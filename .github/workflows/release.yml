@@ -60,6 +60,12 @@ jobs:
   publish:
     name: Publish
     needs: package
+    # One platform failing should not withhold the packages that did build; the
+    # download page reports any platform whose asset is missing. A matrix job's
+    # result collapses to a single value, so this cannot test individual
+    # platforms — the artifact check below decides whether there is anything to
+    # publish.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -67,8 +73,13 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: List artifacts
-        run: ls -lh artifacts
+      - name: Check something was built
+        run: |
+          ls -lh artifacts
+          if [ -z "$(ls -A artifacts 2>/dev/null)" ]; then
+            echo "::error::Hiçbir platform paketlenemedi; yayımlanacak dosya yok."
+            exit 1
+          fi
 
       # Rolling release. The tag is moved to the built commit each time, which is
       # what keeps github.com/<repo>/releases/latest/download/<name> resolving.

@@ -14,11 +14,13 @@ files:
 asarUnpack:
   - resources/**
 
+# File names are written out literally rather than through ${arch}: the download
+# page links to fixed URLs, and ${arch} does not expand the same way for every
+# target (a deb renders x64 as "amd64", which would break the link).
 win:
   target:
     - target: nsis
       arch: [x64]
-  artifactName: OpbayClient-win-${arch}.${ext}
 
 nsis:
   oneClick: false
@@ -27,12 +29,14 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Opbay Client
+  artifactName: OpbayClient-win-x64.${ext}
 
 mac:
   category: public.app-category.games
   target:
     - target: dmg
       arch: [x64, arm64]
+  # Two architectures, so this one keeps the placeholder.
   artifactName: OpbayClient-mac-${arch}.${ext}
 
 linux:
@@ -42,9 +46,16 @@ linux:
       arch: [x64]
     - target: deb
       arch: [x64]
-  artifactName: OpbayClient-linux-${arch}.${ext}
+  # Debian packages require a maintainer; without one the build fails outright.
+  maintainer: Opbay <opbay@users.noreply.github.com>
+
+appImage:
+  artifactName: OpbayClient-linux-x64.AppImage
+
+deb:
+  artifactName: OpbayClient-linux-x64.deb
 
 publish:
   provider: github
   owner: pisanadam
-  repo: opbay-client-
+  repo: Opbay-client-

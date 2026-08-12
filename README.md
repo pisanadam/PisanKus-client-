@@ -4,7 +4,7 @@ Modern arayüzlü, açık kaynak bir Minecraft: Java Edition launcher'ı. Modrin
 profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu tutar.
 
 <p align="center">
-  <a href="https://pisanadam.github.io/opbay-client-/"><strong>İndirme sayfası →</strong></a>
+  <a href="https://pisanadam.github.io/Opbay-client-/"><strong>İndirme sayfası →</strong></a>
 </p>
 
 ## Özellikler
@@ -40,8 +40,8 @@ dâhil) ve tamamen özelleştirilebilir tema.
 
 ## Kurulum
 
-Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/opbay-client-/) veya
-[Releases](https://github.com/pisanadam/opbay-client-/releases) bölümünü kullanın.
+Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/Opbay-client-/) veya
+[Releases](https://github.com/pisanadam/Opbay-client-/releases) bölümünü kullanın.
 
 ## Geliştirme
 
@@ -97,24 +97,26 @@ Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulama
 
 Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
 
-- **Paketler:** `main` dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon) ve Linux paketleri
-  derlenir ve `latest` sürümüne yüklenir. Paket adları sürüm numarası içermediği için indirme bağlantıları
+- **Paketler:** Deponun varsayılan dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon), Linux
+  ve Android paketleri derlenir ve `latest` sürümüne yüklenir. İş akışları dal adını sabit yazmaz; deponun
+  varsayılan dalı neyse orada çalışırlar. Paket adları sürüm numarası içermediği için indirme bağlantıları
   sabittir:
 
   ```
-  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-win-x64.exe
-  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-mac-arm64.dmg
-  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-mac-x64.dmg
-  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-linux-x64.AppImage
-  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-linux-x64.deb
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-win-x64.exe
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-mac-arm64.dmg
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-mac-x64.dmg
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-linux-x64.AppImage
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-linux-x64.deb
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-android.apk
   ```
 
   İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.
   Sabitlenmiş bir sürüm istersen `v*` etiketi gönder (`git tag v1.1.0 && git push --tags`); ayrıca
   numaralandırılmış bir Release oluşturulur.
 
-- **İndirme sayfası:** `main` dalına `docs/` altında bir değişiklik gittiğinde GitHub Pages'e dağıtılır.
-  Deponun **Settings → Pages** ayarında kaynak olarak **GitHub Actions** seçili olmalıdır.
+- **İndirme sayfası:** Varsayılan dala her gönderimde GitHub Pages'e dağıtılır:
+  <https://pisanadam.github.io/Opbay-client-/> — adres büyük/küçük harfe duyarlıdır.
 
 Paketler kod imzalama sertifikasıyla imzalanmaz; Windows'ta SmartScreen, macOS'ta Gatekeeper uyarı gösterir
 (sayfadaki SSS bölümünde nasıl geçileceği anlatılıyor).
