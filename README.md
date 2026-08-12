@@ -29,14 +29,7 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 
 ## Platformlar
 
-| Platform | Durum | Not |
-|---|---|---|
-| Windows / macOS / Linux | Hazır paket | Her güncellemede otomatik derlenir |
-| Android | Hazır APK | Oyunu çalıştırmak için ayrıca bir Java çalışma zamanı içe aktarılır — bkz. [`android/README.md`](android/README.md) |
-
-Android sürümü `android/` dizinindedir (Kotlin + Jetpack Compose) ve masaüstü sürümüyle
-aynı özellikleri sunar: profiller, Modrinth, mod paketleri, tüm sürüm kanalları (beta ve alfa
-dâhil) ve tamamen özelleştirilebilir tema.
+Windows, macOS (Intel + Apple Silicon) ve Linux. Paketler her güncellemede otomatik derlenir.
 
 ## Kurulum
 
@@ -97,8 +90,8 @@ Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulama
 
 Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
 
-- **Paketler:** Deponun varsayılan dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon), Linux
-  ve Android paketleri derlenir ve `latest` sürümüne yüklenir. İş akışları dal adını sabit yazmaz; deponun
+- **Paketler:** Deponun varsayılan dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon) ve
+  Linux paketleri derlenir ve `latest` sürümüne yüklenir. İş akışları dal adını sabit yazmaz; deponun
   varsayılan dalı neyse orada çalışırlar. Paket adları sürüm numarası içermediği için indirme bağlantıları
   sabittir:
 
@@ -108,7 +101,6 @@ Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
   https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-mac-x64.dmg
   https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-linux-x64.AppImage
   https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-linux-x64.deb
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-android.apk
   ```
 
   İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.

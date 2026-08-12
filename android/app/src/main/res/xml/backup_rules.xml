@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<full-backup-content>
-    <!-- Game files are large and re-downloadable; tokens must not leave the device. -->
-    <exclude domain="file" path="minecraft/" />
-    <exclude domain="file" path="runtimes/" />
-    <exclude domain="file" path="accounts.json" />
-</full-backup-content>

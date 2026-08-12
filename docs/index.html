@@ -842,36 +842,6 @@
               </p>
             </details>
             <details>
-              <summary>Android sürümünde oyun neden hemen başlamıyor?</summary>
-              <p>
-                Android'in kendi çalışma zamanı Minecraft Java Edition'ı çalıştıramaz; ayrı bir Java çalışma
-                zamanı (JRE) gerekir. Bunu sizin bulmanıza gerek yok: Minecraft'ın o sürüm için istediği Java
-                sürümü (8, 17 veya 21) kurulu değilse oyunu başlattığınızda <b>otomatik indirilir</b>.
-                Dilerseniz <b>Ayarlar → Java</b> bölümünden önceden kurabilir ya da elinizdeki bir arşivi
-                (<code>.tar.xz</code>, <code>.tar.gz</code>, <code>.zip</code>) içe aktarabilirsiniz.
-                Grafik tarafında Minecraft 26.2 ile Vulkan arka ucu geldiği için o sürüm ve sonrası Android'in
-                kendi Vulkan sürücüsünü kullanır; daha eski sürümler için OpenGL çeviri bileşeni
-                <b>Ayarlar → Grafik</b> bölümünden kurulur.
-              </p>
-            </details>
-            <details>
-              <summary>Android sürümünde oyun penceresi açılmıyor.</summary>
-              <p>
-                Bu bilinen bir sınır. Launcher oyunu ayrı bir süreç olarak başlatıyor ve ayrı bir süreç
-                uygulamanın penceresine çizemiyor. Görüntü için JVM'in uygulama içinde başlatılması ve
-                Android'e derlenmiş LWJGL bileşenleri gerekiyor; Mojang bunları yayımlamıyor. İndirme,
-                oturum açma ve mod kurulumu çalışıyor, oyun penceresi açılmıyor.
-              </p>
-            </details>
-            <details>
-              <summary>Android'de hangi Minecraft sürümleri var?</summary>
-              <p>
-                Mojang'ın yayımladığı tüm kanallar: sürümler, anlık görüntüler ve 2010 dönemine ait
-                <b>beta</b> (örn. <code>b1.7.3</code>) ile <b>alfa</b> (örn. <code>a1.2.6</code>) yapıları.
-                Profil oluştururken kanal filtreleriyle seçebilirsiniz.
-              </p>
-            </details>
-            <details>
               <summary>Verilerim nerede saklanıyor?</summary>
               <p>
                 Tüm profiller, oturum bilgileri ve indirilen dosyalar yalnızca kendi bilgisayarında tutulur. Opbay
@@ -946,9 +916,9 @@
           // Apple silicon reports as Intel in some browsers; offer both builds either way.
           return 'mac'
         }
-        // Android reports "Linux" too, so it has to be checked first.
-        if (haystack.includes('android')) return 'android'
-        if (haystack.includes('linux') || haystack.includes('x11')) return 'linux'
+        if (haystack.includes('linux') || haystack.includes('android') || haystack.includes('x11')) {
+          return 'linux'
+        }
         return null
       }
 
@@ -987,13 +957,6 @@
             { label: 'AppImage', file: 'OpbayClient-linux-x64.AppImage' },
             { label: 'Debian (.deb)', file: 'OpbayClient-linux-x64.deb' }
           ]
-        },
-        {
-          id: 'android',
-          name: 'Android',
-          icon: '🤖',
-          note: 'Android 8.0 ve üzeri · ayrıca Java çalışma zamanı gerekir',
-          assets: [{ label: 'APK', file: 'OpbayClient-android.apk' }]
         }
       ]
 
