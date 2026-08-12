@@ -113,11 +113,13 @@ export async function resolveVersion(dataDir: string, versionId: string): Promis
     current = json.inheritsFrom
   }
 
-  // Walk parents first so children override them.
+  // Walk parents first so children override them. Libraries are the exception:
+  // the loader's entries go in front, because resolution keeps the first match
+  // for a coordinate and a loader that replaces a vanilla library must win.
   return chain.reverse().reduce((merged, json) => ({
     ...merged,
     ...json,
-    libraries: [...(merged.libraries ?? []), ...(json.libraries ?? [])],
+    libraries: [...(json.libraries ?? []), ...(merged.libraries ?? [])],
     arguments: {
       game: [...(merged.arguments?.game ?? []), ...(json.arguments?.game ?? [])],
       jvm: [...(merged.arguments?.jvm ?? []), ...(json.arguments?.jvm ?? [])]

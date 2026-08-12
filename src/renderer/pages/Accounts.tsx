@@ -34,7 +34,7 @@ export function Accounts(): JSX.Element {
           const active = account.id === activeAccount?.id
           return (
             <div key={account.id} className="list__row">
-              <SkinHead skinUrl={account.skinUrl} size={38} />
+              <SkinHead skinUrl={account.skinUrl} size={38} name={account.name} />
 
               <div className="list__main">
                 <div className="list__title">

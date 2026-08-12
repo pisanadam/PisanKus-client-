@@ -72,7 +72,7 @@ export function Skins(): JSX.Element {
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(320px, 420px)', gap: 22 }}>
-        <SkinViewer skinUrl={info?.skinUrl} slim={variant === 'slim'} scale={10} />
+        <SkinViewer skinUrl={info?.skinUrl} slim={variant === 'slim'} scale={10} loading={loading} />
 
         <div className="stack-lg">
           <div className="settings-group">

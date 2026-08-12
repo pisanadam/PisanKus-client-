@@ -107,7 +107,7 @@ export function App(): JSX.Element {
         <div className="sidebar__spacer" />
 
         <button className="account-chip" onClick={() => setRoute({ page: 'accounts' })}>
-          <SkinHead skinUrl={activeAccount?.skinUrl} size={26} />
+          <SkinHead skinUrl={activeAccount?.skinUrl} size={26} name={activeAccount?.name} />
           <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {activeAccount?.name ?? 'Hesap'}
           </span>

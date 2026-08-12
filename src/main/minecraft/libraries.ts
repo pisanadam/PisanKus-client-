@@ -65,6 +65,28 @@ function nativeClassifier(library: Library): string | undefined {
   return library.natives[currentOs()]?.replace('${arch}', process.arch === 'ia32' ? '32' : '64')
 }
 
+/**
+ * Whether a `natives-*` jar is the build for this machine.
+ *
+ * Mojang's rules gate these by operating system only — `natives-windows`,
+ * `natives-windows-arm64` and `natives-windows-x86` all carry the identical
+ * rule `{os: {name: windows}}`. The architecture lives in the classifier
+ * suffix, so without this check every architecture's jar lands on the
+ * classpath at once.
+ */
+export function nativeArchMatches(name: string): boolean {
+  const classifier = name.split(':')[3]
+  if (!classifier?.startsWith('natives-')) return true
+
+  const arch = currentArch()
+  if (classifier.endsWith('-arm64')) return arch === 'arm64'
+  if (classifier.endsWith('-x86')) return arch === 'x86'
+  // LWJGL ships a macOS patch jar that is not architecture-specific.
+  if (classifier.endsWith('-patch')) return true
+  // A bare `natives-<os>` is the 64-bit build.
+  return arch === 'x64'
+}
+
 export interface ResolvedLibraries {
   /** Jars that belong on the classpath. */
   classpath: string[]
@@ -82,10 +104,16 @@ export function resolveLibraries(version: VersionJson, dataDir: string): Resolve
 
   for (const library of version.libraries) {
     if (!rulesAllow(library.rules)) continue
+    if (!nativeArchMatches(library.name)) continue
 
-    // Loader-added libraries frequently repeat with different versions; the first
-    // entry wins because the merge order already puts overrides first.
-    const key = library.name.split(':').slice(0, 2).join(':') + (library.natives ? ':natives' : '')
+    // Libraries repeat across a version and its loader, so only the first entry
+    // for a coordinate is kept. The classifier is part of that identity: from
+    // LWJGL 3.3 the native builds ship as ordinary classpath jars sharing a
+    // group and artifact with the plain one (`org.lwjgl:lwjgl:3.4.2` alongside
+    // `org.lwjgl:lwjgl:3.4.2:natives-windows`). Keying on group:artifact alone
+    // discarded every native jar, and the game then failed to find lwjgl.dll.
+    const [groupId, artifactId, , nameClassifier] = library.name.split(':')
+    const key = [groupId, artifactId, nameClassifier ?? '', library.natives ? 'natives' : ''].join(':')
     if (seen.has(key)) continue
     seen.add(key)
 

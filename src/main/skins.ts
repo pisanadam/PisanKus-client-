@@ -12,6 +12,17 @@ export interface SkinInfo {
   capes: { id: string; alias: string; url: string; active: boolean }[]
 }
 
+/**
+ * Mojang hands back texture URLs over plain http. The renderer's content policy
+ * only permits https images — and textures.minecraft.net serves https fine — so
+ * the scheme is upgraded here rather than by widening the policy to allow any
+ * plaintext image.
+ */
+export function httpsTexture(url: string | undefined): string | undefined {
+  if (!url) return undefined
+  return url.replace(/^http:\/\//i, 'https://')
+}
+
 interface ProfileResponse {
   id: string
   name: string
@@ -45,12 +56,12 @@ export async function getSkinInfo(account: Account): Promise<SkinInfo> {
   const profile = await authorized<ProfileResponse>(account, MC_API)
   const active = profile.skins?.find((skin) => skin.state === 'ACTIVE')
   return {
-    skinUrl: active?.url,
+    skinUrl: httpsTexture(active?.url),
     variant: active?.variant?.toLowerCase() === 'slim' ? 'slim' : 'classic',
     capes: (profile.capes ?? []).map((cape) => ({
       id: cape.id,
       alias: cape.alias,
-      url: cape.url,
+      url: httpsTexture(cape.url) ?? cape.url,
       active: cape.state === 'ACTIVE'
     }))
   }

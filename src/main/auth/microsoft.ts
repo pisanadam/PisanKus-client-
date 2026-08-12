@@ -2,6 +2,7 @@ import { BrowserWindow, shell } from 'electron'
 import { createHash, randomBytes } from 'node:crypto'
 import type { Account, AuthMode } from '../../shared/types'
 import { fetchJson } from '../minecraft/downloader'
+import { httpsTexture } from '../skins'
 
 const XBL_AUTH = 'https://user.auth.xboxlive.com/user/authenticate'
 const XSTS_AUTH = 'https://xsts.auth.xboxlive.com/xsts/authorize'
@@ -270,7 +271,7 @@ async function completeMinecraftLogin(msToken: MsToken, mode: AuthMode): Promise
     expiresAt: Date.now() + mcLogin.expires_in * 1000,
     refreshToken: msToken.refresh_token,
     authMode: mode,
-    skinUrl: profile.skins?.find((skin) => skin.state === 'ACTIVE')?.url,
+    skinUrl: httpsTexture(profile.skins?.find((skin) => skin.state === 'ACTIVE')?.url),
     capeId: profile.capes?.find((cape) => cape.state === 'ACTIVE')?.id,
     addedAt: Date.now()
   }

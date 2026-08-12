@@ -197,9 +197,17 @@ export interface SkinViewerProps {
   /** Pixels per skin pixel. */
   scale?: number
   className?: string
+  /** Distinguishes "still fetching" from "there is nothing to show". */
+  loading?: boolean
 }
 
-export function SkinViewer({ skinUrl, slim = false, scale = 9, className }: SkinViewerProps): JSX.Element {
+export function SkinViewer({
+  skinUrl,
+  slim = false,
+  scale = 9,
+  className,
+  loading = false
+}: SkinViewerProps): JSX.Element {
   const [rotation, setRotation] = useState({ x: -12, y: 22 })
   const [dragging, setDragging] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
@@ -240,7 +248,7 @@ export function SkinViewer({ skinUrl, slim = false, scale = 9, className }: Skin
       <div className={`skin-stage ${className ?? ''}`}>
         <div className="empty" style={{ border: 'none' }}>
           <div className="empty__icon">🧍</div>
-          <div className="muted">Skin yükleniyor…</div>
+          <div className="muted">{loading ? 'Skin yükleniyor…' : 'Bu hesapta özel skin yok.'}</div>
         </div>
       </div>
     )
@@ -276,8 +284,36 @@ export function SkinViewer({ skinUrl, slim = false, scale = 9, className }: Skin
 }
 
 /** Flat 2D head render, used for avatars in lists. */
-export function SkinHead({ skinUrl, size = 32 }: { skinUrl?: string; size?: number }): JSX.Element {
-  if (!skinUrl) return <div className="avatar" style={{ width: size, height: size }} />
+export function SkinHead({
+  skinUrl,
+  size = 32,
+  name
+}: {
+  skinUrl?: string
+  size?: number
+  /** Falls back to this player's initial, so the slot is never blank. */
+  name?: string
+}): JSX.Element {
+  if (!skinUrl) {
+    return (
+      <div
+        className="avatar"
+        style={{
+          width: size,
+          height: size,
+          display: 'grid',
+          placeItems: 'center',
+          background: 'var(--accent-soft)',
+          color: 'var(--accent)',
+          fontSize: size * 0.45,
+          fontWeight: 700
+        }}
+        aria-hidden="true"
+      >
+        {name?.trim()?.charAt(0)?.toLocaleUpperCase('tr') ?? ''}
+      </div>
+    )
+  }
 
   const pixel = size / 8
   return (

@@ -200,6 +200,22 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     }
     if (currentOs() === 'osx') jvmArgs.push('-XstartOnFirstThread')
 
+    // From 26.3 the jvm template points each consumer at its own subfolder of the
+    // natives directory (`${natives_directory}/java`, `/lwjgl`, `/jna`, `/netty`)
+    // instead of the directory itself. None of them create the folder, so LWJGL
+    // reported `java.library.path : <not a directory>` and failed to load
+    // lwjgl.dll. Create whatever the template actually asked for.
+    for (const arg of jvmArgs) {
+      const value = /^-D[\w.]+=(.+)$/.exec(arg)?.[1]
+      if (!value) continue
+      // The template joins with `/` even on Windows, so compare through `path`
+      // rather than by prefix.
+      const relative = path.relative(nativesDir, value)
+      if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+        await fsp.mkdir(value, { recursive: true })
+      }
+    }
+
     const gameArgs = version.minecraftArguments
       ? version.minecraftArguments.split(' ').map((arg) => substitute(arg, values))
       : flattenArguments(version.arguments?.game as ArgumentEntry[], values, features)
