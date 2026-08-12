@@ -42,8 +42,19 @@ jobs:
       - name: Unit tests
         run: ./gradlew testDebugUnitTest
 
+      # Gradle resolves dependencies over the network; a dropped connection
+      # should not leave the APK stale on the rolling release.
       - name: Build APK
-        run: ./gradlew assembleDebug
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew assembleDebug; then
+              exit 0
+            fi
+            echo "::warning::APK derleme denemesi $attempt başarısız oldu, yeniden deneniyor…"
+            sleep $((attempt * 20))
+          done
+          echo "::error::APK üç denemede de derlenemedi."
+          exit 1
 
       - name: Name the artifact
         run: cp app/build/outputs/apk/debug/app-debug.apk OpbayClient-android.apk

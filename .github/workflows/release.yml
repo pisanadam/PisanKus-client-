@@ -44,8 +44,37 @@ jobs:
 
       - run: npm ci
 
+      # electron-builder pulls its helper binaries (electron, nsis, winCodeSign…)
+      # from GitHub releases on every run. Caching them removes most of the
+      # network exposure that makes packaging flaky.
+      - name: Cache packaging binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-electron-
+
+      # Those downloads still fail outright now and then — a dropped connection
+      # mid-transfer aborts the whole build. Retrying costs a few minutes; not
+      # retrying leaves one platform's package stale on the rolling release.
       - name: Build installers
-        run: npm run ${{ matrix.script }}
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if npm run ${{ matrix.script }}; then
+              exit 0
+            fi
+            echo "::warning::Paketleme denemesi $attempt başarısız oldu, yeniden deneniyor…"
+            sleep $((attempt * 20))
+          done
+          echo "::error::Paketleme üç denemede de başarısız oldu."
+          exit 1
 
       - uses: actions/upload-artifact@v4
         with:
