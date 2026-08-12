@@ -1,8 +1,8 @@
 name: Build
 
+# Pushes to the default branch are already fully built by the Release workflow,
+# so this only guards pull requests.
 on:
-  push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 

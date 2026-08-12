@@ -1,11 +1,9 @@
 name: Deploy download page
 
+# Runs on whatever the repository's default branch is called.
 on:
   push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - '.github/workflows/pages.yml'
+    branches: ['**']
   workflow_dispatch:
 
 permissions:
@@ -20,6 +18,9 @@ concurrency:
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     environment:
       name: github-pages

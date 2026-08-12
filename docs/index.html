@@ -990,22 +990,33 @@
         return `${(bytes / 1e6).toFixed(1)} MB`
       }
 
-      function render(release) {
+      /**
+       * `release` is the API response, or null when it could not be read.
+       * `known` is null in that case: an asset is only treated as missing when
+       * the release was actually read and did not list it, so a rate-limited or
+       * blocked API never hides working links.
+       */
+      function render(release, known) {
         const sizes = new Map((release?.assets ?? []).map((asset) => [asset.name, asset.size]))
         const detected = detectPlatform()
         const container = document.getElementById('downloads')
+        const available = (file) => known === null || known.has(file)
 
         container.innerHTML = PLATFORMS.map((platform) => {
-          const links = platform.assets
-            .map((asset) => {
-              const size = sizes.get(asset.file)
-              const sub = size ? formatSize(size) : 'en son yapı'
-              return `<a class="dl__link" href="${dl(asset.file)}">${asset.label}<br><span style="font-weight:400;opacity:.6;font-size:12px">${sub}</span></a>`
-            })
-            .join('')
+          const ready = platform.assets.filter((asset) => available(asset.file))
+
+          const links = ready.length
+            ? ready
+                .map((asset) => {
+                  const size = sizes.get(asset.file)
+                  const sub = size ? formatSize(size) : 'en son yapı'
+                  return `<a class="dl__link" href="${dl(asset.file)}">${asset.label}<br><span style="font-weight:400;opacity:.6;font-size:12px">${sub}</span></a>`
+                })
+                .join('')
+            : `<span class="dl__link" style="opacity:.55;cursor:default">Derleniyor…<br><span style="font-weight:400;font-size:12px">birkaç dakika sürer</span></span>`
 
           return `
-            <div class="dl ${detected === platform.id ? 'recommended' : ''}">
+            <div class="dl ${detected === platform.id && ready.length ? 'recommended' : ''}">
               <div class="dl__os">
                 <span>${platform.icon}</span> ${platform.name}
                 ${detected === platform.id ? '<span class="dl__badge">Sisteminiz</span>' : ''}
@@ -1017,14 +1028,16 @@
 
         // Point the hero button at the detected platform's primary asset.
         const primary = PLATFORMS.find((platform) => platform.id === detected)
+        const primaryAsset = primary?.assets.find((asset) => available(asset.file))
         const button = document.getElementById('primary-download')
         const label = document.getElementById('primary-download-label')
-        if (primary) {
-          button.href = dl(primary.assets[0].file)
+
+        if (primaryAsset) {
+          button.href = dl(primaryAsset.file)
           label.textContent = `${primary.name} için indir`
         } else {
           button.href = '#indir'
-          label.textContent = 'İndirme seçenekleri'
+          label.textContent = known === null ? 'İndirme seçenekleri' : 'Paketler hazırlanıyor'
         }
       }
 
@@ -1052,19 +1065,28 @@
       }
 
       async function load() {
-        // Draw working links first; the API call only enriches them afterwards.
-        render(null)
+        // Draw the cards immediately; the API call refines them afterwards.
+        render(null, null)
         try {
           const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
             headers: { Accept: 'application/vnd.github+json' }
           })
-          // A repo with no published release answers 404 — that is a valid state.
-          const release = response.ok ? await response.json() : null
+
+          if (response.status === 404) {
+            // No release published yet — the first build has not finished.
+            renderReleaseMeta(null)
+            render(null, new Set())
+            return
+          }
+          if (!response.ok) throw new Error(String(response.status))
+
+          const release = await response.json()
           renderReleaseMeta(release)
-          render(release)
+          render(release, new Set(release.assets.map((asset) => asset.name)))
         } catch {
+          // Unreachable API: keep the links, they may well work.
           renderReleaseMeta(null)
-          render(null)
+          render(null, null)
         }
       }
 
