@@ -1,16 +1,46 @@
 import { BrowserWindow, shell } from 'electron'
 import { createHash, randomBytes } from 'node:crypto'
-import type { Account } from '../../shared/types'
+import type { Account, AuthMode } from '../../shared/types'
 import { fetchJson } from '../minecraft/downloader'
 
-const MS_AUTHORITY = 'https://login.microsoftonline.com/consumers/oauth2/v2.0'
 const XBL_AUTH = 'https://user.auth.xboxlive.com/user/authenticate'
 const XSTS_AUTH = 'https://xsts.auth.xboxlive.com/xsts/authorize'
 const MC_LOGIN = 'https://api.minecraftservices.com/authentication/login_with_xbox'
 const MC_PROFILE = 'https://api.minecraftservices.com/minecraft/profile'
 const MC_ENTITLEMENTS = 'https://api.minecraftservices.com/entitlements/mcstore'
-const REDIRECT_URI = 'https://login.microsoftonline.com/common/oauth2/nativeclient'
-const SCOPE = 'XboxLive.signin offline_access'
+
+/**
+ * Microsoft runs two separate identity platforms and a client id is registered
+ * with exactly one of them.
+ *
+ * `legacy` is the platform Minecraft's own launcher client id lives on. It has
+ * no PKCE and hands back a ticket Xbox Live accepts as-is.
+ *
+ * `azure` is the modern v2.0 platform, which requires an app registered in
+ * Azure AD. Its tickets must be prefixed with `d=` for Xbox Live.
+ *
+ * Sending a client id to the wrong platform fails with a flat 400
+ * (`unauthorized_client` / AADSTS700016), which is why the mode is explicit
+ * rather than guessed.
+ */
+const ENDPOINTS = {
+  legacy: {
+    authorize: 'https://login.live.com/oauth20_authorize.srf',
+    token: 'https://login.live.com/oauth20_token.srf',
+    redirect: 'https://login.live.com/oauth20_desktop.srf',
+    scope: 'service::user.auth.xboxlive.com::MBI_SSL',
+    usePkce: false,
+    rpsPrefix: ''
+  },
+  azure: {
+    authorize: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize',
+    token: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
+    redirect: 'https://login.microsoftonline.com/common/oauth2/nativeclient',
+    scope: 'XboxLive.signin offline_access',
+    usePkce: true,
+    rpsPrefix: 'd='
+  }
+} as const satisfies Record<AuthMode, unknown>
 
 interface MsToken {
   access_token: string
@@ -42,41 +72,72 @@ export class AuthError extends Error {
   }
 }
 
+/**
+ * Posts a form and turns Microsoft's own error payload into the message the
+ * user sees — the raw status code alone says nothing actionable.
+ */
 async function postForm<T>(url: string, body: Record<string, string>): Promise<T> {
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(body).toString()
   })
+
   const text = await response.text()
-  if (!response.ok) {
-    throw new AuthError(`Microsoft yanıtı: ${text.slice(0, 300)}`, 'ms_token_failed')
+  if (response.ok) return JSON.parse(text) as T
+
+  let code = 'ms_token_failed'
+  let detail = text.slice(0, 300)
+  try {
+    const parsed = JSON.parse(text) as { error?: string; error_description?: string }
+    code = parsed.error ?? code
+    detail = parsed.error_description ?? detail
+  } catch {
+    // Not JSON — the raw body is the best detail available.
   }
-  return JSON.parse(text) as T
+
+  if (code === 'unauthorized_client' || detail.includes('AADSTS700016')) {
+    throw new AuthError(
+      'Bu istemci kimliği Azure platformunda kayıtlı değil. Ayarlar → Hesap bölümünden oturum açma ' +
+        'yöntemini “Minecraft (varsayılan)” yapın ya da geçerli bir Azure uygulama kimliği girin.',
+      code
+    )
+  }
+
+  throw new AuthError(detail.split('Trace ID')[0].trim(), code)
+}
+
+interface Pkce {
+  verifier: string
+  challenge: string
+}
+
+function createPkce(): Pkce {
+  const verifier = randomBytes(48).toString('base64url')
+  return { verifier, challenge: createHash('sha256').update(verifier).digest('base64url') }
 }
 
 /**
  * Opens the Microsoft login page in a dedicated window and resolves once the
- * redirect carrying the authorization code is observed. PKCE keeps the flow
- * safe for a public client that ships no secret.
+ * redirect carrying the authorization code is observed.
  */
-function requestAuthCode(clientId: string): Promise<{ code: string; verifier: string }> {
-  const verifier = randomBytes(32).toString('base64url')
-  const challenge = createHash('sha256').update(verifier).digest('base64url')
+function requestAuthCode(clientId: string, mode: AuthMode): Promise<{ code: string; pkce: Pkce | null }> {
+  const endpoints = ENDPOINTS[mode]
+  const pkce = endpoints.usePkce ? createPkce() : null
   const state = randomBytes(16).toString('hex')
 
-  const authUrl =
-    `${MS_AUTHORITY}/authorize?` +
-    new URLSearchParams({
-      client_id: clientId,
-      response_type: 'code',
-      redirect_uri: REDIRECT_URI,
-      scope: SCOPE,
-      state,
-      code_challenge: challenge,
-      code_challenge_method: 'S256',
-      prompt: 'select_account'
-    }).toString()
+  const params = new URLSearchParams({
+    client_id: clientId,
+    response_type: 'code',
+    redirect_uri: endpoints.redirect,
+    scope: endpoints.scope,
+    state
+  })
+  if (pkce) {
+    params.set('code_challenge', pkce.challenge)
+    params.set('code_challenge_method', 'S256')
+    params.set('prompt', 'select_account')
+  }
 
   return new Promise((resolve, reject) => {
     const window = new BrowserWindow({
@@ -96,21 +157,24 @@ function requestAuthCode(clientId: string): Promise<{ code: string; verifier: st
     }
 
     const inspect = (rawUrl: string): void => {
-      if (!rawUrl.startsWith(REDIRECT_URI)) return
-      const params = new URL(rawUrl).searchParams
-      const error = params.get('error')
+      if (!rawUrl.startsWith(endpoints.redirect)) return
+      const url = new URL(rawUrl)
+      // The legacy platform answers on the query string, the modern one too.
+      const search = url.searchParams
+
+      const error = search.get('error')
       if (error) {
-        const description = params.get('error_description') ?? error
-        finish(() => reject(new AuthError(description, error)))
+        finish(() => reject(new AuthError(search.get('error_description') ?? error, error)))
         return
       }
-      const code = params.get('code')
+      const code = search.get('code')
       if (!code) return
-      if (params.get('state') !== state) {
+      // The legacy platform does not echo `state`, so it is only checked when sent back.
+      if (search.has('state') && search.get('state') !== state) {
         finish(() => reject(new AuthError('Oturum durumu doğrulanamadı.', 'state_mismatch')))
         return
       }
-      finish(() => resolve({ code, verifier }))
+      finish(() => resolve({ code, pkce }))
     }
 
     window.webContents.on('will-redirect', (_event, url) => inspect(url))
@@ -124,11 +188,11 @@ function requestAuthCode(clientId: string): Promise<{ code: string; verifier: st
       finish(() => reject(new AuthError('Oturum açma penceresi kapatıldı.', 'cancelled')))
     })
 
-    void window.loadURL(authUrl)
+    void window.loadURL(`${endpoints.authorize}?${params}`)
   })
 }
 
-async function xboxLive(msAccessToken: string): Promise<{ token: string; uhs: string }> {
+async function xboxLive(msAccessToken: string, mode: AuthMode): Promise<{ token: string; uhs: string }> {
   const xbl = await fetchJson<XboxResponse>(XBL_AUTH, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -136,7 +200,7 @@ async function xboxLive(msAccessToken: string): Promise<{ token: string; uhs: st
       Properties: {
         AuthMethod: 'RPS',
         SiteName: 'user.auth.xboxlive.com',
-        RpsTicket: `d=${msAccessToken}`
+        RpsTicket: `${ENDPOINTS[mode].rpsPrefix}${msAccessToken}`
       },
       RelyingParty: 'http://auth.xboxlive.com',
       TokenType: 'JWT'
@@ -158,7 +222,7 @@ async function xsts(xblToken: string): Promise<string> {
 
   if (response.status === 401) {
     const body = (await response.json().catch(() => ({}))) as { XErr?: number }
-    // Documented XSTS failure codes — plain-language messages help far more than the raw number.
+    // Documented XSTS failure codes — plain language helps far more than the number.
     const messages: Record<number, string> = {
       2148916233: 'Bu Microsoft hesabına bağlı bir Xbox profili yok. Önce xbox.com üzerinden profil oluşturun.',
       2148916235: 'Xbox Live bu ülkede kullanılamıyor.',
@@ -175,8 +239,8 @@ async function xsts(xblToken: string): Promise<string> {
 }
 
 /** Runs the Xbox → Minecraft half of the chain and returns a ready-to-store account. */
-async function completeMinecraftLogin(msToken: MsToken): Promise<Account> {
-  const { token: xblToken, uhs } = await xboxLive(msToken.access_token)
+async function completeMinecraftLogin(msToken: MsToken, mode: AuthMode): Promise<Account> {
+  const { token: xblToken, uhs } = await xboxLive(msToken.access_token, mode)
   const xstsToken = await xsts(xblToken)
 
   const mcLogin = await fetchJson<McLoginResponse>(MC_LOGIN, {
@@ -205,34 +269,48 @@ async function completeMinecraftLogin(msToken: MsToken): Promise<Account> {
     accessToken: mcLogin.access_token,
     expiresAt: Date.now() + mcLogin.expires_in * 1000,
     refreshToken: msToken.refresh_token,
+    authMode: mode,
     skinUrl: profile.skins?.find((skin) => skin.state === 'ACTIVE')?.url,
     capeId: profile.capes?.find((cape) => cape.state === 'ACTIVE')?.id,
     addedAt: Date.now()
   }
 }
 
-export async function signIn(clientId: string): Promise<Account> {
-  const { code, verifier } = await requestAuthCode(clientId)
-  const msToken = await postForm<MsToken>(`${MS_AUTHORITY}/token`, {
+export async function signIn(clientId: string, mode: AuthMode): Promise<Account> {
+  const { code, pkce } = await requestAuthCode(clientId, mode)
+  const endpoints = ENDPOINTS[mode]
+
+  const body: Record<string, string> = {
     client_id: clientId,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: REDIRECT_URI,
-    code_verifier: verifier,
-    scope: SCOPE
-  })
-  return completeMinecraftLogin(msToken)
+    redirect_uri: endpoints.redirect
+  }
+  if (pkce) {
+    body.code_verifier = pkce.verifier
+    body.scope = endpoints.scope
+  }
+
+  return completeMinecraftLogin(await postForm<MsToken>(endpoints.token, body), mode)
 }
 
 /** Renews an account in place; throws when the refresh token itself has expired. */
 export async function refresh(account: Account, clientId: string): Promise<Account> {
-  const msToken = await postForm<MsToken>(`${MS_AUTHORITY}/token`, {
+  // Accounts remember how they were signed in, so a mode change in settings
+  // cannot break sessions that already exist.
+  const mode = account.authMode ?? 'legacy'
+  const endpoints = ENDPOINTS[mode]
+
+  const body: Record<string, string> = {
     client_id: clientId,
     grant_type: 'refresh_token',
     refresh_token: account.refreshToken,
-    scope: SCOPE
-  })
-  const renewed = await completeMinecraftLogin(msToken)
+    redirect_uri: endpoints.redirect
+  }
+  if (endpoints.usePkce) body.scope = endpoints.scope
+
+  const msToken = await postForm<MsToken>(endpoints.token, body)
+  const renewed = await completeMinecraftLogin(msToken, mode)
   return { ...renewed, addedAt: account.addedAt }
 }
 

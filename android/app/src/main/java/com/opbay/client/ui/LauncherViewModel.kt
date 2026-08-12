@@ -9,6 +9,7 @@ import com.opbay.client.content.ContentInstaller
 import com.opbay.client.content.Modrinth
 import com.opbay.client.content.SearchQuery
 import com.opbay.client.data.Account
+import com.opbay.client.data.AuthMode
 import com.opbay.client.data.ContentKind
 import com.opbay.client.data.LauncherDb
 import com.opbay.client.data.LoaderId
@@ -127,17 +128,31 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     // ------------------------------------------------------------------ accounts
 
-    fun beginSignIn(): Pair<String, MicrosoftAuth.PkceChallenge> {
+    /** Everything the sign-in web view needs for one attempt. */
+    data class SignInSession(
+        val url: String,
+        val redirect: String,
+        val mode: AuthMode,
+        val pkce: MicrosoftAuth.PkceChallenge
+    )
+
+    fun beginSignIn(): SignInSession {
         val pkce = MicrosoftAuth.PkceChallenge()
+        val mode = store.settings.authMode
         _authError.value = null
-        return MicrosoftAuth.authorizeUrl(store.settings.msClientId, pkce) to pkce
+        return SignInSession(
+            url = MicrosoftAuth.authorizeUrl(store.settings.msClientId, mode, pkce),
+            redirect = MicrosoftAuth.endpoints(mode).redirect,
+            mode = mode,
+            pkce = pkce
+        )
     }
 
-    fun completeSignIn(code: String, pkce: MicrosoftAuth.PkceChallenge) {
+    fun completeSignIn(session: SignInSession, code: String) {
         _signingIn.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val account = MicrosoftAuth.signIn(store.settings.msClientId, code, pkce)
+                val account = MicrosoftAuth.signIn(store.settings.msClientId, session.mode, code, session.pkce)
                 store.upsertAccount(account)
                 _authError.value = null
             } catch (error: Exception) {

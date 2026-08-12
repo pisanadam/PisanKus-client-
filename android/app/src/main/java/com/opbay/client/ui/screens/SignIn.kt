@@ -26,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.opbay.client.auth.MicrosoftAuth
 import com.opbay.client.ui.LauncherViewModel
 
 /**
@@ -46,19 +46,27 @@ import com.opbay.client.ui.LauncherViewModel
  * safe for a public client that ships no secret.
  */
 @Composable
-fun SignInScreen(viewModel: LauncherViewModel) {
+fun SignInScreen(viewModel: LauncherViewModel, onDone: (() -> Unit)? = null) {
     val signingIn by viewModel.signingIn.collectAsState()
     val error by viewModel.authError.collectAsState()
+    val db by viewModel.db.collectAsState()
 
-    var session by remember { mutableStateOf<Pair<String, MicrosoftAuth.PkceChallenge>?>(null) }
+    // When adding an account from the switcher, leave as soon as one lands.
+    val accountCount = db.accounts.size
+    LaunchedEffect(accountCount) {
+        if (onDone != null && accountCount > 0 && !signingIn) onDone()
+    }
+
+    var session by remember { mutableStateOf<LauncherViewModel.SignInSession?>(null) }
 
     val current = session
     if (current != null && !signingIn) {
         AuthWebView(
-            url = current.first,
+            url = current.url,
+            redirectUri = current.redirect,
             onCode = { code ->
                 session = null
-                viewModel.completeSignIn(code, current.second)
+                viewModel.completeSignIn(current, code)
             },
             onError = { message ->
                 session = null
@@ -152,6 +160,10 @@ fun SignInScreen(viewModel: LauncherViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
+
+                    if (onDone != null) {
+                        TextButton(onClick = onDone) { Text("Vazgeç") }
+                    }
                 }
             }
         }
@@ -162,6 +174,7 @@ fun SignInScreen(viewModel: LauncherViewModel) {
 @Composable
 private fun AuthWebView(
     url: String,
+    redirectUri: String,
     onCode: (String) -> Unit,
     onError: (String) -> Unit,
     onCancel: () -> Unit
@@ -185,7 +198,7 @@ private fun AuthWebView(
 
                         private fun inspect(candidate: String?): Boolean {
                             if (handled || candidate == null) return false
-                            if (!candidate.startsWith(MicrosoftAuth.REDIRECT_URI)) return false
+                            if (!candidate.startsWith(redirectUri)) return false
 
                             val uri = Uri.parse(candidate)
                             val error = uri.getQueryParameter("error")

@@ -7,6 +7,9 @@ import { useApp } from '../state/AppContext'
 
 const ACCENTS = ['#5b8cff', '#7c5cff', '#e0567a', '#f0873c', '#3fb98a', '#2fb6c8', '#d9b23c']
 
+/** Minecraft's own launcher client id, paired with the legacy sign-in flow. */
+const DEFAULT_CLIENT_ID = '00000000402b5328'
+
 export function Settings(): JSX.Element {
   const { settings, saveSettings, notify } = useApp()
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
@@ -203,21 +206,50 @@ export function Settings(): JSX.Element {
 
         <section className="settings-group">
           <div className="section-title">Hesap</div>
-          <div className="field">
-            <label className="field__label" htmlFor="ms-client">
-              Azure istemci kimliği
-            </label>
-            <input
-              id="ms-client"
-              className="input"
-              value={settings.msClientId}
-              onChange={(event) => void saveSettings({ msClientId: event.target.value })}
-            />
-            <span className="field__hint">
-              Kendi Azure uygulamanızı kaydettiyseniz istemci kimliğinizi buraya girin. Uygulamada “genel istemci
-              akışları” etkin olmalıdır.
-            </span>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">Oturum açma yöntemi</div>
+              <div className="faint">
+                Varsayılan yöntem hazır çalışır. Azure seçeneği yalnızca kendi uygulamanızı kaydettiyseniz
+                işe yarar.
+              </div>
+            </div>
+            <select
+              className="select"
+              value={settings.authMode}
+              onChange={(event) =>
+                void saveSettings({
+                  authMode: event.target.value as typeof settings.authMode,
+                  // Switching back to the built-in flow must also restore its client id,
+                  // or sign-in fails with a mismatched pair.
+                  msClientId:
+                    event.target.value === 'legacy' ? DEFAULT_CLIENT_ID : settings.msClientId
+                })
+              }
+            >
+              <option value="legacy">Minecraft (varsayılan)</option>
+              <option value="azure">Azure uygulaması</option>
+            </select>
           </div>
+
+          {settings.authMode === 'azure' && (
+            <div className="field">
+              <label className="field__label" htmlFor="ms-client">
+                Azure istemci kimliği
+              </label>
+              <input
+                id="ms-client"
+                className="input"
+                value={settings.msClientId}
+                onChange={(event) => void saveSettings({ msClientId: event.target.value })}
+              />
+              <span className="field__hint">
+                Uygulamanızda “genel istemci akışları” etkin olmalı ve yönlendirme adresi{' '}
+                <code>https://login.microsoftonline.com/common/oauth2/nativeclient</code> olarak kayıtlı olmalıdır.
+              </span>
+            </div>
+          )}
         </section>
       </div>
     </div>

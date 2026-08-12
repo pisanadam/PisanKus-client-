@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.opbay.client.data.AuthMode
 import com.opbay.client.data.ThemeMode
 import com.opbay.client.ui.LauncherViewModel
 import com.opbay.client.ui.theme.SEED_PRESETS
@@ -62,6 +63,7 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
         mutableStateOf("#%06X".format(theme.seedColor and 0xFFFFFF))
     }
     var corner by remember(theme.cornerRadiusDp) { mutableFloatStateOf(theme.cornerRadiusDp.toFloat()) }
+    var clientIdDraft by remember(db.settings.msClientId) { mutableStateOf(db.settings.msClientId) }
     var fontScale by remember(theme.fontScale) { mutableFloatStateOf(theme.fontScale) }
 
     val runtimePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -270,40 +272,74 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
             // --------------------------------------------------------- accounts
 
             item {
-                SettingsCard("Hesaplar") {
-                    db.accounts.forEach { account ->
-                        ListItem(
-                            headlineContent = { Text(account.name) },
-                            supportingContent = {
-                                Text(
-                                    when {
-                                        account.id == db.activeAccountId -> "Etkin hesap"
-                                        account.expired -> "Oturum yenilenmeli"
-                                        else -> "Bağlı"
-                                    }
-                                )
-                            },
-                            trailingContent = {
-                                Row {
-                                    if (account.id != db.activeAccountId) {
-                                        FilterChip(
-                                            selected = false,
-                                            onClick = { viewModel.setActiveAccount(account.id) },
-                                            label = { Text("Seç") }
+                SettingsCard("Oturum açma") {
+                    Text(
+                        "Varsayılan yöntem hazır çalışır. Azure seçeneği yalnızca kendi uygulamanızı " +
+                            "kaydettiyseniz işe yarar.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+
+                    ChipRow {
+                        AuthMode.entries.forEach { mode ->
+                            FilterChip(
+                                selected = db.settings.authMode == mode,
+                                onClick = {
+                                    viewModel.updateSettings {
+                                        it.copy(
+                                            authMode = mode,
+                                            // Returning to the built-in flow must restore its client
+                                            // id too, or the pair no longer matches.
+                                            msClientId = if (mode == AuthMode.LEGACY) DEFAULT_CLIENT_ID
+                                            else it.msClientId
                                         )
                                     }
-                                    IconButton(onClick = { viewModel.removeAccount(account.id) }) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Çıkış")
-                                    }
-                                }
-                            }
+                                },
+                                label = { Text(mode.label) }
+                            )
+                        }
+                    }
+
+                    if (db.settings.authMode == AuthMode.AZURE) {
+                        OutlinedTextField(
+                            value = clientIdDraft,
+                            onValueChange = { clientIdDraft = it },
+                            label = { Text("Azure istemci kimliği") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.updateSettings { it.copy(msClientId = clientIdDraft.trim()) }
+                                viewModel.notify("İstemci kimliği kaydedildi.")
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) { Text("Kaydet") }
+                        Text(
+                            "Uygulamanızda “genel istemci akışları” etkin olmalı ve yönlendirme adresi " +
+                                "https://login.microsoftonline.com/common/oauth2/nativeclient olarak " +
+                                "kayıtlı olmalıdır.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 6.dp)
                         )
                     }
+
+                    Text(
+                        "Hesaplarınızı Hesaplar sekmesinden yönetebilirsiniz.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
                 }
             }
         }
     }
 }
+
+/** Minecraft's own launcher client id, paired with the legacy sign-in flow. */
+private const val DEFAULT_CLIENT_ID = "00000000402b5328"
 
 @Composable
 private fun SettingsCard(title: String, content: @Composable () -> Unit) {

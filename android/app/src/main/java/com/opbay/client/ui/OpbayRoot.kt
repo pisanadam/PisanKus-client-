@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +40,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.opbay.client.data.TaskState
+import com.opbay.client.ui.screens.AccountsScreen
 import com.opbay.client.ui.screens.DiscoverScreen
 import com.opbay.client.ui.screens.LibraryScreen
 import com.opbay.client.ui.screens.ProfileScreen
@@ -48,6 +50,7 @@ import com.opbay.client.ui.screens.SignInScreen
 private enum class Tab(val label: String, val icon: ImageVector) {
     LIBRARY("Kitaplık", Icons.Default.GridView),
     DISCOVER("Keşfet", Icons.Default.Explore),
+    ACCOUNTS("Hesaplar", Icons.Default.ManageAccounts),
     SETTINGS("Ayarlar", Icons.Default.Settings)
 }
 
@@ -64,6 +67,13 @@ fun OpbayRoot(viewModel: LauncherViewModel) {
     var tab by rememberSaveable { mutableStateOf(Tab.LIBRARY) }
     var openProfileId by rememberSaveable { mutableStateOf<String?>(null) }
     var discoverProfileId by rememberSaveable { mutableStateOf<String?>(null) }
+    // Adding an account reuses the sign-in screen, which is otherwise only the gate.
+    var addingAccount by rememberSaveable { mutableStateOf(false) }
+
+    if (addingAccount) {
+        SignInScreen(viewModel, onDone = { addingAccount = false })
+        return
+    }
 
     val openProfile = openProfileId?.let { id -> db.profiles.firstOrNull { it.id == id } }
 
@@ -105,6 +115,11 @@ fun OpbayRoot(viewModel: LauncherViewModel) {
                 tab == Tab.DISCOVER -> DiscoverScreen(
                     viewModel = viewModel,
                     initialProfileId = discoverProfileId
+                )
+
+                tab == Tab.ACCOUNTS -> AccountsScreen(
+                    viewModel = viewModel,
+                    onAddAccount = { addingAccount = true }
                 )
 
                 tab == Tab.SETTINGS -> SettingsScreen(viewModel)

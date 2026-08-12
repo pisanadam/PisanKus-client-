@@ -4,6 +4,12 @@ export type LoaderId = 'vanilla' | 'fabric' | 'quilt' | 'forge' | 'neoforge'
 
 export type ContentKind = 'mod' | 'resourcepack' | 'shader' | 'datapack' | 'world' | 'modpack'
 
+/**
+ * Which Microsoft identity platform a client id is registered with. A client id
+ * only works against one of them, so this cannot be inferred at runtime.
+ */
+export type AuthMode = 'legacy' | 'azure'
+
 /** Where each kind of content is installed, relative to a profile directory. */
 export const CONTENT_DIRS: Record<ContentKind, string> = {
   mod: 'mods',
@@ -24,6 +30,8 @@ export interface Account {
   expiresAt: number
   /** Microsoft refresh token used to silently renew the session. */
   refreshToken: string
+  /** Platform this account signed in through; renewals must use the same one. */
+  authMode: AuthMode
   skinUrl?: string
   capeId?: string
   addedAt: number
@@ -72,7 +80,9 @@ export interface Settings {
   defaultMemoryMb: number
   javaPath?: string
   jvmArgs: string
-  /** Azure application (client) id used for the Microsoft sign-in flow. */
+  /** Identity platform used for new sign-ins. */
+  authMode: AuthMode
+  /** Client id presented to that platform. */
   msClientId: string
   concurrentDownloads: number
   keepLauncherOpen: boolean

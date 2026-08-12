@@ -55,6 +55,22 @@ enum class ContentKind {
         }
 }
 
+/**
+ * Which Microsoft identity platform a client id is registered with. A client id
+ * only works against one of them, so this cannot be inferred at runtime.
+ */
+@Serializable
+enum class AuthMode {
+    @SerialName("legacy") LEGACY,
+    @SerialName("azure") AZURE;
+
+    val label: String
+        get() = when (this) {
+            LEGACY -> "Minecraft (varsayılan)"
+            AZURE -> "Azure uygulaması"
+        }
+}
+
 /** Mojang's version channels. Beta and alpha are the 2010-era builds. */
 @Serializable
 enum class VersionChannel {
@@ -79,6 +95,8 @@ data class Account(
     val accessToken: String,
     val expiresAt: Long,
     val refreshToken: String,
+    /** Platform this account signed in through; renewals must use the same one. */
+    val authMode: AuthMode = AuthMode.LEGACY,
     val skinUrl: String? = null,
     val addedAt: Long = System.currentTimeMillis()
 ) {
@@ -150,6 +168,8 @@ enum class ThemeMode {
 data class Settings(
     val defaultMemoryMb: Int = 1024,
     val jvmArgs: String = "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1HeapRegionSize=16M",
+    val authMode: AuthMode = AuthMode.LEGACY,
+    // Minecraft's own launcher client id, which lives on the legacy platform.
     val msClientId: String = "00000000402b5328",
     val concurrentDownloads: Int = 6,
     val theme: ThemeSettings = ThemeSettings(),

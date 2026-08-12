@@ -11,7 +11,9 @@ interface Database {
   activeAccountId?: string
 }
 
-const DEFAULT_CLIENT_ID = '00000000402b5328' // Mojang's own public client id, works for device-code sign-in.
+// Minecraft's own launcher client id. It lives on the legacy MSA platform, not
+// Azure AD — signing in against the v2.0 endpoints with it fails outright.
+const DEFAULT_CLIENT_ID = '00000000402b5328'
 
 function defaultSettings(): Settings {
   return {
@@ -20,6 +22,7 @@ function defaultSettings(): Settings {
     jvmArgs:
       '-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 ' +
       '-XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M',
+    authMode: process.env.OPBAY_MS_CLIENT_ID ? 'azure' : 'legacy',
     msClientId: process.env.OPBAY_MS_CLIENT_ID || DEFAULT_CLIENT_ID,
     concurrentDownloads: 8,
     keepLauncherOpen: true,

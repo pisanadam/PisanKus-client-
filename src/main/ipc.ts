@@ -78,7 +78,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   }))
 
   handle('auth:signIn', async () => {
-    const account = await auth.signIn(store.settings.msClientId)
+    const account = await auth.signIn(store.settings.msClientId, store.settings.authMode)
     store.upsertAccount(account)
     return toPublic(account)
   })
