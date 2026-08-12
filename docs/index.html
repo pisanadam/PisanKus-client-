@@ -850,6 +850,24 @@
               </p>
             </details>
             <details>
+              <summary>Android sürümünde oyun neden hemen başlamıyor?</summary>
+              <p>
+                Android'in kendi çalışma zamanı Minecraft Java Edition'ı çalıştıramaz; ayrı bir Java çalışma
+                zamanı (JRE) gerekir. APK bir JRE ile birlikte gelmez — uygulamayı kurduktan sonra
+                <b>Ayarlar → Java çalışma zamanı</b> bölümünden cihazınıza uygun bir arşivi
+                (<code>.tar.xz</code>, <code>.tar.gz</code> veya <code>.zip</code>) içe aktarın. Çalışma zamanı
+                kurulu değilse başlatma denemesi ne yapmanız gerektiğini anlatan bir mesajla durur.
+              </p>
+            </details>
+            <details>
+              <summary>Android'de hangi Minecraft sürümleri var?</summary>
+              <p>
+                Mojang'ın yayımladığı tüm kanallar: sürümler, anlık görüntüler ve 2010 dönemine ait
+                <b>beta</b> (örn. <code>b1.7.3</code>) ile <b>alfa</b> (örn. <code>a1.2.6</code>) yapıları.
+                Profil oluştururken kanal filtreleriyle seçebilirsiniz.
+              </p>
+            </details>
+            <details>
               <summary>Verilerim nerede saklanıyor?</summary>
               <p>
                 Tüm profiller, oturum bilgileri ve indirilen dosyalar yalnızca kendi bilgisayarında tutulur. Opbay
@@ -924,7 +942,9 @@
           // Apple silicon reports as Intel in some browsers; offer both builds either way.
           return 'mac'
         }
-        if (haystack.includes('linux') || haystack.includes('android') || haystack.includes('x11')) return 'linux'
+        // Android reports "Linux" too, so it has to be checked first.
+        if (haystack.includes('android')) return 'android'
+        if (haystack.includes('linux') || haystack.includes('x11')) return 'linux'
         return null
       }
 
@@ -963,6 +983,13 @@
             { label: 'AppImage', file: 'OpbayClient-linux-x64.AppImage' },
             { label: 'Debian (.deb)', file: 'OpbayClient-linux-x64.deb' }
           ]
+        },
+        {
+          id: 'android',
+          name: 'Android',
+          icon: '🤖',
+          note: 'Android 8.0 ve üzeri · ayrıca Java çalışma zamanı gerekir',
+          assets: [{ label: 'APK', file: 'OpbayClient-android.apk' }]
         }
       ]
 

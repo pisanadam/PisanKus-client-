@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="minecraft/" />
+        <exclude domain="file" path="runtimes/" />
+        <exclude domain="file" path="accounts.json" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="minecraft/" />
+        <exclude domain="file" path="runtimes/" />
+    </device-transfer>
+</data-extraction-rules>

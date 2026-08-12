@@ -27,6 +27,17 @@ doğrudan profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumu
   atlanması.
 - **Canlı günlük** — Oyun çıktısı launcher içinde akar; kopyalanabilir.
 
+## Platformlar
+
+| Platform | Durum | Not |
+|---|---|---|
+| Windows / macOS / Linux | Hazır paket | Her güncellemede otomatik derlenir |
+| Android | Hazır APK | Oyunu çalıştırmak için ayrıca bir Java çalışma zamanı içe aktarılır — bkz. [`android/README.md`](android/README.md) |
+
+Android sürümü `android/` dizinindedir (Kotlin + Jetpack Compose) ve masaüstü sürümüyle
+aynı özellikleri sunar: profiller, Modrinth/CurseForge, mod paketleri, tüm sürüm kanalları
+(beta ve alfa dâhil) ve tamamen özelleştirilebilir tema.
+
 ## Kurulum
 
 Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/opbay-client-/) veya
