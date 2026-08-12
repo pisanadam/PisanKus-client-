@@ -1,7 +1,7 @@
 # Opbay Client
 
-Modern arayüzlü, açık kaynak bir Minecraft: Java Edition launcher'ı. Modrinth ve CurseForge içeriklerini
-doğrudan profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu tutar.
+Modern arayüzlü, açık kaynak bir Minecraft: Java Edition launcher'ı. Modrinth içeriklerini doğrudan
+profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu tutar.
 
 <p align="center">
   <a href="https://pisanadam.github.io/opbay-client-/"><strong>İndirme sayfası →</strong></a>
@@ -13,10 +13,10 @@ doğrudan profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumu
   korunan yetkilendirme akışı. Oyun başlatılmadan önce Java Edition lisansı doğrulanır.
 - **İzole profiller** — Her profilin kendi `mods`, `resourcepacks`, `shaderpacks`, `saves`, `datapacks`
   klasörü, kendi bellek ve JVM ayarları vardır.
-- **Modrinth + CurseForge** — Tek arayüzden mod, mod paketi, doku paketi, shader, veri paketi ve dünya arama;
-  profil sürümüne/yükleyicisine göre filtreleme; zorunlu bağımlılıkların otomatik kurulumu.
-- **Mod paketi kurulumu** — Modrinth `.mrpack` ve CurseForge `manifest.json` paketleri açılır, `overrides`
-  içeriği uygulanır, profilin sürümü ve yükleyicisi pakete göre ayarlanır.
+- **Modrinth** — Mod, mod paketi, doku paketi, shader ve veri paketi arama; profil sürümüne/yükleyicisine göre
+  filtreleme; zorunlu bağımlılıkların otomatik kurulumu. Hesap ya da API anahtarı gerekmez.
+- **Mod paketi kurulumu** — Modrinth `.mrpack` paketleri açılır, `overrides` içeriği uygulanır, profilin sürümü
+  ve yükleyicisi pakete göre ayarlanır.
 - **Yerel içe aktarma** — Elindeki `.jar` / `.zip` dosyalarını ve dünya arşivlerini profile aktar.
 - **3B skin değiştirici** — Skin yükle, bağlantıdan uygula, klasik/ince model seç, pelerin değiştir. Model saf
   CSS 3D ile çizilir, sürüklenerek döndürülebilir.
@@ -35,8 +35,8 @@ doğrudan profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumu
 | Android | Hazır APK | Oyunu çalıştırmak için ayrıca bir Java çalışma zamanı içe aktarılır — bkz. [`android/README.md`](android/README.md) |
 
 Android sürümü `android/` dizinindedir (Kotlin + Jetpack Compose) ve masaüstü sürümüyle
-aynı özellikleri sunar: profiller, Modrinth/CurseForge, mod paketleri, tüm sürüm kanalları
-(beta ve alfa dâhil) ve tamamen özelleştirilebilir tema.
+aynı özellikleri sunar: profiller, Modrinth, mod paketleri, tüm sürüm kanalları (beta ve alfa
+dâhil) ve tamamen özelleştirilebilir tema.
 
 ## Kurulum
 
@@ -69,7 +69,7 @@ src/
 │   │   ├── loaders/         Fabric, Quilt, NeoForge, Forge kurulumu
 │   │   ├── downloader.ts    Paralel indirme + SHA-1 doğrulama
 │   │   └── launcher.ts      Argüman üretimi ve süreç yönetimi
-│   ├── content/             Modrinth, CurseForge, kurulum/güncelleme/mod paketi mantığı
+│   ├── content/             Modrinth istemcisi, kurulum/güncelleme/mod paketi mantığı
 │   ├── skins.ts             Skin ve pelerin işlemleri
 │   ├── store.ts             JSON tabanlı yerel veritabanı
 │   └── ipc.ts               Renderer'a açılan tek yüzey
@@ -92,12 +92,6 @@ Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulama
    `https://login.microsoftonline.com/common/oauth2/nativeclient`
 4. **Authentication** → *Allow public client flows* → **Yes**
 5. İstemci kimliğini **Ayarlar → Hesap** bölümüne gir (ya da `OPBAY_MS_CLIENT_ID` ortam değişkenini kullan).
-
-### CurseForge API anahtarı
-
-CurseForge üçüncü taraf uygulamalar için anahtar zorunlu tutar.
-[console.curseforge.com](https://console.curseforge.com/) üzerinden ücretsiz alıp **Ayarlar → İçerik**
-bölümüne girin. Modrinth için anahtar gerekmez.
 
 ## Yayınlama
 

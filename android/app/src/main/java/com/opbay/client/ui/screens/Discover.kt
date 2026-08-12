@@ -54,7 +54,6 @@ import kotlinx.coroutines.delay
 fun DiscoverScreen(viewModel: LauncherViewModel, initialProfileId: String?) {
     val db by viewModel.db.collectAsState()
 
-    var source by remember { mutableStateOf("modrinth") }
     var kind by remember { mutableStateOf(ContentKind.MOD) }
     var query by remember { mutableStateOf("") }
     var profileId by remember { mutableStateOf(initialProfileId ?: db.profiles.firstOrNull()?.id) }
@@ -71,12 +70,11 @@ fun DiscoverScreen(viewModel: LauncherViewModel, initialProfileId: String?) {
     }
 
     // Debounced search: typing should not fire a request per keystroke.
-    LaunchedEffect(source, kind, query, filterByProfile, profile?.id) {
+    LaunchedEffect(kind, query, filterByProfile, profile?.id) {
         loading = true
         error = null
         delay(if (query.isEmpty()) 0 else 350)
         viewModel.search(
-            source = source,
             query = SearchQuery(
                 query = query,
                 kind = kind,
@@ -99,14 +97,6 @@ fun DiscoverScreen(viewModel: LauncherViewModel, initialProfileId: String?) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
             )
-
-            Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                FilterChip(source == "modrinth", { source = "modrinth" }, { Text("Modrinth") })
-                FilterChip(source == "curseforge", { source = "curseforge" }, { Text("CurseForge") })
-            }
 
             Row(
                 Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(16.dp, 8.dp),
@@ -179,7 +169,6 @@ fun DiscoverScreen(viewModel: LauncherViewModel, initialProfileId: String?) {
                                 viewModel.install(
                                     ContentInstaller.Request(
                                         profileId = target,
-                                        source = result.source,
                                         projectId = result.projectId,
                                         kind = result.kind,
                                         name = result.title,

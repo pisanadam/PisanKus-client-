@@ -58,9 +58,6 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
     val runtimes by viewModel.runtimes.collectAsState()
     val theme = db.settings.theme
 
-    var apiKeyDraft by remember(db.settings.curseForgeApiKey) {
-        mutableStateOf(db.settings.curseForgeApiKey.orEmpty())
-    }
     var hexDraft by remember(theme.seedColor) {
         mutableStateOf("#%06X".format(theme.seedColor and 0xFFFFFF))
     }
@@ -267,35 +264,6 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
                         onClick = { runtimePicker.launch(arrayOf("*/*")) },
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
                     ) { Text("Çalışma zamanı arşivi içe aktar") }
-                }
-            }
-
-            // ---------------------------------------------------------- content
-
-            item {
-                SettingsCard("İçerik") {
-                    OutlinedTextField(
-                        value = apiKeyDraft,
-                        onValueChange = { apiKeyDraft = it },
-                        label = { Text("CurseForge API anahtarı") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text(
-                        "CurseForge içerikleri için gerekli; console.curseforge.com üzerinden ücretsiz " +
-                            "alınabilir. Modrinth anahtar gerektirmez.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    )
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.updateSettings {
-                                it.copy(curseForgeApiKey = apiKeyDraft.trim().ifEmpty { null })
-                            }
-                            viewModel.notify("Anahtar kaydedildi.")
-                        }
-                    ) { Text("Kaydet") }
                 }
             }
 

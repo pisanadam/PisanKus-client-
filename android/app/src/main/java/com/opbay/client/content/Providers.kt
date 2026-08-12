@@ -4,7 +4,6 @@ import com.opbay.client.data.ContentKind
 import com.opbay.client.data.LoaderId
 import com.opbay.client.data.ProjectVersion
 import com.opbay.client.data.SearchResult
-import com.opbay.client.net.HttpException
 import com.opbay.client.net.fetchJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,7 +11,7 @@ import java.net.URLEncoder
 
 private fun encode(value: String): String = URLEncoder.encode(value, "UTF-8")
 
-/** Free-text search parameters shared by both stores. */
+/** Free-text search parameters. */
 data class SearchQuery(
     val query: String = "",
     val kind: ContentKind = ContentKind.MOD,
@@ -173,173 +172,4 @@ object Modrinth {
 
     suspend fun version(versionId: String): ProjectVersion =
         fetchJson<Version>("$API/version/$versionId").toProjectVersion()
-}
-
-object CurseForge {
-
-    private const val API = "https://api.curseforge.com/v1"
-    private const val MINECRAFT = 432
-
-    class MissingKeyException : Exception(
-        "CurseForge için API anahtarı gerekiyor. Ayarlar → İçerik bölümünden anahtarınızı girin " +
-            "(console.curseforge.com üzerinden ücretsiz alınabilir)."
-    )
-
-    private fun classId(kind: ContentKind) = when (kind) {
-        ContentKind.MOD -> 6
-        ContentKind.RESOURCEPACK -> 12
-        ContentKind.SHADER -> 6552
-        ContentKind.WORLD -> 17
-        ContentKind.DATAPACK -> 6945
-        ContentKind.MODPACK -> 4471
-    }
-
-    private fun loaderType(loader: LoaderId?) = when (loader) {
-        LoaderId.FORGE -> 1
-        LoaderId.FABRIC -> 4
-        LoaderId.QUILT -> 5
-        LoaderId.NEOFORGE -> 6
-        else -> null
-    }
-
-    @Serializable
-    private data class ModsResponse(val data: List<Mod> = emptyList())
-
-    @Serializable
-    private data class Mod(
-        val id: Long,
-        val name: String = "",
-        val slug: String = "",
-        val summary: String = "",
-        val classId: Int = 6,
-        val downloadCount: Long = 0,
-        val logo: Logo? = null,
-        val authors: List<Author> = emptyList(),
-        val categories: List<Category> = emptyList(),
-        val dateModified: String = ""
-    ) {
-        @Serializable data class Logo(val thumbnailUrl: String = "")
-        @Serializable data class Author(val name: String = "")
-        @Serializable data class Category(val name: String = "")
-    }
-
-    @Serializable
-    private data class FilesResponse(val data: List<CfFile> = emptyList())
-
-    @Serializable
-    data class CfFile(
-        val id: Long,
-        val displayName: String = "",
-        val fileName: String = "",
-        val fileDate: String = "",
-        val fileLength: Long = 0,
-        val releaseType: Int = 1,
-        val downloadUrl: String? = null,
-        val gameVersions: List<String> = emptyList(),
-        val hashes: List<Hash> = emptyList(),
-        val dependencies: List<Dep> = emptyList()
-    ) {
-        @Serializable data class Hash(val value: String = "", val algo: Int = 1)
-        @Serializable data class Dep(val modId: Long = 0, val relationType: Int = 3)
-    }
-
-    private suspend inline fun <reified T> request(apiKey: String?, path: String): T {
-        if (apiKey.isNullOrBlank()) throw MissingKeyException()
-        return try {
-            fetchJson("$API$path", mapOf("x-api-key" to apiKey))
-        } catch (error: HttpException) {
-            if (error.code == 403) {
-                throw Exception("CurseForge API anahtarı reddedildi. Ayarlardan anahtarı kontrol edin.")
-            }
-            throw error
-        }
-    }
-
-    suspend fun search(apiKey: String?, query: SearchQuery): List<SearchResult> {
-        val sortField = when (query.sort) {
-            "updated" -> 3
-            "newest" -> 11
-            "downloads" -> 6
-            else -> 2
-        }
-        val params = buildString {
-            append("gameId=$MINECRAFT&classId=${classId(query.kind)}")
-            append("&searchFilter=${encode(query.query)}")
-            append("&index=${query.offset}&pageSize=${query.limit}")
-            append("&sortOrder=desc&sortField=$sortField")
-            query.gameVersion?.let { append("&gameVersion=$it") }
-            if (query.kind == ContentKind.MOD || query.kind == ContentKind.MODPACK) {
-                loaderType(query.loader)?.let { append("&modLoaderType=$it") }
-            }
-        }
-
-        return request<ModsResponse>(apiKey, "/mods/search?$params").data.map { mod ->
-            SearchResult(
-                source = "curseforge",
-                projectId = mod.id.toString(),
-                slug = mod.slug,
-                title = mod.name,
-                description = mod.summary,
-                author = mod.authors.firstOrNull()?.name,
-                iconUrl = mod.logo?.thumbnailUrl?.ifEmpty { null },
-                downloads = mod.downloadCount,
-                categories = mod.categories.map { it.name },
-                kind = query.kind,
-                updatedAt = mod.dateModified.ifEmpty { null }
-            )
-        }
-    }
-
-    /** CurseForge omits downloadUrl when an author blocks third-party clients. */
-    private fun CfFile.resolvedUrl(): String {
-        downloadUrl?.takeIf { it.isNotEmpty() }?.let { return it }
-        val text = id.toString()
-        return "https://mediafilez.forgecdn.net/files/${text.take(4)}/${text.drop(4).toInt()}/${encode(fileName)}"
-    }
-
-    private fun CfFile.toProjectVersion() = ProjectVersion(
-        id = id.toString(),
-        name = displayName,
-        versionNumber = displayName,
-        gameVersions = gameVersions.filter { it.firstOrNull()?.isDigit() == true },
-        loaders = gameVersions.filter { it.lowercase() in setOf("forge", "fabric", "quilt", "neoforge") }
-            .map { it.lowercase() },
-        channel = when (releaseType) {
-            1 -> "release"
-            2 -> "beta"
-            else -> "alpha"
-        },
-        publishedAt = fileDate,
-        fileName = fileName,
-        fileUrl = resolvedUrl(),
-        fileSize = fileLength,
-        sha1 = hashes.firstOrNull { it.algo == 1 }?.value,
-        dependencies = dependencies
-            .filter { it.relationType == 3 || it.relationType == 2 }
-            .map { ProjectVersion.Dependency(it.modId.toString(), null, it.relationType == 3) }
-    )
-
-    suspend fun versions(
-        apiKey: String?,
-        projectId: String,
-        gameVersion: String? = null,
-        loader: LoaderId? = null
-    ): List<ProjectVersion> {
-        val params = buildString {
-            append("pageSize=50")
-            gameVersion?.let { append("&gameVersion=$it") }
-            loaderType(loader)?.let { append("&modLoaderType=$it") }
-        }
-        return request<FilesResponse>(apiKey, "/mods/$projectId/files?$params").data.map { it.toProjectVersion() }
-    }
-
-    suspend fun bestVersion(
-        apiKey: String?,
-        projectId: String,
-        gameVersion: String?,
-        loader: LoaderId?
-    ): ProjectVersion? {
-        val all = versions(apiKey, projectId, gameVersion, loader)
-        return all.firstOrNull { it.channel == "release" } ?: all.firstOrNull()
-    }
 }

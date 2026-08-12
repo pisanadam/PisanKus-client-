@@ -15,7 +15,6 @@ import type {
   TaskProgress
 } from '../shared/types'
 import * as auth from './auth/microsoft'
-import * as curseforge from './content/curseforge'
 import * as install from './content/install'
 import * as modrinth from './content/modrinth'
 import { discoverJava } from './minecraft/java'
@@ -239,49 +238,15 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   // ------------------------------------------------------------------- content
 
-  handle('content:search', async (query: SearchQuery): Promise<SearchResult[]> => {
-    if (query.source === 'curseforge') {
-      return curseforge.search(store.settings.curseForgeApiKey, query)
-    }
-    return modrinth.search(query)
-  })
+  handle('content:search', (query: SearchQuery): Promise<SearchResult[]> => modrinth.search(query))
 
   handle(
     'content:versions',
-    async (
-      source: 'modrinth' | 'curseforge',
-      projectId: string,
-      gameVersion?: string,
-      loader?: LoaderId
-    ): Promise<ProjectVersion[]> => {
-      if (source === 'curseforge') {
-        return curseforge.listVersions(store.settings.curseForgeApiKey, projectId, gameVersion, loader)
-      }
-      return modrinth.listVersions(projectId, gameVersion, loader)
-    }
+    (projectId: string, gameVersion?: string, loader?: LoaderId): Promise<ProjectVersion[]> =>
+      modrinth.listVersions(projectId, gameVersion, loader)
   )
 
-  handle('content:project', async (source: 'modrinth' | 'curseforge', projectId: string) => {
-    if (source === 'curseforge') {
-      const project = await curseforge.getProject(store.settings.curseForgeApiKey, projectId)
-      return {
-        id: project.id,
-        slug: project.id,
-        title: project.name,
-        description: project.summary,
-        body: project.description,
-        iconUrl: project.iconUrl,
-        downloads: project.downloads,
-        followers: 0,
-        categories: project.categories,
-        gameVersions: [],
-        loaders: [],
-        gallery: [],
-        sourceUrl: project.websiteUrl
-      }
-    }
-    return modrinth.getProject(projectId)
-  })
+  handle('content:project', (projectId: string) => modrinth.getProject(projectId))
 
   handle('content:install', (request: install.InstallRequest) => install.installContent(request, onProgress))
   handle('content:remove', (profileId: string, contentId: string) => install.removeContent(profileId, contentId))

@@ -1,7 +1,7 @@
 # Opbay Client for Android
 
-Minecraft: Java Edition launcher for Android — profiles, Modrinth/CurseForge content,
-every Mojang version channel down to the 2010 alphas, and a fully player-controlled theme.
+Minecraft: Java Edition launcher for Android — profiles, Modrinth content, every Mojang
+version channel down to the 2010 alphas, and a fully player-controlled theme.
 
 ## Ne yapar
 
@@ -12,10 +12,10 @@ every Mojang version channel down to the 2010 alphas, and a fully player-control
 - **Yükleyiciler** — Vanilla, Fabric, Quilt, NeoForge, Forge. Kurulum otomatik.
 - **Tüm sürüm kanalları** — Sürüm, anlık görüntü, **beta** (`b1.7.3` gibi) ve **alfa**
   (`a1.2.6` gibi) build'ler seçilebilir; profil oluştururken kanal filtreleri ile.
-- **Modrinth + CurseForge** — Mod, mod paketi, doku paketi, shader, veri paketi araması;
-  profile göre uyumluluk filtresi; zorunlu bağımlılıkların otomatik kurulumu.
-- **Mod paketleri** — Modrinth `.mrpack` ve CurseForge `manifest.json` paketleri `overrides`
-  dahil kurulur; profilin sürümü ve yükleyicisi pakete göre ayarlanır.
+- **Modrinth** — Mod, mod paketi, doku paketi, shader ve veri paketi araması; profile göre
+  uyumluluk filtresi; zorunlu bağımlılıkların otomatik kurulumu. API anahtarı gerekmez.
+- **Mod paketleri** — Modrinth `.mrpack` paketleri `overrides` dahil kurulur; profilin sürümü
+  ve yükleyicisi pakete göre ayarlanır.
 - **Tema** — Herhangi bir renkten (hazır palet ya da `#RRGGBB`) tüm arayüz paleti türetilir;
   açık/koyu/sistem, AMOLED saf siyah, Material You duvar kâğıdı renkleri, köşe yuvarlaklığı
   ve yazı boyutu ayarlanabilir.
@@ -60,7 +60,7 @@ app/src/main/java/com/opbay/client/
 │   ├── Versions.kt            Sürüm manifesti, kanallar, kalıtım çözümlemesi
 │   ├── Installer.kt           Kütüphane/varlık indirme, sanal varlıklar
 │   └── Loaders.kt             Fabric, Quilt, NeoForge, Forge kurulumu
-├── content/                   Modrinth, CurseForge, mod paketi kurulumu
+├── content/                   Modrinth istemcisi ve mod paketi kurulumu
 ├── game/
 │   ├── JavaRuntime.kt         JRE içe aktarma ve seçimi
 │   ├── GameLauncher.kt        Argüman üretimi ve süreç yönetimi

@@ -120,17 +120,15 @@ const api = {
   content: {
     search: (query: SearchQuery): Promise<SearchResult[]> => ipcRenderer.invoke('content:search', query),
     versions: (
-      source: 'modrinth' | 'curseforge',
       projectId: string,
       gameVersion?: string,
       loader?: LoaderId
     ): Promise<ProjectVersion[]> =>
-      ipcRenderer.invoke('content:versions', source, projectId, gameVersion, loader),
-    project: (source: 'modrinth' | 'curseforge', projectId: string): Promise<ProjectDetail> =>
-      ipcRenderer.invoke('content:project', source, projectId),
+      ipcRenderer.invoke('content:versions', projectId, gameVersion, loader),
+    project: (projectId: string): Promise<ProjectDetail> =>
+      ipcRenderer.invoke('content:project', projectId),
     install: (request: {
       profileId: string
-      source: 'modrinth' | 'curseforge'
       projectId: string
       versionId?: string
       kind: ContentKind

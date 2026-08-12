@@ -24,9 +24,8 @@ const SORTS: { id: NonNullable<SearchQuery['sort']>; label: string }[] = [
 ]
 
 export function Discover({ initialProfileId }: { initialProfileId?: string }): JSX.Element {
-  const { profiles, notify, settings, refreshProfiles } = useApp()
+  const { profiles, notify, refreshProfiles } = useApp()
 
-  const [source, setSource] = useState<'modrinth' | 'curseforge'>('modrinth')
   const [kind, setKind] = useState<ContentKind>('mod')
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
   const [query, setQuery] = useState('')
@@ -51,7 +50,6 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
       setError(null)
       try {
         const found = await api.content.search({
-          source,
           query,
           kind,
           sort,
@@ -69,7 +67,7 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
         setLoading(false)
       }
     },
-    [source, query, kind, sort, filterByProfile, profile]
+    [query, kind, sort, filterByProfile, profile]
   )
 
   // Debounce the query so typing does not fire a request per keystroke.
@@ -78,32 +76,17 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
     return () => clearTimeout(timer)
   }, [runSearch, query])
 
-  const curseForgeMissingKey = source === 'curseforge' && !settings?.curseForgeApiKey
-
   return (
     <div className="page">
       <header className="page__header">
         <div>
           <h1 className="page__title">Keşfet</h1>
-          <p className="page__subtitle">Modrinth ve CurseForge içeriklerini doğrudan profillerinize kurun</p>
+          <p className="page__subtitle">Modrinth içeriklerini doğrudan profillerinize kurun</p>
         </div>
       </header>
 
       <div className="col" style={{ gap: 14, marginBottom: 20 }}>
         <div className="row" style={{ flexWrap: 'wrap' }}>
-          <div className="chips">
-            <button className="chip" aria-pressed={source === 'modrinth'} onClick={() => setSource('modrinth')}>
-              Modrinth
-            </button>
-            <button
-              className="chip"
-              aria-pressed={source === 'curseforge'}
-              onClick={() => setSource('curseforge')}
-            >
-              CurseForge
-            </button>
-          </div>
-
           <div className="search">
             <span className="search__icon">
               <Icon name="search" size={16} />
@@ -175,18 +158,7 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
         </div>
       </div>
 
-      {curseForgeMissingKey && (
-        <div className="empty" style={{ padding: '30px 24px', marginBottom: 18 }}>
-          <div className="empty__icon">🔑</div>
-          <div className="empty__title">CurseForge API anahtarı gerekli</div>
-          <p>
-            CurseForge, üçüncü taraf uygulamalar için API anahtarı zorunlu tutuyor. Ayarlar → İçerik bölümünden
-            ücretsiz anahtarınızı girebilirsiniz.
-          </p>
-        </div>
-      )}
-
-      {error && !curseForgeMissingKey && (
+      {error && (
         <div className="empty" style={{ padding: '30px 24px', marginBottom: 18 }}>
           <div className="empty__icon">⚠️</div>
           <div className="empty__title">Arama başarısız</div>
@@ -198,7 +170,7 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
         </div>
       )}
 
-      {results.length === 0 && !loading && !error && !curseForgeMissingKey && (
+      {results.length === 0 && !loading && !error && (
         <div className="empty">
           <div className="empty__icon">🔍</div>
           <div className="empty__title">Sonuç yok</div>
@@ -218,7 +190,6 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
               try {
                 await api.content.install({
                   profileId: profile.id,
-                  source: result.source,
                   projectId: result.projectId,
                   kind: result.kind,
                   name: result.title,
@@ -336,7 +307,6 @@ function ProjectModal({
       setLoading(true)
       try {
         const list = await api.content.versions(
-          result.source,
           result.projectId,
           onlyCompatible ? profile?.gameVersion : undefined,
           onlyCompatible ? profile?.loader : undefined
@@ -363,7 +333,7 @@ function ProjectModal({
             <span>
               <Icon name="download" size={12} /> {formatCount(result.downloads)} indirme
             </span>
-            <span>{result.source === 'modrinth' ? 'Modrinth' : 'CurseForge'}</span>
+            <span>Modrinth</span>
           </div>
           <div className="chips">
             {result.categories.slice(0, 6).map((category) => (
@@ -425,7 +395,6 @@ function ProjectModal({
                   try {
                     await api.content.install({
                       profileId,
-                      source: result.source,
                       projectId: result.projectId,
                       versionId: version.id,
                       kind: result.kind,

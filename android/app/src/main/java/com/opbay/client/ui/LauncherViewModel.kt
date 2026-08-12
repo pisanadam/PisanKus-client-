@@ -6,7 +6,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.opbay.client.auth.MicrosoftAuth
 import com.opbay.client.content.ContentInstaller
-import com.opbay.client.content.CurseForge
 import com.opbay.client.content.Modrinth
 import com.opbay.client.content.SearchQuery
 import com.opbay.client.data.Account
@@ -208,25 +207,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     // ------------------------------------------------------------------- content
 
     fun search(
-        source: String,
         query: SearchQuery,
         onResult: (List<SearchResult>) -> Unit,
         onError: (String) -> Unit
     ) = viewModelScope.launch(Dispatchers.IO) {
         try {
-            val results = if (source == "curseforge") {
-                CurseForge.search(store.settings.curseForgeApiKey, query)
-            } else {
-                Modrinth.search(query)
-            }
-            onResult(results)
+            onResult(Modrinth.search(query))
         } catch (error: Exception) {
             onError(error.message ?: "Arama başarısız.")
         }
     }
 
     fun projectVersions(
-        source: String,
         projectId: String,
         gameVersion: String?,
         loader: LoaderId?,
@@ -234,19 +226,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         onError: (String) -> Unit
     ) = viewModelScope.launch(Dispatchers.IO) {
         try {
-            val versions = if (source == "curseforge") {
-                CurseForge.versions(store.settings.curseForgeApiKey, projectId, gameVersion, loader)
-            } else {
-                Modrinth.versions(projectId, gameVersion, loader)
-            }
-            onResult(versions)
+            onResult(Modrinth.versions(projectId, gameVersion, loader))
         } catch (error: Exception) {
             onError(error.message ?: "Sürümler alınamadı.")
         }
     }
 
     fun install(request: ContentInstaller.Request) {
-        val taskId = "install-${request.source}-${request.projectId}"
+        val taskId = "install-${request.projectId}"
         run(taskId, "${request.name} kurulamadı") {
             report(taskId, "${request.name} kuruluyor", null)
             installer.install(request) { label, progress, detail ->

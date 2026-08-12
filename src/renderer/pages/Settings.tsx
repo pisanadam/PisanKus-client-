@@ -11,12 +11,10 @@ export function Settings(): JSX.Element {
   const { settings, saveSettings, notify } = useApp()
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
-  const [apiKeyDraft, setApiKeyDraft] = useState('')
   const [jvmDraft, setJvmDraft] = useState('')
 
   useEffect(() => {
     if (!settings) return
-    setApiKeyDraft(settings.curseForgeApiKey ?? '')
     setJvmDraft(settings.jvmArgs)
   }, [settings])
 
@@ -49,7 +47,7 @@ export function Settings(): JSX.Element {
       <header className="page__header">
         <div>
           <h1 className="page__title">Ayarlar</h1>
-          <p className="page__subtitle">Görünüm, oyun dizini, Java ve içerik sağlayıcı ayarları</p>
+          <p className="page__subtitle">Görünüm, oyun dizini, Java ve hesap ayarları</p>
         </div>
       </header>
 
@@ -201,45 +199,6 @@ export function Settings(): JSX.Element {
               otomatik indirilir.
             </p>
           )}
-        </section>
-
-        <section className="settings-group">
-          <div className="section-title">İçerik</div>
-
-          <div className="field">
-            <label className="field__label" htmlFor="cf-key">
-              CurseForge API anahtarı
-            </label>
-            <div className="row">
-              <input
-                id="cf-key"
-                className="input"
-                type="password"
-                placeholder="$2a$10$…"
-                value={apiKeyDraft}
-                onChange={(event) => setApiKeyDraft(event.target.value)}
-              />
-              <button
-                className="btn"
-                onClick={() => void saveSettings({ curseForgeApiKey: apiKeyDraft.trim() || undefined })}
-              >
-                Kaydet
-              </button>
-            </div>
-            <span className="field__hint">
-              CurseForge içeriklerine erişmek için gerekli.{' '}
-              <a
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault()
-                  void api.app.openExternal('https://console.curseforge.com/')
-                }}
-              >
-                console.curseforge.com
-              </a>{' '}
-              üzerinden ücretsiz alınabilir. Modrinth anahtar gerektirmez.
-            </span>
-          </div>
         </section>
 
         <section className="settings-group">

@@ -25,7 +25,6 @@ class ContentInstaller(private val context: Context, private val store: Store) {
 
     data class Request(
         val profileId: String,
-        val source: String,
         val projectId: String,
         val versionId: String? = null,
         val kind: ContentKind,
@@ -35,21 +34,13 @@ class ContentInstaller(private val context: Context, private val store: Store) {
     )
 
     private suspend fun resolveVersion(
-        source: String,
         projectId: String,
         versionId: String?,
         gameVersion: String,
         loader: LoaderId
     ): ProjectVersion {
-        val version = if (source == "modrinth") {
-            versionId?.let { Modrinth.version(it) } ?: Modrinth.bestVersion(projectId, gameVersion, loader)
-        } else {
-            val key = store.settings.curseForgeApiKey
-            val all = CurseForge.versions(key, projectId, gameVersion, loader)
-            versionId?.let { wanted -> all.firstOrNull { it.id == wanted } }
-                ?: all.firstOrNull { it.channel == "release" }
-                ?: all.firstOrNull()
-        }
+        val version = versionId?.let { Modrinth.version(it) }
+            ?: Modrinth.bestVersion(projectId, gameVersion, loader)
         return version ?: throw IllegalStateException("Bu profil için uyumlu bir sürüm bulunamadı.")
     }
 
@@ -61,7 +52,6 @@ class ContentInstaller(private val context: Context, private val store: Store) {
             ?: throw IllegalStateException("Profil bulunamadı.")
 
         val version = resolveVersion(
-            request.source,
             request.projectId,
             request.versionId,
             profile.gameVersion,
@@ -78,15 +68,12 @@ class ContentInstaller(private val context: Context, private val store: Store) {
 
         if (request.withDependencies && request.kind == ContentKind.MOD) {
             for (dependency in version.dependencies.filter { it.required && it.projectId != null }) {
-                val already = profile.content.any {
-                    it.projectId == dependency.projectId && it.source == request.source
-                }
+                val already = profile.content.any { it.projectId == dependency.projectId }
                 if (already) continue
 
                 // A dependency that cannot be resolved must not block the main install.
                 runCatching {
                     val resolved = resolveVersion(
-                        request.source,
                         dependency.projectId!!,
                         dependency.versionId,
                         profile.gameVersion,
@@ -116,8 +103,8 @@ class ContentInstaller(private val context: Context, private val store: Store) {
 
         val installed = queue.map { pending ->
             InstalledContent(
-                id = "${request.source}:${pending.projectId}",
-                source = request.source,
+                id = "modrinth:${pending.projectId}",
+                source = "modrinth",
                 projectId = pending.projectId,
                 versionId = pending.version.id,
                 kind = request.kind,
@@ -155,20 +142,6 @@ class ContentInstaller(private val context: Context, private val store: Store) {
         @Serializable data class Env(val client: String = "required", val server: String = "required")
     }
 
-    @Serializable
-    private data class CurseManifest(
-        val minecraft: MinecraftBlock = MinecraftBlock(),
-        val name: String = "",
-        val version: String = "",
-        val files: List<Entry> = emptyList(),
-        val overrides: String = "overrides"
-    ) {
-        @Serializable
-        data class MinecraftBlock(val version: String = "", val modLoaders: List<Loader> = emptyList())
-        @Serializable data class Loader(val id: String = "", val primary: Boolean = false)
-        @Serializable data class Entry(val projectID: Long = 0, val fileID: Long = 0, val required: Boolean = true)
-    }
-
     private fun loaderFrom(dependencies: Map<String, String>): Pair<LoaderId, String?> = when {
         dependencies.containsKey("fabric-loader") -> LoaderId.FABRIC to dependencies["fabric-loader"]
         dependencies.containsKey("quilt-loader") -> LoaderId.QUILT to dependencies["quilt-loader"]
@@ -195,16 +168,10 @@ class ContentInstaller(private val context: Context, private val store: Store) {
             val profileDir = store.paths.profileDir(profile).apply { mkdirs() }
 
             val mrpack = File(unpacked, "modrinth.index.json")
-            val curse = File(unpacked, "manifest.json")
-
-            val installed = when {
-                mrpack.isFile -> applyMrPack(profile, profileDir, unpacked, mrpack, request, onProgress)
-                curse.isFile -> applyCursePack(profile, profileDir, unpacked, curse, request, onProgress)
-                else -> throw IllegalStateException(
-                    "Tanınmayan mod paketi biçimi (modrinth.index.json veya manifest.json bulunamadı)."
-                )
+            if (!mrpack.isFile) {
+                throw IllegalStateException("Tanınmayan mod paketi biçimi: arşivde modrinth.index.json yok.")
             }
-            listOf(installed)
+            listOf(applyMrPack(profile, profileDir, unpacked, mrpack, request, onProgress))
         } finally {
             work.deleteRecursively()
         }
@@ -246,8 +213,8 @@ class ContentInstaller(private val context: Context, private val store: Store) {
         }
 
         val installed = InstalledContent(
-            id = "${request.source}:${request.projectId}",
-            source = request.source,
+            id = "modrinth:${request.projectId}",
+            source = "modrinth",
             projectId = request.projectId,
             versionId = index.versionId,
             kind = ContentKind.MODPACK,
@@ -261,75 +228,6 @@ class ContentInstaller(private val context: Context, private val store: Store) {
                 gameVersion = gameVersion,
                 loader = loader,
                 loaderVersion = loaderVersion,
-                content = current.content.filterNot { it.id == installed.id } + installed
-            )
-        }
-        return installed
-    }
-
-    private suspend fun applyCursePack(
-        profile: Profile,
-        profileDir: File,
-        unpacked: File,
-        manifestFile: File,
-        request: Request,
-        onProgress: (String, Float?, String?) -> Unit
-    ): InstalledContent {
-        val manifest = json.decodeFromString<CurseManifest>(manifestFile.readText())
-        val apiKey = store.settings.curseForgeApiKey
-
-        val primary = manifest.minecraft.modLoaders.firstOrNull { it.primary }
-            ?: manifest.minecraft.modLoaders.firstOrNull()
-        val idParts = (primary?.id ?: "vanilla").split("-")
-        val loader = when (idParts.firstOrNull()?.lowercase()) {
-            "forge" -> LoaderId.FORGE
-            "fabric" -> LoaderId.FABRIC
-            "quilt" -> LoaderId.QUILT
-            "neoforge" -> LoaderId.NEOFORGE
-            else -> LoaderId.VANILLA
-        }
-
-        val modsDir = File(profileDir, "mods").apply { mkdirs() }
-
-        // CurseForge exposes one file at a time, so resolve then download serially.
-        manifest.files.forEachIndexed { position, entry ->
-            try {
-                val all = CurseForge.versions(apiKey, entry.projectID.toString())
-                val file = all.firstOrNull { it.id == entry.fileID.toString() } ?: all.firstOrNull()
-                if (file != null) {
-                    Downloader.download(
-                        DownloadItem(file.fileUrl, File(modsDir, file.fileName), file.sha1, file.fileSize)
-                    )
-                }
-            } catch (error: Exception) {
-                if (entry.required) throw error
-            }
-            onProgress(
-                manifest.name.ifEmpty { request.name },
-                (position + 1).toFloat() / manifest.files.size.coerceAtLeast(1),
-                "${position + 1}/${manifest.files.size}"
-            )
-        }
-
-        val overrides = File(unpacked, manifest.overrides)
-        if (overrides.isDirectory) overrides.copyRecursively(profileDir, overwrite = true)
-
-        val installed = InstalledContent(
-            id = "${request.source}:${request.projectId}",
-            source = request.source,
-            projectId = request.projectId,
-            versionId = manifest.version,
-            kind = ContentKind.MODPACK,
-            name = manifest.name.ifEmpty { request.name },
-            fileName = "${manifest.name}-${manifest.version}",
-            iconUrl = request.iconUrl
-        )
-
-        store.updateProfile(profile.id) { current ->
-            current.copy(
-                gameVersion = manifest.minecraft.version.ifEmpty { current.gameVersion },
-                loader = loader,
-                loaderVersion = idParts.getOrNull(1),
                 content = current.content.filterNot { it.id == installed.id } + installed
             )
         }
@@ -380,16 +278,7 @@ class ContentInstaller(private val context: Context, private val store: Store) {
         val flagged = profile.content.map { entry ->
             if (entry.source == "local" || entry.projectId == null) return@map entry
             val latest = runCatching {
-                if (entry.source == "modrinth") {
-                    Modrinth.bestVersion(entry.projectId, profile.gameVersion, profile.loader)
-                } else {
-                    CurseForge.bestVersion(
-                        store.settings.curseForgeApiKey,
-                        entry.projectId,
-                        profile.gameVersion,
-                        profile.loader
-                    )
-                }
+                Modrinth.bestVersion(entry.projectId, profile.gameVersion, profile.loader)
             }.getOrNull()
             entry.copy(updateAvailable = latest?.id?.takeIf { it != entry.versionId })
         }
@@ -412,7 +301,6 @@ class ContentInstaller(private val context: Context, private val store: Store) {
         return install(
             Request(
                 profileId = profileId,
-                source = entry.source,
                 projectId = entry.projectId,
                 versionId = entry.updateAvailable,
                 kind = entry.kind,

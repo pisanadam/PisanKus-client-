@@ -11,7 +11,7 @@ enum class LoaderId {
     @SerialName("forge") FORGE,
     @SerialName("neoforge") NEOFORGE;
 
-    /** Identifier the Modrinth and CurseForge APIs expect. */
+    /** Identifier the Modrinth API expects. */
     val slug: String get() = name.lowercase()
 
     val label: String
@@ -151,7 +151,6 @@ data class Settings(
     val defaultMemoryMb: Int = 1024,
     val jvmArgs: String = "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1HeapRegionSize=16M",
     val msClientId: String = "00000000402b5328",
-    val curseForgeApiKey: String? = null,
     val concurrentDownloads: Int = 6,
     val theme: ThemeSettings = ThemeSettings(),
     /** Path of the Java runtime chosen for launches, if any is installed. */
@@ -166,7 +165,7 @@ data class LauncherDb(
     val activeAccountId: String? = null
 )
 
-/** Normalised search result covering Modrinth and CurseForge. */
+/** Normalised search result. */
 data class SearchResult(
     val source: String,
     val projectId: String,

@@ -32,7 +32,7 @@ export interface Account {
 export interface InstalledContent {
   /** Stable id: `${source}:${projectId}` for remote content, file hash for local. */
   id: string
-  source: 'modrinth' | 'curseforge' | 'local'
+  source: 'modrinth' | 'local'
   projectId?: string
   versionId?: string
   kind: ContentKind
@@ -74,8 +74,6 @@ export interface Settings {
   jvmArgs: string
   /** Azure application (client) id used for the Microsoft sign-in flow. */
   msClientId: string
-  /** Optional CurseForge API key — CurseForge browsing is disabled without it. */
-  curseForgeApiKey?: string
   concurrentDownloads: number
   keepLauncherOpen: boolean
   theme: 'dark' | 'light' | 'system'
@@ -106,9 +104,8 @@ export interface GameState {
   exitCode?: number
 }
 
-/** Normalised search result covering both Modrinth and CurseForge. */
 export interface SearchResult {
-  source: 'modrinth' | 'curseforge'
+  source: 'modrinth'
   projectId: string
   slug: string
   title: string
@@ -123,7 +120,6 @@ export interface SearchResult {
 }
 
 export interface SearchQuery {
-  source: 'modrinth' | 'curseforge'
   query: string
   kind: ContentKind
   gameVersion?: string
