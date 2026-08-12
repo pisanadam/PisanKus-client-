@@ -1,0 +1,50 @@
+appId: com.opbay.client
+productName: Opbay Client
+copyright: Copyright © 2026 Opbay
+
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - out/**/*
+  - package.json
+
+# Downloads are large and user-specific, so nothing is bundled with the installer.
+asarUnpack:
+  - resources/**
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: OpbayClient-${version}-win-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Opbay Client
+
+mac:
+  category: public.app-category.games
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  artifactName: OpbayClient-${version}-mac-${arch}.${ext}
+
+linux:
+  category: Game
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  artifactName: OpbayClient-${version}-linux-${arch}.${ext}
+
+publish:
+  provider: github
+  owner: pisanadam
+  repo: opbay-client-

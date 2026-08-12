@@ -1,0 +1,148 @@
+import extract from 'extract-zip'
+import fsp from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import type { DownloadItem } from './downloader'
+import type { Artifact, Library, Rule, VersionJson } from './versions'
+
+export type OsName = 'windows' | 'osx' | 'linux'
+
+export function currentOs(): OsName {
+  switch (process.platform) {
+    case 'win32':
+      return 'windows'
+    case 'darwin':
+      return 'osx'
+    default:
+      return 'linux'
+  }
+}
+
+export function currentArch(): string {
+  // Mojang uses x86/x64/arm64 in rules; Node reports ia32/x64/arm64.
+  return process.arch === 'ia32' ? 'x86' : process.arch
+}
+
+/**
+ * Evaluates Mojang's rule list. Rules are ordered and the last matching one wins;
+ * an empty list means "allow".
+ */
+export function rulesAllow(rules: Rule[] | undefined, features: Record<string, boolean> = {}): boolean {
+  if (!rules || rules.length === 0) return true
+
+  let allowed = false
+  for (const rule of rules) {
+    let matches = true
+
+    if (rule.os) {
+      if (rule.os.name && rule.os.name !== currentOs()) matches = false
+      if (rule.os.arch && rule.os.arch !== currentArch()) matches = false
+      if (rule.os.version && !new RegExp(rule.os.version).test(os.release())) matches = false
+    }
+
+    if (rule.features) {
+      for (const [feature, expected] of Object.entries(rule.features)) {
+        if ((features[feature] ?? false) !== expected) matches = false
+      }
+    }
+
+    if (matches) allowed = rule.action === 'allow'
+  }
+  return allowed
+}
+
+/** Converts `group:artifact:version[:classifier]` into a maven-style relative path. */
+export function mavenPath(name: string): string {
+  const [group, artifact, version, classifier] = name.split(':')
+  const fileName = classifier
+    ? `${artifact}-${version}-${classifier}.jar`
+    : `${artifact}-${version}.jar`
+  return path.join(...group.split('.'), artifact, version, fileName)
+}
+
+function nativeClassifier(library: Library): string | undefined {
+  if (!library.natives) return undefined
+  return library.natives[currentOs()]?.replace('${arch}', process.arch === 'ia32' ? '32' : '64')
+}
+
+export interface ResolvedLibraries {
+  /** Jars that belong on the classpath. */
+  classpath: string[]
+  /** Native jars that must be extracted into the natives directory before launch. */
+  natives: { file: string; exclude: string[] }[]
+  downloads: DownloadItem[]
+}
+
+export function resolveLibraries(version: VersionJson, dataDir: string): ResolvedLibraries {
+  const librariesDir = path.join(dataDir, 'libraries')
+  const classpath: string[] = []
+  const natives: { file: string; exclude: string[] }[] = []
+  const downloads: DownloadItem[] = []
+  const seen = new Set<string>()
+
+  for (const library of version.libraries) {
+    if (!rulesAllow(library.rules)) continue
+
+    // Loader-added libraries frequently repeat with different versions; the first
+    // entry wins because the merge order already puts overrides first.
+    const key = library.name.split(':').slice(0, 2).join(':') + (library.natives ? ':natives' : '')
+    if (seen.has(key)) continue
+    seen.add(key)
+
+    const artifact: Artifact | undefined = library.downloads?.artifact
+    const classifier = nativeClassifier(library)
+    const nativeArtifact = classifier ? library.downloads?.classifiers?.[classifier] : undefined
+
+    if (artifact) {
+      const destination = path.join(librariesDir, artifact.path ?? mavenPath(library.name))
+      downloads.push({ url: artifact.url, destination, sha1: artifact.sha1, size: artifact.size })
+      if (!library.natives) classpath.push(destination)
+    } else if (!library.natives) {
+      // Loader manifests often give only a maven repository root.
+      const relative = mavenPath(library.name)
+      const destination = path.join(librariesDir, relative)
+      const base = (library.url ?? 'https://libraries.minecraft.net/').replace(/\/?$/, '/')
+      downloads.push({ url: base + relative.split(path.sep).join('/'), destination })
+      classpath.push(destination)
+    }
+
+    if (nativeArtifact) {
+      const destination = path.join(librariesDir, nativeArtifact.path ?? mavenPath(library.name))
+      downloads.push({
+        url: nativeArtifact.url,
+        destination,
+        sha1: nativeArtifact.sha1,
+        size: nativeArtifact.size
+      })
+      natives.push({ file: destination, exclude: library.extract?.exclude ?? ['META-INF/'] })
+    }
+  }
+
+  return { classpath, natives, downloads }
+}
+
+/** Unpacks native jars, skipping the entries their manifest excludes. */
+export async function extractNatives(
+  natives: { file: string; exclude: string[] }[],
+  targetDir: string
+): Promise<void> {
+  await fsp.rm(targetDir, { recursive: true, force: true })
+  await fsp.mkdir(targetDir, { recursive: true })
+
+  for (const native of natives) {
+    await extract(native.file, {
+      dir: targetDir,
+      onEntry: (entry) => {
+        const skip =
+          entry.fileName.endsWith('/') ||
+          native.exclude.some((prefix) => entry.fileName.startsWith(prefix))
+        if (skip) {
+          // extract-zip has no per-entry filter, so rename unwanted entries into a
+          // scratch folder that is removed right after.
+          entry.fileName = path.posix.join('__skipped__', entry.fileName)
+        }
+      }
+    })
+  }
+  await fsp.rm(path.join(targetDir, '__skipped__'), { recursive: true, force: true })
+}

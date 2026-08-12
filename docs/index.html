@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opbay Client — Modern Minecraft Launcher</title>
+    <meta
+      name="description"
+      content="Opbay Client, Modrinth ve CurseForge entegrasyonu, skin değiştirici ve Microsoft oturumu ile gelen modern bir Minecraft launcher'ıdır."
+    />
+    <meta property="og:title" content="Opbay Client — Modern Minecraft Launcher" />
+    <meta
+      property="og:description"
+      content="Mod, doku paketi, shader ve dünyaları tek tıkla profillerine kur. Modrinth + CurseForge, skin değiştirici, Microsoft oturumu."
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235b8cff'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='14' font-weight='bold' fill='white' text-anchor='middle'%3EOP%3C/text%3E%3C/svg%3E"
+    />
+
+    <style>
+      :root {
+        --accent: #5b8cff;
+        --accent-2: #a855f7;
+        --bg: #080b12;
+        --surface: #11151f;
+        --surface-2: #171d2a;
+        --border: #232a3a;
+        --text: #e8ecf5;
+        --muted: #9aa4bd;
+        --faint: #6b7590;
+        --radius: 14px;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .wrap {
+        width: min(1120px, 100% - 40px);
+        margin-inline: auto;
+      }
+
+      /* ------------------------------------------------------------- header */
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid transparent;
+        background: rgb(8 11 18 / 72%);
+        backdrop-filter: blur(14px);
+        transition: border-color 0.2s;
+      }
+
+      header.scrolled {
+        border-bottom-color: var(--border);
+      }
+
+      .header-inner {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        height: 64px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .logo__mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        font-size: 14px;
+        font-weight: 800;
+        box-shadow: 0 4px 18px rgb(91 140 255 / 40%);
+      }
+
+      nav {
+        display: flex;
+        gap: 4px;
+        margin-left: auto;
+      }
+
+      nav a {
+        padding: 7px 13px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      nav a:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+
+      /* --------------------------------------------------------------- hero */
+
+      .hero {
+        position: relative;
+        padding: 92px 0 70px;
+        text-align: center;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: '';
+        position: absolute;
+        inset: -40% 0 auto;
+        height: 720px;
+        background: radial-gradient(600px 340px at 50% 40%, rgb(91 140 255 / 26%), transparent 70%),
+          radial-gradient(500px 300px at 78% 30%, rgb(168 85 247 / 18%), transparent 70%);
+        pointer-events: none;
+      }
+
+      .hero > * {
+        position: relative;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 22px;
+        padding: 6px 15px;
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .pill b {
+        color: var(--accent);
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.035em;
+      }
+
+      h1 span {
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .lede {
+        max-width: 640px;
+        margin: 20px auto 34px;
+        color: var(--muted);
+        font-size: clamp(1rem, 2vw, 1.16rem);
+      }
+
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 13px 26px;
+        border-radius: 11px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.14s, background 0.14s, border-color 0.14s;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        background: var(--surface-2);
+        border-color: #33405c;
+      }
+
+      .btn--primary {
+        border-color: transparent;
+        background: linear-gradient(120deg, var(--accent), #6f7dff);
+        color: #fff;
+        box-shadow: 0 10px 30px rgb(91 140 255 / 34%);
+      }
+
+      .btn--primary:hover {
+        background: linear-gradient(120deg, #6d99ff, #8189ff);
+      }
+
+      .cta-note {
+        margin-top: 16px;
+        color: var(--faint);
+        font-size: 13px;
+      }
+
+      /* ------------------------------------------------------------ mockup */
+
+      .mockup {
+        margin-top: 56px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: 0 40px 90px rgb(0 0 0 / 60%);
+        overflow: hidden;
+        text-align: left;
+      }
+
+      .mockup__bar {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 11px 15px;
+        border-bottom: 1px solid var(--border);
+        background: #0d111a;
+      }
+
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 99px;
+        background: #333c52;
+      }
+
+      .mockup__body {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        min-height: 400px;
+      }
+
+      .mockup__side {
+        padding: 16px 12px;
+        border-right: 1px solid var(--border);
+        background: #0e121b;
+      }
+
+      .m-nav {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--faint);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .m-nav.active {
+        background: rgb(91 140 255 / 16%);
+        color: var(--accent);
+      }
+
+      .m-nav i {
+        width: 15px;
+        height: 15px;
+        border-radius: 4px;
+        background: currentColor;
+        opacity: 0.5;
+      }
+
+      .mockup__main {
+        padding: 22px;
+      }
+
+      .m-title {
+        margin-bottom: 18px;
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .m-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .m-card {
+        border-radius: 11px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        overflow: hidden;
+      }
+
+      .m-card__art {
+        display: grid;
+        place-items: center;
+        aspect-ratio: 16 / 10;
+        font-size: 30px;
+        background: linear-gradient(135deg, rgb(91 140 255 / 22%), transparent);
+      }
+
+      .m-card__meta {
+        padding: 10px 12px 13px;
+      }
+
+      .m-line {
+        height: 8px;
+        border-radius: 99px;
+        background: #2a3245;
+      }
+
+      .m-line + .m-line {
+        width: 60%;
+        margin-top: 7px;
+        background: #212939;
+      }
+
+      /* ----------------------------------------------------------- sections */
+
+      section {
+        padding: 74px 0;
+      }
+
+      .section-head {
+        max-width: 620px;
+        margin-bottom: 42px;
+      }
+
+      .eyebrow {
+        margin-bottom: 10px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      h2 {
+        font-size: clamp(1.7rem, 3.6vw, 2.35rem);
+        font-weight: 750;
+        letter-spacing: -0.028em;
+      }
+
+      .section-head p {
+        margin-top: 12px;
+        color: var(--muted);
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+        gap: 16px;
+      }
+
+      .feature {
+        padding: 24px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--surface), #0d111a);
+        transition: transform 0.16s, border-color 0.16s;
+      }
+
+      .feature:hover {
+        transform: translateY(-3px);
+        border-color: #34405a;
+      }
+
+      .feature__icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 15px;
+        border-radius: 11px;
+        background: rgb(91 140 255 / 14%);
+        font-size: 20px;
+      }
+
+      .feature h3 {
+        margin-bottom: 7px;
+        font-size: 16px;
+        font-weight: 650;
+      }
+
+      .feature p {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* --------------------------------------------------------- downloads */
+
+      #indir {
+        border-top: 1px solid var(--border);
+        background: linear-gradient(180deg, #0a0e16, var(--bg));
+      }
+
+      .downloads {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+      }
+
+      .dl {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 24px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        transition: border-color 0.16s, transform 0.16s;
+      }
+
+      .dl.recommended {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px rgb(91 140 255 / 30%), 0 16px 44px rgb(91 140 255 / 14%);
+      }
+
+      .dl:hover {
+        transform: translateY(-3px);
+      }
+
+      .dl__os {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 17px;
+        font-weight: 680;
+      }
+
+      .dl__badge {
+        margin-left: auto;
+        padding: 2px 9px;
+        border-radius: 99px;
+        background: rgb(91 140 255 / 16%);
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .dl__meta {
+        color: var(--faint);
+        font-size: 13px;
+      }
+
+      .dl__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .dl__link {
+        flex: 1;
+        min-width: 110px;
+        padding: 10px 14px;
+        border-radius: 9px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 13.5px;
+        font-weight: 600;
+        text-align: center;
+        transition: background 0.14s, border-color 0.14s;
+      }
+
+      .dl__link:hover {
+        background: #202839;
+        border-color: #38445f;
+      }
+
+      .dl.recommended .dl__link:first-child {
+        border-color: transparent;
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .dl.recommended .dl__link:first-child:hover {
+        background: #6d99ff;
+      }
+
+      .release-info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 26px;
+        padding: 13px 18px;
+        border-radius: 11px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .tag {
+        padding: 3px 11px;
+        border-radius: 99px;
+        background: rgb(70 198 138 / 15%);
+        color: #46c68a;
+        font-size: 12.5px;
+        font-weight: 700;
+      }
+
+      /* --------------------------------------------------------------- faq */
+
+      .faq {
+        display: grid;
+        gap: 10px;
+      }
+
+      details {
+        padding: 18px 20px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      details[open] {
+        border-color: #34405a;
+      }
+
+      summary {
+        cursor: pointer;
+        font-weight: 620;
+        list-style: none;
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary::after {
+        content: '+';
+        float: right;
+        color: var(--faint);
+        font-size: 19px;
+        line-height: 1;
+      }
+
+      details[open] summary::after {
+        content: '−';
+      }
+
+      details p {
+        margin-top: 11px;
+        color: var(--muted);
+        font-size: 14.5px;
+      }
+
+      /* ------------------------------------------------------------ footer */
+
+      footer {
+        padding: 40px 0;
+        border-top: 1px solid var(--border);
+        color: var(--faint);
+        font-size: 13.5px;
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 16px;
+        margin-left: auto;
+      }
+
+      .disclaimer {
+        margin-top: 14px;
+        max-width: 720px;
+        font-size: 12.5px;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 720px) {
+        .mockup__body {
+          grid-template-columns: 1fr;
+        }
+        .mockup__side {
+          display: none;
+        }
+        .m-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        nav {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header id="site-header">
+      <div class="wrap header-inner">
+        <a class="logo" href="#">
+          <span class="logo__mark">OP</span>
+          Opbay Client
+        </a>
+        <nav>
+          <a href="#ozellikler">Özellikler</a>
+          <a href="#indir">İndir</a>
+          <a href="#sss">SSS</a>
+          <a id="repo-link" href="https://github.com/pisanadam/opbay-client-">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap">
+          <span class="pill">
+            <b>Yeni</b> Modrinth + CurseForge tek arayüzde
+          </span>
+
+          <h1>
+            Minecraft'ı <span>modernleştiren</span><br />
+            launcher
+          </h1>
+
+          <p class="lede">
+            Mod, doku paketi, shader ve dünyaları tek tıkla profillerine kur. Profiller birbirinden tamamen izole,
+            Microsoft oturumu zorunlu, arayüz hızlı.
+          </p>
+
+          <div class="cta">
+            <a class="btn btn--primary" id="primary-download" href="#indir">
+              <span id="primary-download-label">İndir</span>
+            </a>
+            <a class="btn" href="#ozellikler">Özellikleri gör</a>
+          </div>
+
+          <p class="cta-note" id="version-note">Sürüm bilgisi yükleniyor…</p>
+
+          <div class="mockup" aria-hidden="true">
+            <div class="mockup__bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div class="mockup__body">
+              <div class="mockup__side">
+                <div class="m-nav active"><i></i> Kitaplık</div>
+                <div class="m-nav"><i></i> Keşfet</div>
+                <div class="m-nav"><i></i> Skin</div>
+                <div class="m-nav"><i></i> Hesaplar</div>
+                <div class="m-nav"><i></i> Ayarlar</div>
+              </div>
+              <div class="mockup__main">
+                <div class="m-title">Kitaplık</div>
+                <div class="m-grid">
+                  <div class="m-card">
+                    <div class="m-card__art">⛏️</div>
+                    <div class="m-card__meta"><div class="m-line"></div><div class="m-line"></div></div>
+                  </div>
+                  <div class="m-card">
+                    <div class="m-card__art">✨</div>
+                    <div class="m-card__meta"><div class="m-line"></div><div class="m-line"></div></div>
+                  </div>
+                  <div class="m-card">
+                    <div class="m-card__art">🌲</div>
+                    <div class="m-card__meta"><div class="m-line"></div><div class="m-line"></div></div>
+                  </div>
+                  <div class="m-card">
+                    <div class="m-card__art">🏰</div>
+                    <div class="m-card__meta"><div class="m-line"></div><div class="m-line"></div></div>
+                  </div>
+                  <div class="m-card">
+                    <div class="m-card__art">🐉</div>
+                    <div class="m-card__meta"><div class="m-line"></div><div class="m-line"></div></div>
+                  </div>
+                  <div class="m-card">
+                    <div class="m-card__art">🚀</div>
+                    <div class="m-card__meta"><div class="m-line"></div><div class="m-line"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ozellikler">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">Özellikler</div>
+            <h2>Bir launcher'dan beklediğin her şey</h2>
+            <p>
+              İçerik kurulumundan skin değiştirmeye kadar her işlem uygulamanın içinde. Tarayıcıya, dosya
+              yöneticisine ya da harici araca gerek yok.
+            </p>
+          </div>
+
+          <div class="features">
+            <div class="feature">
+              <div class="feature__icon">🧩</div>
+              <h3>Modrinth &amp; CurseForge</h3>
+              <p>
+                İki büyük mağazayı tek arama kutusundan tara. Bağımlılıklar otomatik çözülür, sürüm uyumu profile
+                göre filtrelenir.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">📦</div>
+              <h3>Profil başına izolasyon</h3>
+              <p>
+                Her profilin kendi mod, dünya, ayar ve doku klasörü var. Bir profildeki değişiklik diğerlerini
+                etkilemez.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">🎨</div>
+              <h3>Doku, shader, dünya</h3>
+              <p>
+                Doku paketleri, shader'lar ve veri paketleri doğru klasöre kurulur. Dünya arşivlerini sürükleyip
+                içe aktarabilirsin.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">🧍</div>
+              <h3>3B skin değiştirici</h3>
+              <p>
+                Skinini yükle, modeli döndürerek önizle, klasik/ince model arasında geçiş yap, pelerinini seç.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">🔐</div>
+              <h3>Microsoft oturumu</h3>
+              <p>
+                Yalnızca resmî Microsoft/Xbox akışı. Oturum bilgileri cihazında kalır, hiçbir sunucuya
+                gönderilmez.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">☕</div>
+              <h3>Otomatik Java</h3>
+              <p>
+                Sürümün ihtiyaç duyduğu Java otomatik bulunur, yoksa indirilir. Java kurmakla uğraşmana gerek yok.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">🔄</div>
+              <h3>Tek tık güncelleme</h3>
+              <p>Kurulu içeriklerin yeni sürümlerini denetle ve hepsini birden güncelle.</p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">⚡</div>
+              <h3>Paralel indirme</h3>
+              <p>
+                Kütüphane ve varlık dosyaları eşzamanlı indirilir, sağlama toplamıyla doğrulanır, kesilen indirmeler
+                kaldığı yerden tamamlanır.
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature__icon">🖥️</div>
+              <h3>Fabric, Quilt, NeoForge, Forge</h3>
+              <p>Dört büyük mod yükleyicisi ve vanilla desteklenir; kurulum tamamen otomatiktir.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="indir">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">İndir</div>
+            <h2>Opbay Client'ı kur</h2>
+            <p>Windows, macOS ve Linux için hazır paketler. Kurulum sonrası Microsoft hesabınla giriş yap, hazırsın.</p>
+          </div>
+
+          <div class="release-info" id="release-info">
+            <span class="tag" id="release-tag">…</span>
+            <span id="release-date">Sürüm bilgisi alınıyor…</span>
+            <a id="release-notes-link" href="https://github.com/pisanadam/opbay-client-/releases" style="margin-left: auto"
+              >Tüm sürümler →</a
+            >
+          </div>
+
+          <div class="downloads" id="downloads"></div>
+
+          <p class="cta-note" style="margin-top: 22px">
+            Kaynak koddan çalıştırmak için: <code>npm install</code> → <code>npm run dev</code>. Kendi paketini
+            üretmek için <code>npm run dist</code>.
+          </p>
+        </div>
+      </section>
+
+      <section id="sss">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">SSS</div>
+            <h2>Sık sorulanlar</h2>
+          </div>
+
+          <div class="faq">
+            <details open>
+              <summary>Minecraft hesabım olmadan kullanabilir miyim?</summary>
+              <p>
+                Hayır. Opbay Client yalnızca resmî Microsoft oturum akışını destekler ve oyunu başlatmadan önce
+                hesabın Minecraft: Java Edition lisansını doğrular. Korsan ("cracked") giriş desteklenmez.
+              </p>
+            </details>
+            <details>
+              <summary>CurseForge içerikleri neden görünmüyor?</summary>
+              <p>
+                CurseForge üçüncü taraf uygulamalar için API anahtarı zorunlu tutuyor. Ayarlar → İçerik bölümünden
+                console.curseforge.com üzerinden aldığın ücretsiz anahtarı girdiğinde arama açılır. Modrinth için
+                anahtar gerekmez.
+              </p>
+            </details>
+            <details>
+              <summary>Java kurmam gerekiyor mu?</summary>
+              <p>
+                Gerekmiyor. Launcher sistemdeki Java sürümlerini tarar; oyunun ihtiyaç duyduğu sürüm yoksa uygun
+                Eclipse Temurin çalışma zamanını kendisi indirir.
+              </p>
+            </details>
+            <details>
+              <summary>Mevcut dünyalarımı taşıyabilir miyim?</summary>
+              <p>
+                Evet. Profil sayfasındaki Dünyalar sekmesinden bir <code>.zip</code> arşivini içe aktarabilir ya da
+                profil klasörünü açıp <code>saves</code> dizinine doğrudan kopyalayabilirsin.
+              </p>
+            </details>
+            <details>
+              <summary>Verilerim nerede saklanıyor?</summary>
+              <p>
+                Tüm profiller, oturum bilgileri ve indirilen dosyalar yalnızca kendi bilgisayarında tutulur. Opbay
+                Client'ın herhangi bir sunucusu ya da telemetrisi yoktur.
+              </p>
+            </details>
+            <details>
+              <summary>Windows "bilinmeyen yayıncı" uyarısı veriyor.</summary>
+              <p>
+                Paketler kod imzalama sertifikasıyla imzalanmadığı için SmartScreen uyarı gösterir. "Ek bilgi" →
+                "Yine de çalıştır" ile devam edebilirsin. Dilersen kaynak koddan kendin derleyebilirsin.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="footer-inner">
+          <span class="logo">
+            <span class="logo__mark" style="width: 28px; height: 28px; font-size: 12px">OP</span>
+            Opbay Client
+          </span>
+          <div class="footer-links">
+            <a href="https://github.com/pisanadam/opbay-client-">GitHub</a>
+            <a href="https://github.com/pisanadam/opbay-client-/issues">Sorun bildir</a>
+            <a href="https://github.com/pisanadam/opbay-client-/releases">Sürümler</a>
+          </div>
+        </div>
+        <p class="disclaimer">
+          Opbay Client bağımsız bir projedir; Mojang Studios veya Microsoft ile bir bağlantısı yoktur ve bu şirketler
+          tarafından onaylanmamıştır. Minecraft, Mojang Studios'un ticari markasıdır. Oyunu oynamak için geçerli bir
+          Minecraft: Java Edition lisansı gereklidir.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      const REPO = 'pisanadam/opbay-client-'
+      const RELEASES_URL = `https://github.com/${REPO}/releases`
+
+      document.addEventListener('scroll', () => {
+        document.getElementById('site-header').classList.toggle('scrolled', window.scrollY > 8)
+      })
+
+      /** Best guess at the visitor's platform, used to highlight one download card. */
+      function detectPlatform() {
+        const ua = navigator.userAgent
+        const platform = navigator.userAgentData?.platform ?? navigator.platform ?? ''
+        const haystack = `${ua} ${platform}`.toLowerCase()
+
+        if (haystack.includes('win')) return 'windows'
+        if (haystack.includes('mac') || haystack.includes('iphone') || haystack.includes('ipad')) {
+          // Apple silicon reports as Intel in some browsers; offer both builds either way.
+          return 'mac'
+        }
+        if (haystack.includes('linux') || haystack.includes('android') || haystack.includes('x11')) return 'linux'
+        return null
+      }
+
+      const PLATFORMS = [
+        {
+          id: 'windows',
+          name: 'Windows',
+          icon: '🪟',
+          note: 'Windows 10 ve üzeri · 64-bit',
+          matchers: [
+            { label: 'Kurulum (.exe)', test: (n) => n.includes('win') && n.endsWith('.exe') }
+          ]
+        },
+        {
+          id: 'mac',
+          name: 'macOS',
+          icon: '🍎',
+          note: 'macOS 11 ve üzeri',
+          matchers: [
+            { label: 'Apple Silicon (.dmg)', test: (n) => n.includes('mac') && n.includes('arm64') },
+            { label: 'Intel (.dmg)', test: (n) => n.includes('mac') && n.includes('x64') }
+          ]
+        },
+        {
+          id: 'linux',
+          name: 'Linux',
+          icon: '🐧',
+          note: 'AppImage veya Debian paketi',
+          matchers: [
+            { label: 'AppImage', test: (n) => n.endsWith('.appimage') },
+            { label: 'Debian (.deb)', test: (n) => n.endsWith('.deb') }
+          ]
+        }
+      ]
+
+      function formatSize(bytes) {
+        if (!bytes) return ''
+        return `${(bytes / 1e6).toFixed(1)} MB`
+      }
+
+      function render(release) {
+        const assets = release?.assets ?? []
+        const detected = detectPlatform()
+        const container = document.getElementById('downloads')
+
+        container.innerHTML = PLATFORMS.map((platform) => {
+          const links = platform.matchers
+            .map((matcher) => {
+              const asset = assets.find((candidate) => matcher.test(candidate.name.toLowerCase()))
+              if (!asset) return null
+              return `<a class="dl__link" href="${asset.browser_download_url}">${matcher.label}<br><span style="font-weight:400;opacity:.6;font-size:12px">${formatSize(asset.size)}</span></a>`
+            })
+            .filter(Boolean)
+
+          const body = links.length
+            ? links.join('')
+            : `<a class="dl__link" href="${RELEASES_URL}">Sürümler sayfası</a>`
+
+          return `
+            <div class="dl ${detected === platform.id ? 'recommended' : ''}">
+              <div class="dl__os">
+                <span>${platform.icon}</span> ${platform.name}
+                ${detected === platform.id ? '<span class="dl__badge">Sisteminiz</span>' : ''}
+              </div>
+              <div class="dl__meta">${platform.note}</div>
+              <div class="dl__links">${body}</div>
+            </div>`
+        }).join('')
+
+        // Point the hero button at the detected platform's primary asset.
+        const primary = PLATFORMS.find((platform) => platform.id === detected)
+        const primaryAsset = primary
+          ? assets.find((candidate) => primary.matchers[0].test(candidate.name.toLowerCase()))
+          : null
+
+        const button = document.getElementById('primary-download')
+        const label = document.getElementById('primary-download-label')
+        if (primaryAsset) {
+          button.href = primaryAsset.browser_download_url
+          label.textContent = `${primary.name} için indir`
+        } else {
+          button.href = '#indir'
+          label.textContent = 'İndirme seçenekleri'
+        }
+      }
+
+      function renderReleaseMeta(release) {
+        const tag = document.getElementById('release-tag')
+        const date = document.getElementById('release-date')
+        const note = document.getElementById('version-note')
+
+        if (!release) {
+          tag.textContent = 'beta'
+          date.textContent = 'Henüz yayımlanmış bir sürüm yok — kaynak koddan derleyebilirsiniz.'
+          note.textContent = 'Henüz yayımlanmış paket yok · kaynak koddan çalıştırılabilir'
+          return
+        }
+
+        tag.textContent = release.tag_name
+        date.textContent = `${new Date(release.published_at).toLocaleDateString('tr-TR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })} tarihinde yayımlandı`
+        document.getElementById('release-notes-link').href = release.html_url
+        note.textContent = `${release.tag_name} · Windows, macOS ve Linux · ücretsiz ve açık kaynak`
+      }
+
+      async function load() {
+        try {
+          const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+            headers: { Accept: 'application/vnd.github+json' }
+          })
+          // A repo with no published release answers 404 — that is a valid state.
+          const release = response.ok ? await response.json() : null
+          renderReleaseMeta(release)
+          render(release)
+        } catch {
+          renderReleaseMeta(null)
+          render(null)
+        }
+      }
+
+      load()
+    </script>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+# Opbay Client
+
+Modern arayüzlü, açık kaynak bir Minecraft: Java Edition launcher'ı. Modrinth ve CurseForge içeriklerini
+doğrudan profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu tutar.
+
+<p align="center">
+  <a href="https://pisanadam.github.io/opbay-client-/"><strong>İndirme sayfası →</strong></a>
+</p>
+
+## Özellikler
+
+- **Microsoft oturumu (zorunlu)** — Resmî MSA → Xbox Live → XSTS → Minecraft servisleri zinciri, PKCE ile
+  korunan yetkilendirme akışı. Oyun başlatılmadan önce Java Edition lisansı doğrulanır.
+- **İzole profiller** — Her profilin kendi `mods`, `resourcepacks`, `shaderpacks`, `saves`, `datapacks`
+  klasörü, kendi bellek ve JVM ayarları vardır.
+- **Modrinth + CurseForge** — Tek arayüzden mod, mod paketi, doku paketi, shader, veri paketi ve dünya arama;
+  profil sürümüne/yükleyicisine göre filtreleme; zorunlu bağımlılıkların otomatik kurulumu.
+- **Mod paketi kurulumu** — Modrinth `.mrpack` ve CurseForge `manifest.json` paketleri açılır, `overrides`
+  içeriği uygulanır, profilin sürümü ve yükleyicisi pakete göre ayarlanır.
+- **Yerel içe aktarma** — Elindeki `.jar` / `.zip` dosyalarını ve dünya arşivlerini profile aktar.
+- **3B skin değiştirici** — Skin yükle, bağlantıdan uygula, klasik/ince model seç, pelerin değiştir. Model saf
+  CSS 3D ile çizilir, sürüklenerek döndürülebilir.
+- **Otomatik Java** — Sistemdeki JVM'leri tarar; sürümün gerektirdiği Java yoksa Eclipse Temurin runtime'ını
+  indirir.
+- **Yükleyiciler** — Vanilla, Fabric, Quilt, NeoForge, Forge.
+- **Sağlam indirme** — Paralel indirme havuzu, SHA-1 doğrulaması, yeniden deneme, yarım kalan dosyaların
+  atlanması.
+- **Canlı günlük** — Oyun çıktısı launcher içinde akar; kopyalanabilir.
+
+## Kurulum
+
+Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/opbay-client-/) veya
+[Releases](https://github.com/pisanadam/opbay-client-/releases) bölümünü kullanın.
+
+## Geliştirme
+
+```bash
+npm install
+npm run dev        # Electron + Vite geliştirme sunucusu
+npm run typecheck  # TypeScript denetimi
+npm run build      # main / preload / renderer derlemesi
+npm run dist       # Bulunduğun platform için kurulum paketi
+```
+
+Node.js 20+ gerekir.
+
+### Mimari
+
+```
+src/
+├── main/                    Electron ana süreci — ağ, dosya sistemi ve oyun süreci burada
+│   ├── auth/microsoft.ts    MSA → XBL → XSTS → Minecraft oturum zinciri
+│   ├── minecraft/
+│   │   ├── versions.ts      Sürüm manifesti, kalıtım (inheritsFrom) çözümlemesi
+│   │   ├── libraries.ts     Kural değerlendirmesi, classpath, native ayıklama
+│   │   ├── assets.ts        Varlık indeksi ve sanal varlıklar
+│   │   ├── java.ts          JVM tarama ve Temurin indirme
+│   │   ├── loaders/         Fabric, Quilt, NeoForge, Forge kurulumu
+│   │   ├── downloader.ts    Paralel indirme + SHA-1 doğrulama
+│   │   └── launcher.ts      Argüman üretimi ve süreç yönetimi
+│   ├── content/             Modrinth, CurseForge, kurulum/güncelleme/mod paketi mantığı
+│   ├── skins.ts             Skin ve pelerin işlemleri
+│   ├── store.ts             JSON tabanlı yerel veritabanı
+│   └── ipc.ts               Renderer'a açılan tek yüzey
+├── preload/                 contextBridge ile tip güvenli API
+├── renderer/                React arayüzü
+└── shared/types.ts          İki tarafın paylaştığı tipler
+```
+
+Erişim jetonları hiçbir zaman renderer'a geçmez; `ipc.ts` hesapları `PublicAccount` biçimine indirger.
+
+## Yapılandırma
+
+### Microsoft istemci kimliği
+
+Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulamanı kaydetmek istersen:
+
+1. [Azure Portal](https://portal.azure.com) → **App registrations** → **New registration**
+2. **Supported account types**: *Personal Microsoft accounts only*
+3. **Redirect URI** (Mobile and desktop applications):
+   `https://login.microsoftonline.com/common/oauth2/nativeclient`
+4. **Authentication** → *Allow public client flows* → **Yes**
+5. İstemci kimliğini **Ayarlar → Hesap** bölümüne gir (ya da `OPBAY_MS_CLIENT_ID` ortam değişkenini kullan).
+
+### CurseForge API anahtarı
+
+CurseForge üçüncü taraf uygulamalar için anahtar zorunlu tutar.
+[console.curseforge.com](https://console.curseforge.com/) üzerinden ücretsiz alıp **Ayarlar → İçerik**
+bölümüne girin. Modrinth için anahtar gerekmez.
+
+## Yayınlama
+
+- `main` dalına `docs/` altında bir değişiklik gittiğinde indirme sayfası GitHub Pages'e dağıtılır.
+  Deponun **Settings → Pages** ayarında kaynak olarak **GitHub Actions** seçili olmalıdır.
+- `v*` biçiminde bir etiket gönderildiğinde (`git tag v1.0.0 && git push --tags`) üç platform için paketler
+  üretilir ve Releases'a yüklenir. İndirme sayfası en son sürümü GitHub API'sinden otomatik okur.
+
+## Yasal
+
+Opbay Client bağımsız bir projedir; Mojang Studios veya Microsoft ile bağlantılı değildir ve bu şirketler
+tarafından onaylanmamıştır. Minecraft, Mojang Studios'un ticari markasıdır. Oyunu oynamak için geçerli bir
+Minecraft: Java Edition lisansı gereklidir — launcher lisanssız ("cracked") girişi desteklemez.
+
+GPL-3.0 lisansı ile dağıtılır.
