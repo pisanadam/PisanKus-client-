@@ -132,6 +132,7 @@ class Paths(context: Context) {
     val assets = File(root, "assets")
     val profiles = File(root, "profiles")
     val runtimes = File(context.filesDir, "runtimes")
+    val renderers = File(context.filesDir, "renderers")
     val cache: File = context.cacheDir
 
     fun profileDir(profile: Profile): File = File(profiles, profile.folder)

@@ -5,13 +5,8 @@ import android.net.Uri
 import com.opbay.client.data.Paths
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
-import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.zip.ZipInputStream
 
 /**
  * A Java runtime installed into the app's private storage.
@@ -132,20 +127,7 @@ object JavaRuntime {
 
         onProgress("$name açılıyor…")
 
-        val buffered = BufferedInputStream(input)
-        when {
-            archiveName.endsWith(".zip", true) -> extractZip(buffered, target)
-            archiveName.endsWith(".tar.xz", true) || archiveName.endsWith(".txz", true) ->
-                extractTar(XZCompressorInputStream(buffered), target)
-            archiveName.endsWith(".tar.gz", true) || archiveName.endsWith(".tgz", true) ->
-                extractTar(GzipCompressorInputStream(buffered), target)
-            else -> {
-                target.deleteRecursively()
-                throw IllegalArgumentException(
-                    "Desteklenmeyen arşiv biçimi: $archiveName (.tar.xz, .tar.gz veya .zip bekleniyor)."
-                )
-            }
-        }
+        Archives.extract(input, archiveName, target)
 
         val home = findJavaHome(target)
             ?: run {
@@ -174,49 +156,4 @@ object JavaRuntime {
         File(paths.runtimes, name).deleteRecursively()
     }
 
-    private fun extractZip(input: InputStream, target: File) {
-        ZipInputStream(input).use { zip ->
-            while (true) {
-                val entry = zip.nextEntry ?: break
-                val file = safeChild(target, entry.name) ?: continue
-                if (entry.isDirectory) {
-                    file.mkdirs()
-                } else {
-                    file.parentFile?.mkdirs()
-                    file.outputStream().use { zip.copyTo(it) }
-                }
-            }
-        }
-    }
-
-    private fun extractTar(input: InputStream, target: File) {
-        TarArchiveInputStream(input).use { tar ->
-            while (true) {
-                val entry = tar.nextEntry ?: break
-                val file = safeChild(target, entry.name) ?: continue
-                when {
-                    entry.isDirectory -> file.mkdirs()
-                    entry.isSymbolicLink -> {
-                        // Runtimes symlink e.g. lib/server/libjvm.so; copy the target
-                        // instead, since app storage may not permit symlinks.
-                        file.parentFile?.mkdirs()
-                        val linked = File(file.parentFile, entry.linkName)
-                        if (linked.isFile) runCatching { linked.copyTo(file, overwrite = true) }
-                    }
-                    else -> {
-                        file.parentFile?.mkdirs()
-                        file.outputStream().use { tar.copyTo(it) }
-                        if (entry.mode and 0b001_000_000 != 0) file.setExecutable(true, false)
-                    }
-                }
-            }
-        }
-    }
-
-    /** Rejects archive entries that would escape the target directory (zip slip). */
-    private fun safeChild(target: File, name: String): File? {
-        val file = File(target, name)
-        val targetPath = target.canonicalPath + File.separator
-        return if (file.canonicalPath.startsWith(targetPath)) file else null
-    }
 }

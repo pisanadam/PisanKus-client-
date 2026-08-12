@@ -24,8 +24,10 @@ import com.opbay.client.data.VersionChannel
 import com.opbay.client.data.VersionSummary
 import com.opbay.client.game.GameLauncher
 import com.opbay.client.game.GameService
+import com.opbay.client.game.InstalledRenderer
 import com.opbay.client.game.InstalledRuntime
 import com.opbay.client.game.JavaRuntime
+import com.opbay.client.game.RendererProvisioner
 import com.opbay.client.game.RuntimeProvisioner
 import com.opbay.client.minecraft.LoaderVersion
 import com.opbay.client.minecraft.Loaders
@@ -66,6 +68,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _runtimes = MutableStateFlow<List<InstalledRuntime>>(emptyList())
     val runtimes: StateFlow<List<InstalledRuntime>> = _runtimes.asStateFlow()
 
+    private val _renderers = MutableStateFlow<List<InstalledRenderer>>(emptyList())
+    val renderers: StateFlow<List<InstalledRenderer>> = _renderers.asStateFlow()
+
+    /** Whether the device can take the native Vulkan path at all. */
+    val deviceHasVulkan: Boolean get() = RendererProvisioner.deviceHasVulkan()
+
     private val _authError = MutableStateFlow<String?>(null)
     val authError: StateFlow<String?> = _authError.asStateFlow()
 
@@ -81,6 +89,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     init {
         refreshVersions()
         refreshRuntimes()
+        refreshRenderers()
     }
 
     // --------------------------------------------------------------------- tasks
@@ -323,6 +332,55 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             ) { label, progress, detail -> report(taskId, label, progress, detail) }
             refreshRuntimes()
             report(taskId, "Java $major hazır", 1f, null, TaskState.Status.DONE)
+        }
+    }
+
+    fun refreshRenderers() {
+        _renderers.value = RendererProvisioner.list(store.paths)
+    }
+
+    fun installRenderer() {
+        val taskId = "renderer-install"
+        run(taskId, "Grafik bileşeni kurulamadı") {
+            val renderer = RendererProvisioner.provision(store.paths, store.settings.rendererSource) {
+                label, progress, detail -> report(taskId, label, progress, detail)
+            }
+            refreshRenderers()
+            if (store.settings.rendererName == null) {
+                store.updateSettings { it.copy(rendererName = renderer.name) }
+            }
+            report(taskId, "${renderer.name} hazır", 1f, null, TaskState.Status.DONE)
+        }
+    }
+
+    fun removeRenderer(name: String) {
+        RendererProvisioner.remove(store.paths, name)
+        if (store.settings.rendererName == name) store.updateSettings { it.copy(rendererName = null) }
+        refreshRenderers()
+    }
+
+    /** Java versions the existing profiles actually require. */
+    fun requiredJavaVersions(): List<Int> = store.profiles
+        .map { profile -> javaMajorFor(profile.gameVersion) }
+        .distinct()
+        .sorted()
+
+    /**
+     * Mojang's mapping of game version to Java version, used only to label the
+     * quick-install buttons; a launch always reads the real value from the
+     * version file.
+     */
+    private fun javaMajorFor(gameVersion: String): Int {
+        val parts = gameVersion.split(".", "-")
+        val major = parts.getOrNull(0)?.toIntOrNull() ?: return 8
+        return when {
+            major >= 26 -> 25
+            major == 1 -> when (parts.getOrNull(1)?.toIntOrNull() ?: 0) {
+                in 0..16 -> 8
+                in 17..20 -> 17
+                else -> 21
+            }
+            else -> 8
         }
     }
 

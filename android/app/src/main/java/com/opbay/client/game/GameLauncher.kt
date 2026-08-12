@@ -30,7 +30,9 @@ class GameLauncher(
         val command: List<String>,
         val environment: Map<String, String>,
         val workingDir: File,
-        val runtime: InstalledRuntime
+        val runtime: InstalledRuntime,
+        val rendererKind: RendererKind,
+        val renderer: InstalledRenderer?
     )
 
     /**
@@ -144,25 +146,38 @@ class GameLauncher(
             addAll(gameArgs)
         }
 
-        val nativeLibDir = context.applicationInfo.nativeLibraryDir
-        val environment = mapOf(
-            "JAVA_HOME" to runtime.home.absolutePath,
-            "HOME" to gameDir.absolutePath,
-            "TMPDIR" to paths.cache.absolutePath,
-            // The runtime's own libraries plus anything the renderer ships.
-            "LD_LIBRARY_PATH" to listOf(
-                File(runtime.home, "lib").absolutePath,
-                File(runtime.home, "lib/server").absolutePath,
-                File(runtime.home, "lib/${Rules.arch}").absolutePath,
-                nativeLibDir
-            ).joinToString(":"),
-            "LIBGL_ES" to "3",
-            "LIBGL_MIPMAP" to "3",
-            "LIBGL_NORMALIZE" to "1",
-            "MESA_GLSL_CACHE_DIR" to paths.cache.absolutePath
-        )
+        // Versions from 26.2 carry lwjgl-vulkan and drive the device's own Vulkan
+        // driver; older ones call desktop OpenGL and need a translator.
+        val rendererKind = RendererProvisioner.kindFor(version.libraries.map { it.name })
+        val renderer = RendererProvisioner.byName(paths, settings.rendererName)
+            ?: RendererProvisioner.list(paths).firstOrNull()
 
-        return LaunchPlan(command, environment, gameDir, runtime)
+        val nativeLibDir = context.applicationInfo.nativeLibraryDir
+        val libraryPath = buildList {
+            add(File(runtime.home, "lib").absolutePath)
+            add(File(runtime.home, "lib/server").absolutePath)
+            add(File(runtime.home, "lib/${Rules.arch}").absolutePath)
+            renderer?.directory?.let { add(it.absolutePath) }
+            add(nativeLibDir)
+        }.joinToString(":")
+
+        val environment = buildMap {
+            put("JAVA_HOME", runtime.home.absolutePath)
+            put("HOME", gameDir.absolutePath)
+            put("TMPDIR", paths.cache.absolutePath)
+            put("LD_LIBRARY_PATH", libraryPath)
+            put("MESA_GLSL_CACHE_DIR", paths.cache.absolutePath)
+
+            if (rendererKind == RendererKind.GL_TRANSLATED) {
+                // gl4es reads these; they are meaningless on the Vulkan path.
+                put("LIBGL_ES", "3")
+                put("LIBGL_MIPMAP", "3")
+                put("LIBGL_NORMALIZE", "1")
+                put("LIBGL_GL", "21")
+            }
+        }
+
+        return LaunchPlan(command, environment, gameDir, runtime, rendererKind, renderer)
     }
 
     /**
@@ -180,6 +195,34 @@ class GameLauncher(
         builder.environment().putAll(plan.environment)
 
         onLine("[opbay] ${plan.runtime.name} (Java ${plan.runtime.majorVersion})")
+        onLine("[opbay] Grafik yolu: ${plan.rendererKind.label}")
+
+        when {
+            plan.rendererKind == RendererKind.VULKAN && RendererProvisioner.deviceHasVulkan() ->
+                onLine("[opbay] Cihazda Vulkan sürücüsü bulundu; çeviri katmanı gerekmiyor.")
+
+            plan.rendererKind == RendererKind.VULKAN ->
+                onLine("[opbay] UYARI: Bu sürüm Vulkan istiyor fakat cihazda Vulkan sürücüsü bulunamadı.")
+
+            plan.renderer != null ->
+                onLine("[opbay] Çeviri bileşeni: ${plan.renderer.name} (${plan.renderer.libraries.size} kütüphane)")
+
+            else ->
+                onLine(
+                    "[opbay] UYARI: Bu sürüm masaüstü OpenGL kullanıyor ve kurulu bir çeviri bileşeni yok. " +
+                        "Ayarlar → Grafik bölümünden kurabilirsiniz."
+                )
+        }
+
+        // Stated plainly rather than discovered as a mystery crash: the JVM runs
+        // as a child process, and a child process cannot draw into this app's
+        // window. Rendering additionally needs LWJGL natives built for Android,
+        // which Mojang does not publish.
+        onLine(
+            "[opbay] NOT: Oyun ayrı bir süreçte başlatılıyor; bu yapıyla pencere açılmaz. " +
+                "İndirme, oturum ve mod kurulumu doğrulanabilir, görüntü için Android'e derlenmiş " +
+                "LWJGL bileşenleri gerekir."
+        )
         onLine("[opbay] ${plan.command.first()} … ${plan.command.size} argüman")
 
         val process = builder.start()

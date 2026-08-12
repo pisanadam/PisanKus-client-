@@ -849,8 +849,18 @@
                 sürümü (8, 17 veya 21) kurulu değilse oyunu başlattığınızda <b>otomatik indirilir</b>.
                 Dilerseniz <b>Ayarlar → Java</b> bölümünden önceden kurabilir ya da elinizdeki bir arşivi
                 (<code>.tar.xz</code>, <code>.tar.gz</code>, <code>.zip</code>) içe aktarabilirsiniz.
-                Ayrıca oyunun ekrana çizebilmesi için bir OpenGL ES çeviri katmanı gerekir — bu ayrı bir
-                bileşendir.
+                Grafik tarafında Minecraft 26.2 ile Vulkan arka ucu geldiği için o sürüm ve sonrası Android'in
+                kendi Vulkan sürücüsünü kullanır; daha eski sürümler için OpenGL çeviri bileşeni
+                <b>Ayarlar → Grafik</b> bölümünden kurulur.
+              </p>
+            </details>
+            <details>
+              <summary>Android sürümünde oyun penceresi açılmıyor.</summary>
+              <p>
+                Bu bilinen bir sınır. Launcher oyunu ayrı bir süreç olarak başlatıyor ve ayrı bir süreç
+                uygulamanın penceresine çizemiyor. Görüntü için JVM'in uygulama içinde başlatılması ve
+                Android'e derlenmiş LWJGL bileşenleri gerekiyor; Mojang bunları yayımlamıyor. İndirme,
+                oturum açma ve mod kurulumu çalışıyor, oyun penceresi açılmıyor.
               </p>
             </details>
             <details>

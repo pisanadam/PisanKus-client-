@@ -171,6 +171,12 @@ enum class ThemeMode {
  */
 const val DEFAULT_RUNTIME_SOURCE = "PojavLauncherTeam/android-openjdk-build-multiarch"
 
+/**
+ * Where the OpenGL translation component comes from. Versions with Vulkan
+ * support (26.2 and later) do not need it — Android has its own Vulkan driver.
+ */
+const val DEFAULT_RENDERER_SOURCE = "PojavLauncherTeam/GL4ES"
+
 @Serializable
 data class Settings(
     val defaultMemoryMb: Int = 1024,
@@ -183,7 +189,11 @@ data class Settings(
     /** Java runtime chosen for launches; null means "whatever matches the version". */
     val runtimeName: String? = null,
     /** GitHub repository the launcher pulls Android Java runtimes from. */
-    val runtimeSource: String = DEFAULT_RUNTIME_SOURCE
+    val runtimeSource: String = DEFAULT_RUNTIME_SOURCE,
+    /** Renderer component chosen for launches, if any is installed. */
+    val rendererName: String? = null,
+    /** GitHub repository the launcher pulls renderer components from. */
+    val rendererSource: String = DEFAULT_RENDERER_SOURCE
 )
 
 @Serializable

@@ -42,11 +42,28 @@ dosyayı buluyor**. Kaynak depo Ayarlar'dan değiştirilebilir; eşleşen yapı 
 arandığını söyleyen bir mesaj gösterilir. Elinizde bir arşiv varsa "Arşivden kur" ile de
 ekleyebilirsiniz (`.tar.xz`, `.tar.gz`, `.zip`).
 
-### Grafik katmanı
+### Grafik
 
-Java çalışma zamanı tek başına oyunu ekrana çizmeye yetmez: Minecraft'ın masaüstü OpenGL
-çağrılarını Android'in OpenGL ES'ine çeviren bir katman (gl4es benzeri) da gerekir. Bu, bu
-projenin üretmediği ayrı bir native bileşendir.
+Minecraft **26.2** ile Vulkan arka ucu geldi: o sürümün kütüphane listesinde
+`org.lwjgl:lwjgl-vulkan:3.4.1` var, 1.21.4'te yok. Android 7.0'dan beri sistemde Vulkan
+sürücüsü bulunduğu için **26.2 ve sonrası için OpenGL çeviri katmanına gerek yok**.
+
+26.2 öncesi sürümler masaüstü OpenGL çağırır; bunlar için gl4es benzeri bir çeviri bileşeni
+gerekir. Launcher hangi yolun geçerli olduğunu sürüm dosyasından okur ve ortam değişkenlerini
+buna göre kurar; çeviri bileşenini Ayarlar → Grafik bölümünden mimariye göre otomatik indirir.
+
+### Bilinen sınır: pencere açılmıyor
+
+Bu launcher oyunu **ayrı bir süreç** olarak başlatıyor. Ayrı süreç, uygulamanın penceresine
+çizemez. Görüntü için iki şey daha gerekir:
+
+1. JVM'in uygulama içinde (JNI ile) başlatılması ve bir `SurfaceView`'a bağlanması,
+2. Android'e derlenmiş LWJGL bileşenleri — özellikle GLFW çağrılarını Android pencere
+   sistemine bağlayan köprü. Mojang bunları yayımlamıyor (sürüm dosyalarında yalnızca
+   `natives-linux`, `natives-macos`, `natives-windows` var).
+
+Bu ikisi tamamlanana kadar indirme, oturum açma, mod/paket kurulumu ve başlatma komutunun
+üretilmesi çalışır; oyun penceresi açılmaz. Günlük sekmesi bunu her başlatmada açıkça yazar.
 
 ## Geliştirme
 

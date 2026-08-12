@@ -57,6 +57,7 @@ import com.opbay.client.ui.theme.SEED_PRESETS
 fun SettingsScreen(viewModel: LauncherViewModel) {
     val db by viewModel.db.collectAsState()
     val runtimes by viewModel.runtimes.collectAsState()
+    val renderers by viewModel.renderers.collectAsState()
     val theme = db.settings.theme
 
     var hexDraft by remember(theme.seedColor) {
@@ -65,6 +66,7 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
     var corner by remember(theme.cornerRadiusDp) { mutableFloatStateOf(theme.cornerRadiusDp.toFloat()) }
     var clientIdDraft by remember(db.settings.msClientId) { mutableStateOf(db.settings.msClientId) }
     var runtimeSourceDraft by remember(db.settings.runtimeSource) { mutableStateOf(db.settings.runtimeSource) }
+    var rendererSourceDraft by remember(db.settings.rendererSource) { mutableStateOf(db.settings.rendererSource) }
     var fontScale by remember(theme.fontScale) { mutableFloatStateOf(theme.fontScale) }
 
     val runtimePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -255,8 +257,10 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
 
                     Label("Şimdi kur")
                     ChipRow {
-                        // The versions Mojang pins across the whole game history.
-                        listOf(8, 17, 21).forEach { major ->
+                        // Driven by what the profiles need, so a new game version
+                        // that raises the requirement shows up here on its own.
+                        (viewModel.requiredJavaVersions() + listOf(8, 17, 21, 25)).distinct().sorted()
+                            .forEach { major ->
                             val installed = runtimes.any { it.majorVersion == major }
                             FilterChip(
                                 selected = installed,
@@ -287,6 +291,69 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
                             onClick = { runtimePicker.launch(arrayOf("*/*")) },
                             modifier = Modifier.padding(top = 8.dp)
                         ) { Text("Arşivden kur") }
+                    }
+                }
+            }
+
+            item {
+                SettingsCard("Grafik") {
+                    Text(
+                        if (viewModel.deviceHasVulkan) {
+                            "Cihazınızda Vulkan sürücüsü var. Minecraft 26.2 ve sonrası Vulkan " +
+                                "kullanır; bu sürümler için ek bir bileşen gerekmez."
+                        } else {
+                            "Cihazınızda Vulkan sürücüsü bulunamadı."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "26.2 öncesi sürümler masaüstü OpenGL kullanır ve Android'de bir çeviri " +
+                            "bileşeni ister.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+
+                    if (renderers.isEmpty()) {
+                        Text(
+                            "Kurulu çeviri bileşeni yok.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 10.dp)
+                        )
+                    } else {
+                        renderers.forEach { renderer ->
+                            ListItem(
+                                headlineContent = { Text(renderer.name) },
+                                supportingContent = { Text("${renderer.libraries.size} kütüphane") },
+                                trailingContent = {
+                                    IconButton(onClick = { viewModel.removeRenderer(renderer.name) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Sil")
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = rendererSourceDraft,
+                        onValueChange = { rendererSourceDraft = it },
+                        label = { Text("Grafik bileşeni kaynağı (GitHub deposu)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.updateSettings { it.copy(rendererSource = rendererSourceDraft.trim()) }
+                                viewModel.notify("Kaynak kaydedildi.")
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) { Text("Kaydet") }
+                        OutlinedButton(
+                            onClick = { viewModel.installRenderer() },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) { Text("Kur") }
                     }
                 }
             }
