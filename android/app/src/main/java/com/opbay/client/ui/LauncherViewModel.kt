@@ -26,6 +26,7 @@ import com.opbay.client.game.GameLauncher
 import com.opbay.client.game.GameService
 import com.opbay.client.game.InstalledRuntime
 import com.opbay.client.game.JavaRuntime
+import com.opbay.client.game.RuntimeProvisioner
 import com.opbay.client.minecraft.LoaderVersion
 import com.opbay.client.minecraft.Loaders
 import com.opbay.client.minecraft.Versions
@@ -307,6 +308,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 store.updateSettings { it.copy(runtimeName = runtime.name) }
             }
             report(taskId, "${runtime.name} hazır (Java ${runtime.majorVersion})", 1f, null, TaskState.Status.DONE)
+        }
+    }
+
+    /** Downloads a runtime on demand, so a player can prepare before playing. */
+    fun installRuntime(major: Int) {
+        val taskId = "runtime-java-$major"
+        run(taskId, "Java $major kurulamadı") {
+            RuntimeProvisioner.provision(
+                context = getApplication(),
+                paths = store.paths,
+                source = store.settings.runtimeSource,
+                major = major
+            ) { label, progress, detail -> report(taskId, label, progress, detail) }
+            refreshRuntimes()
+            report(taskId, "Java $major hazır", 1f, null, TaskState.Status.DONE)
         }
     }
 

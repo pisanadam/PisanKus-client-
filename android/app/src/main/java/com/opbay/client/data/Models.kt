@@ -164,6 +164,13 @@ enum class ThemeMode {
         }
 }
 
+/**
+ * Where Android Java runtimes are fetched from. Community builds, not a
+ * first-party source — which is why it is a setting rather than a constant
+ * buried in the downloader.
+ */
+const val DEFAULT_RUNTIME_SOURCE = "PojavLauncherTeam/android-openjdk-build-multiarch"
+
 @Serializable
 data class Settings(
     val defaultMemoryMb: Int = 1024,
@@ -173,8 +180,10 @@ data class Settings(
     val msClientId: String = "00000000402b5328",
     val concurrentDownloads: Int = 6,
     val theme: ThemeSettings = ThemeSettings(),
-    /** Path of the Java runtime chosen for launches, if any is installed. */
-    val runtimeName: String? = null
+    /** Java runtime chosen for launches; null means "whatever matches the version". */
+    val runtimeName: String? = null,
+    /** GitHub repository the launcher pulls Android Java runtimes from. */
+    val runtimeSource: String = DEFAULT_RUNTIME_SOURCE
 )
 
 @Serializable

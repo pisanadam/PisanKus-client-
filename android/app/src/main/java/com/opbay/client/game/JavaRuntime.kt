@@ -52,15 +52,16 @@ object JavaRuntime {
         name?.let { wanted -> list(paths).firstOrNull { it.name == wanted } }
 
     /**
-     * Picks a runtime for a version's Java requirement, preferring an exact
-     * match and otherwise the newest runtime that is at least as new.
+     * Picks the runtime for a version's Java requirement.
+     *
+     * The match is exact: Mojang pins a major version per game version, and
+     * running on a different one fails deep inside the game with an error that
+     * points nowhere near the cause. A preferred runtime is honoured only when
+     * its version is the one required.
      */
     fun select(paths: Paths, preferred: String?, requiredMajor: Int): InstalledRuntime? {
-        val installed = list(paths)
-        byName(paths, preferred)?.let { return it }
-        return installed.firstOrNull { it.majorVersion == requiredMajor }
-            ?: installed.firstOrNull { it.majorVersion >= requiredMajor }
-            ?: installed.firstOrNull()
+        byName(paths, preferred)?.takeIf { it.majorVersion == requiredMajor }?.let { return it }
+        return list(paths).firstOrNull { it.majorVersion == requiredMajor }
     }
 
     /** Archives may nest the JRE one level down; find the directory holding bin/. */
@@ -85,10 +86,7 @@ object JavaRuntime {
         return Regex("(\\d+)").findAll(home.name).lastOrNull()?.value?.toIntOrNull() ?: 0
     }
 
-    /**
-     * Unpacks a runtime archive the player picked. `.tar.xz`, `.tar.gz` and
-     * `.zip` are accepted because the community runtimes ship in all three.
-     */
+    /** Unpacks a runtime archive the player picked from storage. */
     suspend fun import(
         context: Context,
         paths: Paths,
@@ -96,31 +94,58 @@ object JavaRuntime {
         displayName: String,
         onProgress: (String) -> Unit
     ): InstalledRuntime = withContext(Dispatchers.IO) {
-        val name = displayName
-            .substringBeforeLast(".tar")
-            .substringBeforeLast('.')
-            .replace(Regex("[^A-Za-z0-9._-]"), "_")
-            .ifEmpty { "runtime-${System.currentTimeMillis()}" }
+        val stream = context.contentResolver.openInputStream(uri)
+            ?: throw IllegalStateException("Dosya okunamadı.")
+        stream.use { unpack(paths, it, displayName, runtimeName(displayName), onProgress) }
+    }
 
+    /** Unpacks an archive already on disk, such as a downloaded runtime. */
+    suspend fun importArchive(
+        paths: Paths,
+        archive: File,
+        name: String,
+        onProgress: (String) -> Unit
+    ): InstalledRuntime = withContext(Dispatchers.IO) {
+        archive.inputStream().use { unpack(paths, it, archive.name, name, onProgress) }
+    }
+
+    private fun runtimeName(displayName: String): String = displayName
+        .substringBeforeLast(".tar")
+        .substringBeforeLast('.')
+        .replace(Regex("[^A-Za-z0-9._-]"), "_")
+        .ifEmpty { "runtime-${System.currentTimeMillis()}" }
+
+    /**
+     * `.tar.xz`, `.tar.gz` and `.zip` are all accepted because the community
+     * runtimes ship in all three.
+     */
+    private fun unpack(
+        paths: Paths,
+        input: InputStream,
+        archiveName: String,
+        name: String,
+        onProgress: (String) -> Unit
+    ): InstalledRuntime {
         val target = File(paths.runtimes, name)
         target.deleteRecursively()
         target.mkdirs()
 
         onProgress("$name açılıyor…")
 
-        context.contentResolver.openInputStream(uri)?.use { raw ->
-            val buffered = BufferedInputStream(raw)
-            when {
-                displayName.endsWith(".zip", true) -> extractZip(buffered, target)
-                displayName.endsWith(".tar.xz", true) || displayName.endsWith(".txz", true) ->
-                    extractTar(XZCompressorInputStream(buffered), target)
-                displayName.endsWith(".tar.gz", true) || displayName.endsWith(".tgz", true) ->
-                    extractTar(GzipCompressorInputStream(buffered), target)
-                else -> throw IllegalArgumentException(
-                    "Desteklenmeyen arşiv biçimi: $displayName (.tar.xz, .tar.gz veya .zip bekleniyor)."
+        val buffered = BufferedInputStream(input)
+        when {
+            archiveName.endsWith(".zip", true) -> extractZip(buffered, target)
+            archiveName.endsWith(".tar.xz", true) || archiveName.endsWith(".txz", true) ->
+                extractTar(XZCompressorInputStream(buffered), target)
+            archiveName.endsWith(".tar.gz", true) || archiveName.endsWith(".tgz", true) ->
+                extractTar(GzipCompressorInputStream(buffered), target)
+            else -> {
+                target.deleteRecursively()
+                throw IllegalArgumentException(
+                    "Desteklenmeyen arşiv biçimi: $archiveName (.tar.xz, .tar.gz veya .zip bekleniyor)."
                 )
             }
-        } ?: throw IllegalStateException("Dosya okunamadı.")
+        }
 
         val home = findJavaHome(target)
             ?: run {
@@ -142,7 +167,7 @@ object JavaRuntime {
             throw IllegalStateException("Arşivde bin/java bulunamadı.")
         }
 
-        InstalledRuntime(name, home, binary, readMajorVersion(home))
+        return InstalledRuntime(name, home, binary, readMajorVersion(home))
     }
 
     fun remove(paths: Paths, name: String) {

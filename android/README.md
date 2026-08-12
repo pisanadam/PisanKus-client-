@@ -20,22 +20,33 @@ version channel down to the 2010 alphas, and a fully player-controlled theme.
   açık/koyu/sistem, AMOLED saf siyah, Material You duvar kâğıdı renkleri, köşe yuvarlaklığı
   ve yazı boyutu ayarlanabilir.
 
-## Java çalışma zamanı gereksinimi
+## Java çalışma zamanı
 
 **Android'de Minecraft Java Edition'ı çalıştırmak için bir Java çalışma zamanı (JRE) gerekir.**
 Android'in kendi çalışma zamanı (ART) standart JVM bytecode'unu ve LWJGL'in native
 kütüphanelerini çalıştıramaz.
 
-Opbay Client bir JRE ile birlikte gelmez. **Ayarlar → Java çalışma zamanı** bölümünden
-cihazınızın mimarisine uygun bir arşivi (`.tar.xz`, `.tar.gz` veya `.zip`) içe aktarırsınız;
-arşiv uygulamanın özel depolamasına açılır ve oyun bu çalışma zamanıyla başlatılır.
+Minecraft her sürüm için belirli bir Java sürümü ister (sürüm dosyasındaki
+`javaVersion.majorVersion`). Oyunu başlattığınızda gereken sürüm kurulu değilse **otomatik
+indirilir** — elle bir şey yapmanız gerekmez. Ayarlar → Java bölümünden önceden de
+kurabilirsiniz.
 
-Bu, PojavLauncher ekosisteminin dağıttığı `android-aarch64` JRE yapılarıyla aynı hedefi
-kullanır. Ek olarak, oyunun ekrana çizebilmesi için bir OpenGL ES çeviri katmanı (gl4es gibi)
-gerekir — bu da cihaza kurulan bileşenlerden biridir.
+Eşleşme sürüm bazında kesindir: 1.20.5+ Java 21, 1.17–1.20.4 Java 17, daha eskiler Java 8
+ister. Yanlış sürümle başlatmak oyunun içinde, sebebi anlaşılmayan bir hataya yol açtığı için
+launcher farklı bir sürümle çalışmayı denemez.
 
-Çalışma zamanı kurulu değilse başlatma denemesi, ne yapılması gerektiğini anlatan bir
-mesajla durur; sessizce çökmez.
+Android için JRE yayımlayan bir üretici, masaüstündeki Adoptium gibi sürümlenmiş bir API
+sunmuyor; var olanlar GitHub sürümlerine eklenmiş topluluk yapıları. Bu yüzden indirme adresi
+koda gömülü değil: launcher sürüm listesini okuyup **Java sürümü ve cihaz mimarisiyle eşleşen
+dosyayı buluyor**. Kaynak depo Ayarlar'dan değiştirilebilir; eşleşen yapı bulunamazsa neyin
+arandığını söyleyen bir mesaj gösterilir. Elinizde bir arşiv varsa "Arşivden kur" ile de
+ekleyebilirsiniz (`.tar.xz`, `.tar.gz`, `.zip`).
+
+### Grafik katmanı
+
+Java çalışma zamanı tek başına oyunu ekrana çizmeye yetmez: Minecraft'ın masaüstü OpenGL
+çağrılarını Android'in OpenGL ES'ine çeviren bir katman (gl4es benzeri) da gerekir. Bu, bu
+projenin üretmediği ayrı bir native bileşendir.
 
 ## Geliştirme
 

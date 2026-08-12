@@ -25,10 +25,6 @@ class GameLauncher(
     private val paths: Paths
 ) {
 
-    class MissingRuntimeException : Exception(
-        "Oyunu başlatmak için bir Java çalışma zamanı gerekiyor. " +
-            "Ayarlar → Java çalışma zamanı bölümünden bir JRE arşivi içe aktarın."
-    )
 
     data class LaunchPlan(
         val command: List<String>,
@@ -66,9 +62,17 @@ class GameLauncher(
             onProgress = onProgress
         )
 
+        // Mojang pins a Java version per game version; install the matching one
+        // rather than asking the player to work out which they need.
         val requiredJava = version.javaVersion?.majorVersion ?: 8
         val runtime = JavaRuntime.select(paths, settings.runtimeName, requiredJava)
-            ?: throw MissingRuntimeException()
+            ?: RuntimeProvisioner.provision(
+                context = context,
+                paths = paths,
+                source = settings.runtimeSource,
+                major = requiredJava,
+                onProgress = onProgress
+            )
 
         val assets = Installer.resolveAssets(version, paths)
         val assetsRoot = Installer.assetsRoot(assets, paths)

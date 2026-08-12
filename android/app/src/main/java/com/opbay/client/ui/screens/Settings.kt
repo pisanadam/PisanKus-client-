@@ -64,6 +64,7 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
     }
     var corner by remember(theme.cornerRadiusDp) { mutableFloatStateOf(theme.cornerRadiusDp.toFloat()) }
     var clientIdDraft by remember(db.settings.msClientId) { mutableStateOf(db.settings.msClientId) }
+    var runtimeSourceDraft by remember(db.settings.runtimeSource) { mutableStateOf(db.settings.runtimeSource) }
     var fontScale by remember(theme.fontScale) { mutableFloatStateOf(theme.fontScale) }
 
     val runtimePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -223,49 +224,70 @@ fun SettingsScreen(viewModel: LauncherViewModel) {
             item {
                 SettingsCard("Java çalışma zamanı") {
                     Text(
-                        "Android'de Minecraft Java Edition'ı çalıştırmak için bir Java çalışma zamanı " +
-                            "gerekir. Opbay Client bir JRE ile birlikte gelmez; cihazınıza uygun bir " +
-                            "arşivi (.tar.xz, .tar.gz veya .zip) içe aktarın.",
+                        "Minecraft her sürüm için belirli bir Java sürümü ister. Oyunu başlattığınızda " +
+                            "gereken sürüm kurulu değilse otomatik indirilir — elle bir şey yapmanız " +
+                            "gerekmez.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (runtimes.isEmpty()) {
                         Text(
-                            "Kurulu çalışma zamanı yok — oyun başlatılamaz.",
+                            "Henüz kurulu çalışma zamanı yok.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = 10.dp)
                         )
                     } else {
                         runtimes.forEach { runtime ->
                             ListItem(
-                                headlineContent = {
+                                headlineContent = { Text("Java ${runtime.majorVersion}") },
+                                supportingContent = {
                                     Text(runtime.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 },
-                                supportingContent = { Text("Java ${runtime.majorVersion}") },
                                 trailingContent = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        FilterChip(
-                                            selected = db.settings.runtimeName == runtime.name,
-                                            onClick = {
-                                                viewModel.updateSettings { it.copy(runtimeName = runtime.name) }
-                                            },
-                                            label = { Text("Kullan") }
-                                        )
-                                        IconButton(onClick = { viewModel.removeRuntime(runtime.name) }) {
-                                            Icon(Icons.Default.Delete, contentDescription = "Sil")
-                                        }
+                                    IconButton(onClick = { viewModel.removeRuntime(runtime.name) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Sil")
                                     }
                                 }
                             )
                         }
                     }
 
-                    Button(
-                        onClick = { runtimePicker.launch(arrayOf("*/*")) },
-                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
-                    ) { Text("Çalışma zamanı arşivi içe aktar") }
+                    Label("Şimdi kur")
+                    ChipRow {
+                        // The versions Mojang pins across the whole game history.
+                        listOf(8, 17, 21).forEach { major ->
+                            val installed = runtimes.any { it.majorVersion == major }
+                            FilterChip(
+                                selected = installed,
+                                enabled = !installed,
+                                onClick = { viewModel.installRuntime(major) },
+                                label = { Text("Java $major") }
+                            )
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = runtimeSourceDraft,
+                        onValueChange = { runtimeSourceDraft = it },
+                        label = { Text("Çalışma zamanı kaynağı (GitHub deposu)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.updateSettings { it.copy(runtimeSource = runtimeSourceDraft.trim()) }
+                                viewModel.notify("Kaynak kaydedildi.")
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) { Text("Kaydet") }
+
+                        OutlinedButton(
+                            onClick = { runtimePicker.launch(arrayOf("*/*")) },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) { Text("Arşivden kur") }
+                    }
                 }
             }
 
