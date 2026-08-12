@@ -18,7 +18,7 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  artifactName: OpbayClient-${version}-win-${arch}.${ext}
+  artifactName: OpbayClient-win-${arch}.${ext}
 
 nsis:
   oneClick: false
@@ -33,7 +33,7 @@ mac:
   target:
     - target: dmg
       arch: [x64, arm64]
-  artifactName: OpbayClient-${version}-mac-${arch}.${ext}
+  artifactName: OpbayClient-mac-${arch}.${ext}
 
 linux:
   category: Game
@@ -42,7 +42,7 @@ linux:
       arch: [x64]
     - target: deb
       arch: [x64]
-  artifactName: OpbayClient-${version}-linux-${arch}.${ext}
+  artifactName: OpbayClient-linux-${arch}.${ext}
 
 publish:
   provider: github

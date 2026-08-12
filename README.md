@@ -90,10 +90,29 @@ bölümüne girin. Modrinth için anahtar gerekmez.
 
 ## Yayınlama
 
-- `main` dalına `docs/` altında bir değişiklik gittiğinde indirme sayfası GitHub Pages'e dağıtılır.
+Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
+
+- **Paketler:** `main` dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon) ve Linux paketleri
+  derlenir ve `latest` sürümüne yüklenir. Paket adları sürüm numarası içermediği için indirme bağlantıları
+  sabittir:
+
+  ```
+  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-win-x64.exe
+  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-mac-arm64.dmg
+  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-mac-x64.dmg
+  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-linux-x64.AppImage
+  https://github.com/pisanadam/opbay-client-/releases/latest/download/OpbayClient-linux-x64.deb
+  ```
+
+  İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.
+  Sabitlenmiş bir sürüm istersen `v*` etiketi gönder (`git tag v1.1.0 && git push --tags`); ayrıca
+  numaralandırılmış bir Release oluşturulur.
+
+- **İndirme sayfası:** `main` dalına `docs/` altında bir değişiklik gittiğinde GitHub Pages'e dağıtılır.
   Deponun **Settings → Pages** ayarında kaynak olarak **GitHub Actions** seçili olmalıdır.
-- `v*` biçiminde bir etiket gönderildiğinde (`git tag v1.0.0 && git push --tags`) üç platform için paketler
-  üretilir ve Releases'a yüklenir. İndirme sayfası en son sürümü GitHub API'sinden otomatik okur.
+
+Paketler kod imzalama sertifikasıyla imzalanmaz; Windows'ta SmartScreen, macOS'ta Gatekeeper uyarı gösterir
+(sayfadaki SSS bölümünde nasıl geçileceği anlatılıyor).
 
 ## Yasal
 

@@ -1,8 +1,17 @@
 name: Release
 
+# Packages are published automatically: every push to main refreshes the rolling
+# "latest" release, so the download page always has working links without anyone
+# cutting a release by hand. Pushing a v* tag additionally publishes a pinned
+# versioned release.
 on:
   push:
+    branches: [main]
     tags: ['v*']
+    paths-ignore:
+      - 'docs/**'
+      - 'android/**'
+      - '**.md'
   workflow_dispatch:
 
 permissions:
@@ -35,8 +44,6 @@ jobs:
 
       - name: Build installers
         run: npm run ${{ matrix.script }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -46,10 +53,10 @@ jobs:
             release/*.dmg
             release/*.AppImage
             release/*.deb
-          if-no-files-found: warn
+          if-no-files-found: error
 
   publish:
-    name: Publish release
+    name: Publish
     needs: package
     runs-on: ubuntu-latest
     steps:
@@ -58,8 +65,28 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - uses: softprops/action-gh-release@v2
+      - name: List artifacts
+        run: ls -lh artifacts
+
+      # Rolling release. The tag is moved to the built commit each time, which is
+      # what keeps github.com/<repo>/releases/latest/download/<name> resolving.
+      - name: Publish rolling build
+        if: startsWith(github.ref, 'refs/tags/') == false
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          tag_name: latest
+          name: Son sürüm (otomatik)
+          body: |
+            `main` dalındaki son commit'ten otomatik üretilen paketler.
+
+            Bu sürüm her push'ta güncellenir; aşağıdaki bağlantılar her zaman en yeni yapıyı indirir.
+          prerelease: false
+          make_latest: true
+
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
           generate_release_notes: true
-          draft: false
