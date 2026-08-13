@@ -111,10 +111,6 @@ export function Skins(): JSX.Element {
               <button className="btn btn--sm btn--ghost" onClick={() => setPending(null)} disabled={busy}>
                 Vazgeç
               </button>
-              <button className="btn btn--sm btn--primary" onClick={apply} disabled={busy}>
-                {busy ? <div className="spinner" /> : <Icon name="check" size={14} />}
-                Uygula
-              </button>
             </div>
           )}
 
@@ -201,6 +197,25 @@ export function Skins(): JSX.Element {
                 sonra modelde görünür.
               </p>
             </div>
+
+            {/* Always visible rather than appearing only once something is chosen:
+                an action that materialises somewhere else on the page is an
+                action nobody finds. */}
+            <button
+              className="btn btn--primary btn--block"
+              disabled={busy || !pending}
+              onClick={apply}
+            >
+              {busy ? <div className="spinner" /> : <Icon name="check" size={16} />}
+              Uygula
+            </button>
+            <p className="faint">
+              {pending
+                ? pending.kind === 'file'
+                  ? `Seçilen: ${pending.file.name} — modelde önizliyorsunuz.`
+                  : 'Bağlantı seçildi. Uygula\u2019ya basınca Mojang dosyayı indirip uygulayacak.'
+                : 'Önce yukarıdan bir PNG dosyası ya da bağlantı seçin.'}
+            </p>
 
             <button
               className="btn btn--ghost"

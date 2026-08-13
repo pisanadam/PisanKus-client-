@@ -776,6 +776,10 @@ button.update--ready:hover {
   color: var(--text);
 }
 
+.btn--block {
+  width: 100%;
+}
+
 .btn--sm {
   padding: 6px 11px;
   font-size: 12.5px;
