@@ -507,6 +507,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   })
 
   handle('app:version', () => app.getVersion())
+  handle('app:tokenStorage', () => store.encryption)
 
   // -------------------------------------------------------------- updates
 

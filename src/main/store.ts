@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Account, Profile, SavedSkin, Settings } from '../shared/types'
+import { encryptionStatus, protect, reveal } from './secrets'
 
 interface Database {
   settings: Settings
@@ -52,7 +53,14 @@ class Store {
         this.data = {
           settings: { ...defaultSettings(), ...(parsed.settings ?? {}) },
           profiles: parsed.profiles ?? [],
-          accounts: parsed.accounts ?? [],
+          // A token that cannot be decrypted (different OS user, reset keyring)
+          // becomes empty, which reads as an expired session and asks for a
+          // fresh sign-in rather than failing in some obscure way later.
+          accounts: (parsed.accounts ?? []).map((account) => ({
+            ...account,
+            accessToken: reveal(account.accessToken) ?? '',
+            refreshToken: reveal(account.refreshToken) ?? ''
+          })),
           activeAccountId: parsed.activeAccountId,
           savedSkins: parsed.savedSkins ?? []
         }
@@ -62,12 +70,30 @@ class Store {
       }
     }
     fs.mkdirSync(this.data.settings.dataDir, { recursive: true })
+    // Rewrites the file, which is also what migrates tokens that were stored in
+    // the clear by an earlier build.
     this.save()
   }
 
+  /** Reported in Settings so the player can see where their tokens are kept. */
+  get encryption(): { available: boolean; backend: string } {
+    return encryptionStatus()
+  }
+
   private save(): void {
+    // Tokens are the only secrets here, and they never touch the disk in the
+    // clear. Everything else stays readable so the file remains debuggable.
+    const onDisk: Database = {
+      ...this.data,
+      accounts: this.data.accounts.map((account) => ({
+        ...account,
+        accessToken: protect(account.accessToken) ?? '',
+        refreshToken: protect(account.refreshToken) ?? ''
+      }))
+    }
+
     const tmp = `${this.file}.tmp`
-    fs.writeFileSync(tmp, JSON.stringify(this.data, null, 2))
+    fs.writeFileSync(tmp, JSON.stringify(onDisk, null, 2))
     fs.renameSync(tmp, this.file)
   }
 

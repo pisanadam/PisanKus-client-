@@ -232,6 +232,9 @@ const api = {
 
   app: {
     version: (): Promise<string> => ipcRenderer.invoke('app:version'),
+    /** Where the launcher's tokens are encrypted, for the security note. */
+    tokenStorage: (): Promise<{ available: boolean; backend: string }> =>
+      ipcRenderer.invoke('app:tokenStorage'),
     openExternal: (url: string): Promise<void> => ipcRenderer.invoke('app:openExternal', url),
     platform: process.platform,
     minimize: (): Promise<void> => ipcRenderer.invoke('window:minimize'),

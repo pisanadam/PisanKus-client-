@@ -19,6 +19,7 @@ export function Settings(): JSX.Element {
   const [appVersion, setAppVersion] = useState<string | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
   const [checkingUpdate, setCheckingUpdate] = useState(false)
+  const [tokenStorage, setTokenStorage] = useState<{ available: boolean; backend: string } | null>(null)
   const [applying, setApplying] = useState(false)
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
@@ -31,6 +32,7 @@ export function Settings(): JSX.Element {
 
   useEffect(() => {
     void api.app.version().then(setAppVersion).catch(() => undefined)
+    void api.app.tokenStorage().then(setTokenStorage).catch(() => undefined)
     void api.updates.status().then(setUpdateStatus).catch(() => undefined)
     return api.updates.onStatus(setUpdateStatus)
   }, [])
@@ -208,6 +210,28 @@ export function Settings(): JSX.Element {
                 Güncellemeyi kontrol et
               </button>
             </div>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <div className="section-title">Güvenlik</div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">Oturum jetonları</div>
+              <div className="faint">
+                {tokenStorage === null
+                  ? 'Denetleniyor…'
+                  : tokenStorage.available
+                  ? `İşletim sisteminin kasasıyla şifreleniyor (${backendName(tokenStorage.backend)}). ` +
+                    'Anahtar bu kullanıcı hesabına bağlı; dosya kopyalansa bile başka bir makinede açılmaz.'
+                  : 'Bu sistemde şifreleme kasası bulunamadı, jetonlar düz metin olarak saklanıyor. ' +
+                    'Linux\u2019ta gnome-keyring veya kwallet kurmak bunu çözer.'}
+              </div>
+            </div>
+            <span className={tokenStorage?.available ? 'badge badge--success' : 'badge badge--warning'}>
+              {tokenStorage === null ? '…' : tokenStorage.available ? 'şifreli' : 'düz metin'}
+            </span>
           </div>
         </section>
 
@@ -463,5 +487,23 @@ function updateHint(status: UpdateStatus): string {
       return status.message
     default:
       return 'Her açılışta kendiliğinden kontrol edilir'
+  }
+}
+
+/** The operating system facility behind `safeStorage`, in plain words. */
+function backendName(backend: string): string {
+  switch (backend) {
+    case 'win32':
+      return 'Windows DPAPI'
+    case 'darwin':
+      return 'macOS Anahtar Zinciri'
+    case 'gnome_libsecret':
+      return 'GNOME Keyring'
+    case 'kwallet':
+    case 'kwallet5':
+    case 'kwallet6':
+      return 'KWallet'
+    default:
+      return backend
   }
 }
