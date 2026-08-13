@@ -11,15 +11,15 @@ import { Icon } from './Icon'
  * account moves on to a different one.
  */
 export function SkinLibrary({
-  accountId,
-  hasCurrentSkin,
+  currentSkinUrl,
+  currentVariant,
   busy,
   onApply,
   notify
 }: {
-  accountId: string
-  /** Whether there is an account skin worth offering to save. */
-  hasCurrentSkin: boolean
+  /** The skin on the account right now, if it has a custom one. */
+  currentSkinUrl?: string
+  currentVariant: 'classic' | 'slim'
   busy: boolean
   onApply: (id: string) => void
   notify: (message: string, kind?: 'info' | 'error') => void
@@ -66,10 +66,12 @@ export function SkinLibrary({
           </button>
           <button
             className="btn btn--sm btn--primary"
-            disabled={saving || busy || !hasCurrentSkin}
-            title={hasCurrentSkin ? undefined : 'Bu hesapta özel bir skin yok'}
+            disabled={saving || busy || !currentSkinUrl}
+            title={currentSkinUrl ? undefined : 'Bu hesapta özel bir skin yok'}
             onClick={() =>
-              void guard(() => api.skins.saveCurrent(accountId, `Skin ${skins.length + 1}`))
+              void guard(() =>
+                api.skins.saveFromUrl(currentSkinUrl!, `Skin ${skins.length + 1}`, currentVariant)
+              )
             }
           >
             {saving ? <div className="spinner" /> : <Icon name="plus" size={14} />}

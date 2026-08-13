@@ -378,13 +378,14 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     skins.saveSkinBuffer(await fsp.readFile(filePath), name, variant)
   )
 
-  /** Adds whatever the account is wearing right now. */
-  handle('skins:saveCurrent', (accountId: string, name: string) =>
-    withAccount(accountId, async (account) => {
-      const info = await skins.getSkinInfo(account)
-      if (!info.skinUrl) throw new Error('Bu hesapta kaydedilecek özel bir skin yok.')
-      return skins.saveSkinFromUrl(info.skinUrl, name, info.variant)
-    })
+  /**
+   * Adds a Mojang-hosted skin to the library. The renderer passes the url it is
+   * already displaying rather than the account id: re-asking Mojang would need a
+   * live token to save a texture the launcher can already see, and would fail
+   * for no reason once the session expired.
+   */
+  handle('skins:saveFromUrl', (url: string, name: string, variant: skins.SkinVariant) =>
+    skins.saveSkinFromUrl(url, name, variant)
   )
 
   handle('skins:applySaved', (accountId: string, id: string) =>
@@ -441,10 +442,4 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     else window.maximize()
   })
   handle('window:close', () => getWindow()?.close())
-}
-
-/** Stops every running game — used when the launcher itself is quitting. */
-export function killAllSessions(): void {
-  for (const session of sessions.values()) session.kill()
-  sessions.clear()
 }

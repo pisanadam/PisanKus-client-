@@ -119,8 +119,8 @@ export function Skins(): JSX.Element {
           )}
 
           <SkinLibrary
-            accountId={activeAccount.id}
-            hasCurrentSkin={Boolean(info?.skinUrl)}
+            currentSkinUrl={info?.skinUrl}
+            currentVariant={variant}
             busy={busy}
             notify={notify}
             onApply={(id) => void mutate(() => api.skins.applySaved(activeAccount.id, id))}

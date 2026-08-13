@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell } from 'electron'
 import path from 'node:path'
-import { killAllSessions, registerIpc } from './ipc'
+import { registerIpc } from './ipc'
 import { store } from './store'
 import { checkForUpdates } from './updater'
 
@@ -85,5 +85,8 @@ if (!app.requestSingleInstanceLock()) {
     if (process.platform !== 'darwin') app.quit()
   })
 
-  app.on('before-quit', () => killAllSessions())
+  // The game deliberately outlives the launcher: closing the window mid-session
+  // used to kill Minecraft with it. Sessions are only stopped from the profile's
+  // own stop button.
+
 }

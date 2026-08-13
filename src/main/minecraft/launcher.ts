@@ -225,11 +225,17 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     log(`Başlatılıyor: ${path.basename(javaPath)} ${version.mainClass}`)
     onProgress({ id: taskId, label: 'Oyun başlatıldı', progress: 1, state: 'done' })
 
+    // Detached, so the game keeps running when the launcher is closed. Without
+    // its own process group the JVM would be torn down with the parent, and
+    // quitting the launcher mid-session would kill the game.
     const child = spawn(javaPath, args, {
       cwd: profile.directory,
       windowsHide: true,
-      detached: false
+      detached: true
     })
+    // The launcher no longer waits on it; the pipes below are read while the
+    // launcher is alive and simply end when it goes away.
+    child.unref()
 
     const emit = (stream: 'stdout' | 'stderr', chunk: Buffer): void => {
       for (const line of String(chunk).split(/\r?\n/)) {

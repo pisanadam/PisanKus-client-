@@ -10,7 +10,7 @@ import {
   writeOption,
   type OptionSpec
 } from '../../shared/options'
-import { UNBOUND, keyFromCode, keyFromMouseButton, keyLabel } from '../../shared/keys'
+import { KEY_BIND_DEFAULTS, UNBOUND, keyFromCode, keyFromMouseButton, keyLabel } from '../../shared/keys'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
@@ -229,7 +229,11 @@ function OptionRow({
           </select>
         )}
 
-        {type.kind === 'keybind' && <KeyBindButton value={value} onChange={onChange} />}
+        {type.kind === 'keybind' && (
+          /* A key the file does not mention is not unbound — the game falls back
+             to its own default, so the editor shows that rather than "Atanmadı". */
+          <KeyBindButton value={value ?? KEY_BIND_DEFAULTS[spec.key]} onChange={onChange} />
+        )}
 
         {type.kind === 'text' && (
           <input

@@ -191,8 +191,8 @@ const api = {
     savedTexture: (id: string): Promise<Texture> => ipcRenderer.invoke('skins:savedTexture', id),
     saveFile: (filePath: string, name: string, variant: 'classic' | 'slim'): Promise<SavedSkin[]> =>
       ipcRenderer.invoke('skins:saveFile', filePath, name, variant),
-    saveCurrent: (accountId: string, name: string): Promise<SavedSkin[]> =>
-      ipcRenderer.invoke('skins:saveCurrent', accountId, name),
+    saveFromUrl: (url: string, name: string, variant: 'classic' | 'slim'): Promise<SavedSkin[]> =>
+      ipcRenderer.invoke('skins:saveFromUrl', url, name, variant),
     removeSaved: (id: string): Promise<SavedSkin[]> => ipcRenderer.invoke('skins:removeSaved', id),
     renameSaved: (id: string, name: string): Promise<SavedSkin[]> =>
       ipcRenderer.invoke('skins:renameSaved', id, name),
