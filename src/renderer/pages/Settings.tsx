@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { JavaInfo } from '../../preload'
 import { Icon } from '../components/Icon'
+import { OptionsEditor } from '../components/OptionsEditor'
+import { parseOptions } from '../../shared/options'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { useApp } from '../state/AppContext'
@@ -11,7 +13,9 @@ const ACCENTS = ['#5b8cff', '#7c5cff', '#e0567a', '#f0873c', '#3fb98a', '#2fb6c8
 const DEFAULT_CLIENT_ID = '00000000402b5328'
 
 export function Settings(): JSX.Element {
-  const { settings, saveSettings, notify } = useApp()
+  const { settings, saveSettings, notify, profiles } = useApp()
+  const [editingOptions, setEditingOptions] = useState(false)
+  const [applying, setApplying] = useState(false)
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
   const [jvmDraft, setJvmDraft] = useState('')
@@ -45,8 +49,23 @@ export function Settings(): JSX.Element {
     )
   }
 
+  const optionCount = parseOptions(settings.minecraftOptions).filter((line) => !('raw' in line)).length
+
   return (
     <div className="page">
+      {editingOptions && (
+        <OptionsEditor
+          value={settings.minecraftOptions}
+          notify={notify}
+          onClose={() => setEditingOptions(false)}
+          onSave={async (text) => {
+            await saveSettings({ minecraftOptions: text })
+            setEditingOptions(false)
+            notify('Minecraft ayarları kaydedildi.')
+          }}
+        />
+      )}
+
       <header className="page__header">
         <div>
           <h1 className="page__title">Ayarlar</h1>
@@ -133,6 +152,55 @@ export function Settings(): JSX.Element {
               Yeniden göster
             </button>
           </div>
+        </section>
+
+        <section className="settings-group">
+          <div className="section-title">Minecraft ayarları</div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">options.txt şablonu</div>
+              <div className="faint">
+                {optionCount > 0
+                  ? `${optionCount} ayar tanımlı · yeni profillere otomatik kurulur`
+                  : 'Tanımlı değil · yeni profiller oyunun kendi varsayılanlarıyla başlar'}
+              </div>
+            </div>
+            <button className="btn" onClick={() => setEditingOptions(true)}>
+              <Icon name="settings" size={16} />
+              Ayarla
+            </button>
+          </div>
+
+          {optionCount > 0 && (
+            <div className="settings-row">
+              <div>
+                <div className="settings-row__label">Mevcut profillere uygula</div>
+                <div className="faint">
+                  {profiles.length} profilin options.txt dosyası bu şablonla güncellenir. Şablonda
+                  olmayan ayarlar (tuş atamaları, kaynak paketleri) korunur.
+                </div>
+              </div>
+              <button
+                className="btn"
+                disabled={profiles.length === 0 || applying}
+                onClick={async () => {
+                  setApplying(true)
+                  try {
+                    const count = await api.options.applyToProfiles(profiles.map((p) => p.id))
+                    notify(`${count} profile uygulandı.`)
+                  } catch (error) {
+                    notify(errorMessage(error), 'error')
+                  } finally {
+                    setApplying(false)
+                  }
+                }}
+              >
+                {applying ? <div className="spinner" /> : <Icon name="check" size={16} />}
+                Uygula
+              </button>
+            </div>
+          )}
         </section>
 
         <section className="settings-group">

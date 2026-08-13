@@ -24,6 +24,7 @@ import { listVersions as listGameVersions } from './minecraft/versions'
 import * as skins from './skins'
 import { store } from './store'
 import * as updater from './updater'
+import { writeProfileOptions } from './minecraft/options'
 
 /** Account shape safe to hand to the renderer — tokens stay in the main process. */
 export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { expired: boolean }
@@ -115,7 +116,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('profiles:list', () => store.profiles)
 
-  handle('profiles:create', (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) => {
+  handle('profiles:create', async (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) => {
     const slug = input.name.replace(/[^\p{L}\p{N}\-_ ]/gu, '').trim() || 'profil'
 
     // Two profiles may share a name, but never a directory — otherwise they would
@@ -125,7 +126,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     let suffix = 2
     while (taken.has(folder)) folder = `${slug}-${suffix++}`
 
-    return store.addProfile({
+    const profile = store.addProfile({
       name: input.name,
       gameVersion: input.gameVersion,
       loader: input.loader,
@@ -134,6 +135,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       directory: path.join(store.settings.dataDir, 'profiles', folder),
       memoryMb: store.settings.defaultMemoryMb
     })
+
+    // Seed the configured game options. Only for brand new profiles — the
+    // directory is fresh here, so there is nothing to overwrite.
+    await writeProfileOptions(profile.directory, store.settings.minecraftOptions)
+    return profile
   })
 
   handle('profiles:update', (id: string, patch: Partial<Profile>) => store.updateProfile(id, patch))
@@ -360,6 +366,29 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   // ----------------------------------------------------------------------- app
 
   handle('skins:texture', (url: string) => skins.textureDataUrl(url))
+
+  // ------------------------------------------------------------ game options
+
+  handle('options:importFile', async () => {
+    const window = getWindow()
+    if (!window) throw new Error('Pencere bulunamadı.')
+    const result = await dialog.showOpenDialog(window, {
+      properties: ['openFile'],
+      filters: [{ name: 'Minecraft ayarları', extensions: ['txt'] }]
+    })
+    if (result.canceled) return null
+    return fsp.readFile(result.filePaths[0], 'utf8')
+  })
+
+  // Applying to existing profiles is a separate, explicit action: it replaces a
+  // file the player may have spent time tuning in-game.
+  handle('options:applyToProfiles', async (profileIds: string[]) => {
+    for (const id of profileIds) {
+      const profile = store.profile(id)
+      if (profile) await writeProfileOptions(profile.directory, store.settings.minecraftOptions, true)
+    }
+    return profileIds.length
+  })
 
   handle('app:version', () => app.getVersion())
 

@@ -29,6 +29,7 @@ function defaultSettings(): Settings {
     theme: 'dark',
     accentColor: '#5b8cff',
     soundEffects: true,
+    minecraftOptions: '',
     welcomeSeen: false
   }
 }

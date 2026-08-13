@@ -182,6 +182,13 @@ const api = {
     texture: (url: string): Promise<Texture> => ipcRenderer.invoke('skins:texture', url)
   },
 
+  options: {
+    /** Opens a file picker and returns the file's text, or null if cancelled. */
+    importFile: (): Promise<string | null> => ipcRenderer.invoke('options:importFile'),
+    applyToProfiles: (profileIds: string[]): Promise<number> =>
+      ipcRenderer.invoke('options:applyToProfiles', profileIds)
+  },
+
   tasks: {
     onProgress: (listener: (task: TaskProgress) => void): Unsubscribe => subscribe('task:progress', listener)
   },

@@ -133,6 +133,82 @@ a {
   overflow-y: auto;
 }
 
+/* ----------------------------------------------------- options editor */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.options__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.options__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.options__control {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 220px;
+}
+
+.options__raw {
+  min-height: 340px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
+  resize: vertical;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.slider__input {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  appearance: none;
+  border-radius: 99px;
+  background: var(--surface-active);
+  cursor: pointer;
+}
+
+.slider__input::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 1px 5px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.slider__value {
+  flex: 0 0 auto;
+  min-width: 68px;
+  text-align: right;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
 /* -------------------------------------------------------- skin & capes */
 
 .preview-bar {

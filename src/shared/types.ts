@@ -90,6 +90,12 @@ export interface Settings {
   accentColor: string
   /** Whether the launcher plays its welcome chime. */
   soundEffects: boolean
+  /**
+   * Raw options.txt written into every new profile. Empty means "don't manage
+   * game options"; the file is kept verbatim so keys the launcher does not model
+   * survive untouched.
+   */
+  minecraftOptions: string
   /** Cleared only on a fresh install, so the welcome screen shows exactly once. */
   welcomeSeen: boolean
 }
