@@ -133,6 +133,53 @@ a {
   overflow-y: auto;
 }
 
+/* ------------------------------------------------------ install dialog */
+
+.list__row--pick {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  transition: border-color 0.14s, background 0.14s;
+}
+
+.list__row--pick:hover {
+  background: var(--surface-hover);
+}
+
+.list__row--pick[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.notice--warning {
+  color: var(--warning);
+}
+
+.notice strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.notice__list {
+  margin: 0 0 6px;
+  padding-left: 17px;
+  color: var(--text);
+}
+
 /* ----------------------------------------------------- options editor */
 
 .options {

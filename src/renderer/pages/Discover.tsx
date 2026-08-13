@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ContentKind, ProjectVersion, SearchQuery, SearchResult } from '../../shared/types'
 import { Icon } from '../components/Icon'
+import { InstallDialog } from '../components/InstallDialog'
 import { Modal } from '../components/Modal'
 import { api } from '../lib/api'
 import { errorMessage, formatBytes, formatCount, formatRelative } from '../lib/format'
@@ -30,6 +31,9 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
   const [query, setQuery] = useState('')
   const [profileId, setProfileId] = useState(initialProfileId ?? profiles[0]?.id ?? '')
+  // Set while the install dialog is open, so the target profile is always an
+  // explicit choice rather than whatever the filter happened to be showing.
+  const [installing, setInstalling] = useState<{ result: SearchResult; version?: ProjectVersion } | null>(null)
   const [filterByProfile, setFilterByProfile] = useState(true)
 
   const [results, setResults] = useState<SearchResult[]>([])
@@ -183,23 +187,9 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
           <ResultCard
             key={`${result.source}-${result.projectId}`}
             result={result}
-            canInstall={Boolean(profile)}
+            canInstall={profiles.length > 0}
             onOpen={() => setSelected(result)}
-            onQuickInstall={async () => {
-              if (!profile) return notify('Önce bir profil seçin.', 'error')
-              try {
-                await api.content.install({
-                  profileId: profile.id,
-                  projectId: result.projectId,
-                  kind: result.kind,
-                  name: result.title,
-                  iconUrl: result.iconUrl
-                })
-                await refreshProfiles()
-              } catch (caught) {
-                notify(errorMessage(caught), 'error')
-              }
-            }}
+            onQuickInstall={async () => setInstalling({ result })}
           />
         ))}
       </div>
@@ -223,7 +213,22 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
           result={selected}
           profileId={profile?.id}
           onClose={() => setSelected(null)}
-          onInstalled={refreshProfiles}
+          onInstall={(target, version) => setInstalling({ result: target, version })}
+        />
+      )}
+
+      {installing && (
+        <InstallDialog
+          result={installing.result}
+          version={installing.version}
+          profiles={profiles}
+          initialProfileId={profileId}
+          onClose={() => setInstalling(null)}
+          onInstalled={async () => {
+            await refreshProfiles()
+            setSelected(null)
+            notify(`${installing.result.title} kuruldu.`)
+          }}
         />
       )}
     </div>
@@ -287,18 +292,18 @@ function ProjectModal({
   result,
   profileId,
   onClose,
-  onInstalled
+  onInstall
 }: {
   result: SearchResult
   profileId?: string
   onClose: () => void
-  onInstalled: () => Promise<void>
+  /** Hands the chosen version to the install dialog, which picks the profile. */
+  onInstall: (result: SearchResult, version: ProjectVersion) => void
 }): JSX.Element {
   const { notify, profiles } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)
   const [versions, setVersions] = useState<ProjectVersion[]>([])
   const [loading, setLoading] = useState(true)
-  const [installingId, setInstallingId] = useState<string | null>(null)
   const [onlyCompatible, setOnlyCompatible] = useState(true)
 
   useEffect(() => {
@@ -386,31 +391,8 @@ function ProjectModal({
                   · {formatRelative(version.publishedAt)}
                 </div>
               </div>
-              <button
-                className="btn btn--sm btn--primary"
-                disabled={!profileId || installingId != null}
-                onClick={async () => {
-                  if (!profileId) return
-                  setInstallingId(version.id)
-                  try {
-                    await api.content.install({
-                      profileId,
-                      projectId: result.projectId,
-                      versionId: version.id,
-                      kind: result.kind,
-                      name: result.title,
-                      iconUrl: result.iconUrl
-                    })
-                    await onInstalled()
-                    onClose()
-                  } catch (error) {
-                    notify(errorMessage(error), 'error')
-                  } finally {
-                    setInstallingId(null)
-                  }
-                }}
-              >
-                {installingId === version.id ? <div className="spinner" /> : <Icon name="download" size={15} />}
+              <button className="btn btn--sm btn--primary" onClick={() => onInstall(result, version)}>
+                <Icon name="download" size={15} />
                 Kur
               </button>
             </div>
