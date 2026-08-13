@@ -27,7 +27,9 @@ function defaultSettings(): Settings {
     concurrentDownloads: 8,
     keepLauncherOpen: true,
     theme: 'dark',
-    accentColor: '#5b8cff'
+    accentColor: '#5b8cff',
+    soundEffects: true,
+    welcomeSeen: false
   }
 }
 

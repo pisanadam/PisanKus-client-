@@ -88,6 +88,10 @@ export interface Settings {
   keepLauncherOpen: boolean
   theme: 'dark' | 'light' | 'system'
   accentColor: string
+  /** Whether the launcher plays its welcome chime. */
+  soundEffects: boolean
+  /** Cleared only on a fresh install, so the welcome screen shows exactly once. */
+  welcomeSeen: boolean
 }
 
 export interface TaskProgress {

@@ -92,6 +92,47 @@ export function Settings(): JSX.Element {
               ))}
             </div>
           </div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">Karşılama sesi</div>
+              <div className="faint">Launcher ilk açılışta kısa bir jenerik çalar</div>
+            </div>
+            <div className="chips">
+              <button
+                className="chip"
+                aria-pressed={settings.soundEffects}
+                onClick={() => void saveSettings({ soundEffects: true })}
+              >
+                Açık
+              </button>
+              <button
+                className="chip"
+                aria-pressed={!settings.soundEffects}
+                onClick={() => void saveSettings({ soundEffects: false })}
+              >
+                Kapalı
+              </button>
+            </div>
+          </div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">Karşılama ekranı</div>
+              <div className="faint">Tanıtım ekranını bir sonraki açılışta yeniden göster</div>
+            </div>
+            <button
+              className="btn"
+              disabled={!settings.welcomeSeen}
+              onClick={async () => {
+                await saveSettings({ welcomeSeen: false })
+                notify('Karşılama ekranı bir sonraki açılışta gösterilecek.')
+              }}
+            >
+              <Icon name="refresh" size={16} />
+              Yeniden göster
+            </button>
+          </div>
         </section>
 
         <section className="settings-group">

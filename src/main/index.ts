@@ -29,6 +29,9 @@ function createWindow(): void {
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
+      // The welcome chime plays on first launch, before the user has clicked
+      // anything; Chromium's default policy would block it as unsolicited audio.
+      autoplayPolicy: 'no-user-gesture-required',
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false

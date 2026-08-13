@@ -3,6 +3,7 @@ import { Icon, type IconName } from './components/Icon'
 import { LoginGate } from './components/LoginGate'
 import { SkinHead } from './components/SkinViewer'
 import { TaskTray } from './components/TaskTray'
+import { Welcome } from './components/Welcome'
 import { Accounts } from './pages/Accounts'
 import { Discover } from './pages/Discover'
 import { Library } from './pages/Library'
@@ -28,14 +29,29 @@ const NAV: { page: Route['page']; label: string; icon: IconName }[] = [
 ]
 
 export function App(): JSX.Element {
-  const { ready, accounts, activeAccount, profiles, gameStates } = useApp()
+  const { ready, settings, saveSettings, accounts, activeAccount, profiles, gameStates } = useApp()
   const [route, setRoute] = useState<Route>({ page: 'library' })
+  // Kept locally as well so the panel can animate out before the flag round-trips.
+  const [welcomed, setWelcomed] = useState(false)
 
-  if (!ready) {
+  if (!ready || !settings) {
     return (
       <div className="gate">
         <div className="spinner" style={{ width: 26, height: 26 }} />
       </div>
+    )
+  }
+
+  // First launch after installation, before the sign-in gate.
+  if (!settings.welcomeSeen && !welcomed) {
+    return (
+      <Welcome
+        soundEnabled={settings.soundEffects}
+        onDone={() => {
+          setWelcomed(true)
+          void saveSettings({ welcomeSeen: true })
+        }}
+      />
     )
   }
 
