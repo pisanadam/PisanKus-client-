@@ -94,6 +94,15 @@ export interface Settings {
   welcomeSeen: boolean
 }
 
+export type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  /** `canSelfUpdate` is false where the build must be reinstalled by hand. */
+  | { state: 'available'; version: string; canSelfUpdate: boolean }
+  | { state: 'downloading'; version: string; percent: number }
+  | { state: 'ready'; version: string }
+  | { state: 'error'; message: string }
+
 export interface TaskProgress {
   id: string
   label: string

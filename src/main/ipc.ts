@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type {
@@ -23,6 +23,7 @@ import { listLoaderVersions } from './minecraft/loaders'
 import { listVersions as listGameVersions } from './minecraft/versions'
 import * as skins from './skins'
 import { store } from './store'
+import * as updater from './updater'
 
 /** Account shape safe to hand to the renderer — tokens stay in the main process. */
 export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { expired: boolean }
@@ -44,6 +45,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   const onProgress = (task: TaskProgress): void => send('task:progress', task)
   const onLog = (line: GameLogLine): void => send('game:log', line)
   const onState = (state: GameState): void => send('game:state', state)
+
+  // The renderer draws the update button straight from these.
+  updater.initUpdater((status) => send('updates:status', status))
 
   /** Wraps a handler so thrown errors reach the renderer as readable messages. */
   const handle = <T extends unknown[], R>(
@@ -342,6 +346,15 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   )
 
   // ----------------------------------------------------------------------- app
+
+  handle('app:version', () => app.getVersion())
+
+  // -------------------------------------------------------------- updates
+
+  handle('updates:status', () => updater.currentStatus())
+  handle('updates:check', () => updater.checkForUpdates())
+  handle('updates:download', () => updater.downloadUpdate())
+  handle('updates:install', () => updater.installUpdate())
 
   handle('app:openExternal', (url: string) => {
     // Only ever hand http(s) links to the OS.

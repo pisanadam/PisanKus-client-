@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell } from 'electron'
 import path from 'node:path'
 import { killAllSessions, registerIpc } from './ipc'
 import { store } from './store'
+import { checkForUpdates } from './updater'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -38,7 +39,12 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => mainWindow?.show())
+  mainWindow.on('ready-to-show', () => {
+    mainWindow?.show()
+    // Every launch asks once. Delayed so it does not compete with the window
+    // painting, and left unawaited — a failed check must not block startup.
+    setTimeout(() => void checkForUpdates(), 3000)
+  })
   mainWindow.on('closed', () => (mainWindow = null))
 
   // Anything the page tries to open in a new window goes to the system browser.

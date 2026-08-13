@@ -3,6 +3,7 @@ import { Icon, type IconName } from './components/Icon'
 import { LoginGate } from './components/LoginGate'
 import { SkinHead } from './components/SkinViewer'
 import { TaskTray } from './components/TaskTray'
+import { UpdateBanner } from './components/UpdateBanner'
 import { Welcome } from './components/Welcome'
 import { Accounts } from './pages/Accounts'
 import { Discover } from './pages/Discover'
@@ -63,6 +64,8 @@ export function App(): JSX.Element {
   return (
     <div className="app">
       <aside className="sidebar">
+        <UpdateBanner />
+
         <div className="brand">
           <div className="brand__mark">OP</div>
           <div>

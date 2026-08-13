@@ -44,6 +44,23 @@ jobs:
 
       - run: npm ci
 
+      # electron-updater compares the version inside latest*.yml against the
+      # version of the installed build. package.json alone never changes, so
+      # every rolling build would look identical to the one already installed
+      # and no update would ever be offered. The run number is monotonic, which
+      # is all semver needs here.
+      - name: Stamp build version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF#refs/tags/v}"
+          else
+            series=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')")
+            version="$series.$GITHUB_RUN_NUMBER"
+          fi
+          npm version --no-git-tag-version --allow-same-version "$version"
+          echo "Yapı sürümü: $version"
+
       # electron-builder pulls its helper binaries (electron, nsis, winCodeSign…)
       # from GitHub releases on every run. Caching them removes most of the
       # network exposure that makes packaging flaky.
@@ -84,6 +101,8 @@ jobs:
             release/*.dmg
             release/*.AppImage
             release/*.deb
+            release/*.blockmap
+            release/latest*.yml
           if-no-files-found: error
 
   publish:

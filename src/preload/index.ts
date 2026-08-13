@@ -11,6 +11,7 @@ import type {
   SearchResult,
   Settings,
   TaskProgress,
+  UpdateStatus,
   VersionSummary
 } from '../shared/types'
 
@@ -169,7 +170,17 @@ const api = {
     onProgress: (listener: (task: TaskProgress) => void): Unsubscribe => subscribe('task:progress', listener)
   },
 
+  updates: {
+    status: (): Promise<UpdateStatus> => ipcRenderer.invoke('updates:status'),
+    check: (): Promise<UpdateStatus> => ipcRenderer.invoke('updates:check'),
+    download: (): Promise<UpdateStatus> => ipcRenderer.invoke('updates:download'),
+    install: (): Promise<void> => ipcRenderer.invoke('updates:install'),
+    onStatus: (listener: (status: UpdateStatus) => void): Unsubscribe =>
+      subscribe('updates:status', listener)
+  },
+
   app: {
+    version: (): Promise<string> => ipcRenderer.invoke('app:version'),
     openExternal: (url: string): Promise<void> => ipcRenderer.invoke('app:openExternal', url),
     platform: process.platform,
     minimize: (): Promise<void> => ipcRenderer.invoke('window:minimize'),
