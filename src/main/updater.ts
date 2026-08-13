@@ -104,16 +104,36 @@ async function checkViaChannelFile(): Promise<UpdateStatus> {
     : { state: 'idle' }
 }
 
-export async function checkForUpdates(): Promise<UpdateStatus> {
+/**
+ * @param manual Pressed by the user rather than fired on startup. A manual check
+ * always runs: silently reporting "you are up to date" without having asked
+ * anyone would be worse than showing why the check cannot work.
+ */
+export async function checkForUpdates(manual = false): Promise<UpdateStatus> {
   // An unpackaged build has no app-update.yml, and asking anyway only produces
   // an error toast on every `npm run dev`.
-  if (!app.isPackaged && !process.env.OPBAY_FORCE_UPDATE_CHECK) return status
+  if (!manual && !app.isPackaged && !process.env.OPBAY_FORCE_UPDATE_CHECK) return status
   if (status.state === 'downloading' || status.state === 'ready') return status
 
   set({ state: 'checking' })
   try {
-    if (canSelfUpdate) await autoUpdater.checkForUpdates()
-    else set(await checkViaChannelFile())
+    // electron-updater only works from a packaged build; unpackaged it declines
+    // and reads the channel file instead, which answers the same question.
+    if (canSelfUpdate && app.isPackaged) {
+      const result = await autoUpdater.checkForUpdates()
+      // It resolves without firing an event when it declines to check, which
+      // would otherwise leave the UI stuck on "checking" forever.
+      if (status.state === 'checking') {
+        const found = result?.updateInfo?.version
+        set(
+          found && isNewer(found, app.getVersion())
+            ? { state: 'available', version: found, canSelfUpdate }
+            : { state: 'idle' }
+        )
+      }
+    } else {
+      set(await checkViaChannelFile())
+    }
   } catch (error) {
     set({ state: 'error', message: readableError(error as Error) })
   }

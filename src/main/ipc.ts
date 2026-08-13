@@ -469,7 +469,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   // -------------------------------------------------------------- updates
 
   handle('updates:status', () => updater.currentStatus())
-  handle('updates:check', () => updater.checkForUpdates())
+  handle('updates:check', () => updater.checkForUpdates(true))
   handle('updates:download', () => updater.downloadUpdate())
   handle('updates:install', () => updater.installUpdate())
 

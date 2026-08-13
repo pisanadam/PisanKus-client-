@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { JavaInfo } from '../../preload'
+import type { UpdateStatus } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { parseOptions } from '../../shared/options'
@@ -15,6 +16,9 @@ const DEFAULT_CLIENT_ID = '00000000402b5328'
 export function Settings(): JSX.Element {
   const { settings, saveSettings, notify, profiles } = useApp()
   const [editingOptions, setEditingOptions] = useState(false)
+  const [appVersion, setAppVersion] = useState<string | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [applying, setApplying] = useState(false)
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
@@ -24,6 +28,12 @@ export function Settings(): JSX.Element {
     if (!settings) return
     setJvmDraft(settings.jvmArgs)
   }, [settings])
+
+  useEffect(() => {
+    void api.app.version().then(setAppVersion).catch(() => undefined)
+    void api.updates.status().then(setUpdateStatus).catch(() => undefined)
+    return api.updates.onStatus(setUpdateStatus)
+  }, [])
 
   const scanJava = async (): Promise<void> => {
     setScanningJava(true)
@@ -151,6 +161,53 @@ export function Settings(): JSX.Element {
               <Icon name="refresh" size={16} />
               Yeniden göster
             </button>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <div className="section-title">Güncelleme</div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">Sürüm {appVersion ?? '…'}</div>
+              <div className="faint">{updateHint(updateStatus)}</div>
+            </div>
+            <div className="row" style={{ gap: 8 }}>
+              {updateStatus.state === 'available' && (
+                <button className="btn btn--primary" onClick={() => void api.updates.download()}>
+                  <Icon name="download" size={16} />
+                  İndir
+                </button>
+              )}
+              {updateStatus.state === 'ready' && (
+                <button className="btn btn--primary" onClick={() => void api.updates.install()}>
+                  <Icon name="refresh" size={16} />
+                  Yeniden başlat ve kur
+                </button>
+              )}
+              <button
+                className="btn"
+                disabled={checkingUpdate || updateStatus.state === 'downloading'}
+                onClick={async () => {
+                  setCheckingUpdate(true)
+                  try {
+                    const result = await api.updates.check()
+                    // A packaged build with no update reports idle; an unpackaged
+                    // one never checks at all, which is worth saying out loud.
+                    if (result.state === 'available') notify(`Yeni sürüm hazır: ${result.version}`)
+                    else if (result.state === 'error') notify(result.message, 'error')
+                    else if (result.state === 'idle') notify('En güncel sürümü kullanıyorsunuz.')
+                  } catch (error) {
+                    notify(errorMessage(error), 'error')
+                  } finally {
+                    setCheckingUpdate(false)
+                  }
+                }}
+              >
+                {checkingUpdate ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
+                Güncellemeyi kontrol et
+              </button>
+            </div>
           </div>
         </section>
 
@@ -389,4 +446,22 @@ export function Settings(): JSX.Element {
       </div>
     </div>
   )
+}
+
+/** One line describing where the updater currently stands. */
+function updateHint(status: UpdateStatus): string {
+  switch (status.state) {
+    case 'checking':
+      return 'Kontrol ediliyor…'
+    case 'available':
+      return `Yeni sürüm var: ${status.version}`
+    case 'downloading':
+      return `İndiriliyor… %${status.percent}`
+    case 'ready':
+      return `${status.version} kurulmaya hazır`
+    case 'error':
+      return status.message
+    default:
+      return 'Her açılışta kendiliğinden kontrol edilir'
+  }
 }
