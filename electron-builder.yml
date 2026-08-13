@@ -6,18 +6,27 @@ directories:
   output: release
   buildResources: resources
 
+# Game files are large and user-specific, so nothing is bundled with the installer.
 files:
   - out/**/*
   - package.json
 
-# Downloads are large and user-specific, so nothing is bundled with the installer.
-asarUnpack:
-  - resources/**
+# The "OP" badge from the download page, rendered from resources/icon.svg.
+# electron-builder derives the .ico and .icns from it; the copy below is what the
+# running app hands to BrowserWindow on Linux.
+icon: resources/icon.png
+
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
 
 # File names are written out literally rather than through ${arch}: the download
 # page links to fixed URLs, and ${arch} does not expand the same way for every
 # target (a deb renders x64 as "amd64", which would break the link).
 win:
+  # Handed over ready-made: electron-builder would otherwise convert the png into
+  # a single 256px entry and leave Windows to downscale it for every small slot.
+  icon: resources/icon.ico
   target:
     - target: nsis
       arch: [x64]
@@ -41,6 +50,9 @@ mac:
 
 linux:
   category: Game
+  # A lone 1024px png would leave desktops downscaling it into a panel slot, so
+  # Linux gets the whole hicolor set instead. Rendered by scripts/icons.mjs.
+  icon: resources/icons
   target:
     - target: AppImage
       arch: [x64]

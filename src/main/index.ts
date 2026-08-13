@@ -5,12 +5,24 @@ import { store } from './store'
 
 let mainWindow: BrowserWindow | null = null
 
+/**
+ * The window icon. Windows and macOS take it from the executable and the app
+ * bundle, but Linux needs it handed over explicitly or the window falls back to
+ * the stock Electron logo instead of the "OP" mark.
+ */
+function iconPath(): string {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'icon.png')
+    : path.join(__dirname, '../../resources/icon.png')
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 1024,
     minHeight: 660,
+    icon: iconPath(),
     show: false,
     backgroundColor: '#0d1017',
     autoHideMenuBar: true,
