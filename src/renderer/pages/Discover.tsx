@@ -12,8 +12,7 @@ const KINDS: { id: ContentKind; label: string; icon: string }[] = [
   { id: 'modpack', label: 'Mod paketleri', icon: '📦' },
   { id: 'resourcepack', label: 'Doku paketleri', icon: '🎨' },
   { id: 'shader', label: 'Shaderlar', icon: '✨' },
-  { id: 'datapack', label: 'Veri paketleri', icon: '📜' },
-  { id: 'world', label: 'Dünyalar', icon: '🌍' }
+  { id: 'datapack', label: 'Veri paketleri', icon: '📜' }
 ]
 
 const SORTS: { id: NonNullable<SearchQuery['sort']>; label: string }[] = [
@@ -106,13 +105,6 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
 
   const runSearch = useCallback(
     async (nextOffset: number, append: boolean) => {
-      // Modrinth hosts no worlds, so there is nothing to search for that tab.
-      if (kind === 'world') {
-        setResults([])
-        setLoading(false)
-        setError(null)
-        return
-      }
       setLoading(true)
       setError(null)
       try {
@@ -264,7 +256,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       {/* The profile filter is the usual reason a mod "isn't on Modrinth": pinned
           to a snapshot, almost nothing matches. Say so instead of showing an
           empty grid. */}
-      {kind !== 'world' && filterByProfile && profile && !loading && !error && total < 5 && (
+      {filterByProfile && profile && !loading && !error && total < 5 && (
         <div className="notice notice--warning" style={{ marginBottom: 16 }}>
           <Icon name="compass" size={15} />
           <div>
@@ -283,37 +275,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </div>
       )}
 
-      {kind === 'world' && (
-        <div className="empty">
-          <div className="empty__icon">🌍</div>
-          <div className="empty__title">Modrinth&apos;te dünya bulunmuyor</div>
-          <p>
-            Modrinth dünya barındırmıyor, bu yüzden burada aranacak bir şey yok. Dünyalar ya bir mod
-            paketiyle birlikte gelir ya da elinizdeki bir kayıt klasörünü/zip dosyasını içe
-            aktararak eklenir.
-          </p>
-          <button
-            className="btn btn--primary"
-            disabled={!profile}
-            onClick={async () => {
-              if (!profile) return
-              try {
-                await api.content.importLocal(profile.id, 'world')
-                await refreshProfiles()
-                notify(`Dünya ${profile.name} profiline aktarıldı.`)
-              } catch (caught) {
-                notify(errorMessage(caught), 'error')
-              }
-            }}
-          >
-            <Icon name="folder" size={16} />
-            Dosyadan dünya ekle
-          </button>
-          {!profile && <p className="faint">Önce bir profil seçin.</p>}
-        </div>
-      )}
-
-      {kind !== 'world' && results.length === 0 && !loading && !error && (
+      {results.length === 0 && !loading && !error && (
         <div className="empty">
           <div className="empty__icon">🔍</div>
           <div className="empty__title">Sonuç yok</div>
