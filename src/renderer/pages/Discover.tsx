@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ContentKind, ProjectVersion, SearchQuery, SearchResult } from '../../shared/types'
 import { Icon } from '../components/Icon'
-import { InstallDialog } from '../components/InstallDialog'
+import { InstallDialog, checkCompatibility } from '../components/InstallDialog'
 import { Modal } from '../components/Modal'
 import { api } from '../lib/api'
 import { errorMessage, formatBytes, formatCount, formatRelative } from '../lib/format'
@@ -24,16 +24,18 @@ const SORTS: { id: NonNullable<SearchQuery['sort']>; label: string }[] = [
   { id: 'newest', label: 'Yeni' }
 ]
 
-export function Discover({ initialProfileId }: { initialProfileId?: string }): JSX.Element {
+export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX.Element {
   const { profiles, notify, refreshProfiles } = useApp()
 
   const [kind, setKind] = useState<ContentKind>('mod')
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
   const [query, setQuery] = useState('')
-  const [profileId, setProfileId] = useState(initialProfileId ?? profiles[0]?.id ?? '')
-  // Set while the install dialog is open, so the target profile is always an
-  // explicit choice rather than whatever the filter happened to be showing.
+  const [profileId, setProfileId] = useState(lockedProfileId ?? profiles[0]?.id ?? '')
+  // Set while the install dialog is open. When the store was opened from inside
+  // a profile the target is already settled, so the dialog only appears to carry
+  // an incompatibility warning.
   const [installing, setInstalling] = useState<{ result: SearchResult; version?: ProjectVersion } | null>(null)
+  const locked = Boolean(lockedProfileId)
   const [filterByProfile, setFilterByProfile] = useState(true)
 
   const [results, setResults] = useState<SearchResult[]>([])
@@ -43,6 +45,47 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
   const [selected, setSelected] = useState<SearchResult | null>(null)
 
   const profile = useMemo(() => profiles.find((entry) => entry.id === profileId), [profiles, profileId])
+
+  /**
+   * Starts an install. With a locked profile there is nothing to ask, so the
+   * content goes straight in — unless it looks incompatible, which is the one
+   * case still worth interrupting for.
+   */
+  const startInstall = async (result: SearchResult, version?: ProjectVersion): Promise<void> => {
+    if (!locked || !profile) {
+      setInstalling({ result, version })
+      return
+    }
+
+    const supports = version
+      ? { gameVersions: version.gameVersions, loaders: version.loaders }
+      : await api.content
+          .project(result.projectId)
+          .then((detail) => ({ gameVersions: detail.gameVersions, loaders: detail.loaders }))
+          // No listing to compare against is not a reason to block the install.
+          .catch(() => null)
+
+    if (supports && !checkCompatibility(result.kind, supports, profile).ok) {
+      setInstalling({ result, version })
+      return
+    }
+
+    try {
+      await api.content.install({
+        profileId: profile.id,
+        projectId: result.projectId,
+        versionId: version?.id,
+        kind: result.kind,
+        name: result.title,
+        iconUrl: result.iconUrl
+      })
+      await refreshProfiles()
+      setSelected(null)
+      notify(`${result.title} · ${profile.name} profiline kuruldu.`)
+    } catch (caught) {
+      notify(errorMessage(caught), 'error')
+    }
+  }
 
   useEffect(() => {
     if (!profileId && profiles[0]) setProfileId(profiles[0].id)
@@ -105,20 +148,32 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
 
           <div className="topbar__spacer" />
 
-          <select
-            className="select"
-            style={{ width: 210 }}
-            value={profileId}
-            onChange={(event) => setProfileId(event.target.value)}
-            aria-label="Hedef profil"
-          >
-            {profiles.length === 0 && <option value="">Profil yok</option>}
-            {profiles.map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.name} · {entry.gameVersion}
-              </option>
-            ))}
-          </select>
+          {locked && profile ? (
+            /* Opened from a profile: the target is fixed, so it is shown rather
+               than offered as a choice. */
+            <div className="target" title={`${profile.gameVersion} · ${profile.loader}`}>
+              <span aria-hidden="true">{profile.icon ?? '🎮'}</span>
+              <span className="target__name">{profile.name}</span>
+              <span className="target__meta">
+                {profile.gameVersion} · {profile.loader}
+              </span>
+            </div>
+          ) : (
+            <select
+              className="select"
+              style={{ width: 210 }}
+              value={profileId}
+              onChange={(event) => setProfileId(event.target.value)}
+              aria-label="Hedef profil"
+            >
+              {profiles.length === 0 && <option value="">Profil yok</option>}
+              {profiles.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.name} · {entry.gameVersion}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="row" style={{ flexWrap: 'wrap', gap: 14 }}>
@@ -189,7 +244,7 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
             result={result}
             canInstall={profiles.length > 0}
             onOpen={() => setSelected(result)}
-            onQuickInstall={async () => setInstalling({ result })}
+            onQuickInstall={() => startInstall(result)}
           />
         ))}
       </div>
@@ -213,7 +268,7 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
           result={selected}
           profileId={profile?.id}
           onClose={() => setSelected(null)}
-          onInstall={(target, version) => setInstalling({ result: target, version })}
+          onInstall={(target, version) => void startInstall(target, version)}
         />
       )}
 
@@ -223,6 +278,7 @@ export function Discover({ initialProfileId }: { initialProfileId?: string }): J
           version={installing.version}
           profiles={profiles}
           initialProfileId={profileId}
+          locked={locked}
           onClose={() => setInstalling(null)}
           onInstalled={async () => {
             await refreshProfiles()

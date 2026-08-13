@@ -133,6 +133,32 @@ a {
   overflow-y: auto;
 }
 
+/* The fixed install target, shown where the profile picker normally sits. */
+.target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 260px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--accent-soft);
+  font-size: 12.5px;
+}
+
+.target__name {
+  font-weight: 600;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.target__meta {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
 /* ------------------------------------------------------ install dialog */
 
 .list__row--pick {

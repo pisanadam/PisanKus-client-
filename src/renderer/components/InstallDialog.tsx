@@ -84,6 +84,7 @@ export function InstallDialog({
   version,
   profiles,
   initialProfileId,
+  locked = false,
   onClose,
   onInstalled
 }: {
@@ -92,6 +93,12 @@ export function InstallDialog({
   version?: ProjectVersion
   profiles: Profile[]
   initialProfileId?: string
+  /**
+   * The target profile is already decided — the user opened the store from
+   * inside it — so there is nothing to choose. The dialog then only appears at
+   * all when the content looks incompatible, purely to carry the warning.
+   */
+  locked?: boolean
   onClose: () => void
   onInstalled: () => Promise<void>
 }): JSX.Element {
@@ -169,9 +176,29 @@ export function InstallDialog({
         {supports && ` · Destek: ${describeSupport(supports)}`}
       </p>
 
-      <div className="section-title">Hangi profile kurulsun?</div>
+      <div className="section-title">{locked ? 'Kurulacak profil' : 'Hangi profile kurulsun?'}</div>
 
-      {profiles.length === 0 ? (
+      {locked && selected ? (
+        <div className="list">
+          <div className="list__row">
+            <span aria-hidden="true" style={{ fontSize: 18, width: 22, textAlign: 'center' }}>
+              {selected.icon ?? '🎮'}
+            </span>
+            <div className="list__main">
+              <div className="list__title">{selected.name}</div>
+              <div className="list__sub">
+                {selected.gameVersion} · {selected.loader}
+              </div>
+            </div>
+            {compatibility &&
+              (compatibility.ok ? (
+                <span className="badge badge--success">uyumlu</span>
+              ) : (
+                <span className="badge badge--warning">uyumsuz</span>
+              ))}
+          </div>
+        </div>
+      ) : profiles.length === 0 ? (
         <div className="empty" style={{ padding: 24 }}>
           <div className="empty__title">Profil yok</div>
           <p>Önce Kitaplık&apos;tan bir profil oluşturun.</p>

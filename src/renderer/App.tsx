@@ -139,7 +139,9 @@ export function App(): JSX.Element {
           <Library onOpenProfile={(profileId) => setRoute({ page: 'profile', profileId })} />
         )}
 
-        {route.page === 'discover' && <Discover initialProfileId={route.profileId} />}
+        {/* A profileId on the route means the store was opened from inside that
+            profile, so it is the fixed install target rather than a suggestion. */}
+        {route.page === 'discover' && <Discover lockedProfileId={route.profileId} />}
 
         {route.page === 'profile' && (
           <ProfileDetail
