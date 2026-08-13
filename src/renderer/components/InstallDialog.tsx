@@ -105,7 +105,13 @@ export function InstallDialog({
   const [supports, setSupports] = useState<{ gameVersions: string[]; loaders: string[] } | null>(
     version ? { gameVersions: version.gameVersions, loaders: version.loaders } : null
   )
-  const [selectedId, setSelectedId] = useState(initialProfileId ?? profiles[0]?.id ?? '')
+  // Modpacks bring their own game version and loader, so a fresh profile is the
+  // right default — installing one over an existing profile rewrites what it runs.
+  const NEW_PROFILE = '__new__'
+  const isModpack = result.kind === 'modpack'
+  const [selectedId, setSelectedId] = useState(
+    isModpack ? NEW_PROFILE : (initialProfileId ?? profiles[0]?.id ?? '')
+  )
   const [installing, setInstalling] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -128,22 +134,33 @@ export function InstallDialog({
     }
   }, [result.projectId, version])
 
+  const asNewProfile = selectedId === NEW_PROFILE
   const selected = profiles.find((profile) => profile.id === selectedId)
-  const compatibility = supports && selected ? checkCompatibility(result.kind, supports, selected) : null
+  const compatibility =
+    supports && selected && !asNewProfile ? checkCompatibility(result.kind, supports, selected) : null
 
   const install = async (): Promise<void> => {
-    if (!selected) return
+    if (!selected && !asNewProfile) return
     setInstalling(true)
     setError(null)
     try {
-      await api.content.install({
-        profileId: selected.id,
-        projectId: result.projectId,
-        versionId: version?.id,
-        kind: result.kind,
-        name: result.title,
-        iconUrl: result.iconUrl
-      })
+      if (asNewProfile) {
+        await api.content.installModpackAsProfile({
+          projectId: result.projectId,
+          versionId: version?.id,
+          name: result.title,
+          iconUrl: result.iconUrl
+        })
+      } else {
+        await api.content.install({
+          profileId: selected!.id,
+          projectId: result.projectId,
+          versionId: version?.id,
+          kind: result.kind,
+          name: result.title,
+          iconUrl: result.iconUrl
+        })
+      }
       await onInstalled()
       onClose()
     } catch (caught) {
@@ -160,7 +177,7 @@ export function InstallDialog({
       </button>
       <button
         className={compatibility?.ok === false ? 'btn btn--danger' : 'btn btn--primary'}
-        disabled={!selected || installing || !supports}
+        disabled={(!selected && !asNewProfile) || installing || !supports}
         onClick={install}
       >
         {installing ? <div className="spinner" /> : <Icon name="download" size={16} />}
@@ -178,7 +195,7 @@ export function InstallDialog({
 
       <div className="section-title">{locked ? 'Kurulacak profil' : 'Hangi profile kurulsun?'}</div>
 
-      {locked && selected ? (
+      {locked && selected && !isModpack ? (
         <div className="list">
           <div className="list__row">
             <span aria-hidden="true" style={{ fontSize: 18, width: 22, textAlign: 'center' }}>
@@ -205,6 +222,25 @@ export function InstallDialog({
         </div>
       ) : (
         <div className="list">
+          {isModpack && (
+            <button
+              className="list__row list__row--pick"
+              aria-pressed={asNewProfile}
+              onClick={() => setSelectedId(NEW_PROFILE)}
+            >
+              <span aria-hidden="true" style={{ fontSize: 18, width: 22, textAlign: 'center' }}>
+                ✨
+              </span>
+              <div className="list__main">
+                <div className="list__title">Yeni profil oluştur</div>
+                <div className="list__sub">
+                  Paketin kendi sürümü ve yükleyicisiyle kurulur
+                </div>
+              </div>
+              <span className="badge badge--accent">önerilen</span>
+            </button>
+          )}
+
           {profiles.map((profile) => {
             const state = supports ? checkCompatibility(result.kind, supports, profile) : null
             return (

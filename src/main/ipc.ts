@@ -39,6 +39,39 @@ function toPublic(account: Account): PublicAccount {
   }
 }
 
+/**
+ * Creates a profile with a directory of its own and seeds the configured game
+ * options into it. Two profiles may share a name but never a directory —
+ * otherwise they would share mods and worlds.
+ */
+async function createProfile(input: {
+  name: string
+  gameVersion: string
+  loader: LoaderId
+  loaderVersion?: string
+  icon?: string
+}): Promise<Profile> {
+  const slug = input.name.replace(/[^\p{L}\p{N}\-_ ]/gu, '').trim() || 'profil'
+  const taken = new Set(store.profiles.map((profile) => path.basename(profile.directory)))
+  let folder = slug
+  let suffix = 2
+  while (taken.has(folder)) folder = `${slug}-${suffix++}`
+
+  const profile = store.addProfile({
+    name: input.name,
+    gameVersion: input.gameVersion,
+    loader: input.loader,
+    loaderVersion: input.loaderVersion,
+    icon: input.icon,
+    directory: path.join(store.settings.dataDir, 'profiles', folder),
+    memoryMb: store.settings.defaultMemoryMb
+  })
+
+  // Only for brand new profiles — the directory is fresh, nothing to overwrite.
+  await writeProfileOptions(profile.directory, store.settings.minecraftOptions)
+  return profile
+}
+
 const sessions = new Map<string, GameSession>()
 const launchAborts = new Map<string, AbortController>()
 
@@ -115,31 +148,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('profiles:list', () => store.profiles)
 
-  handle('profiles:create', async (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) => {
-    const slug = input.name.replace(/[^\p{L}\p{N}\-_ ]/gu, '').trim() || 'profil'
-
-    // Two profiles may share a name, but never a directory — otherwise they would
-    // share mods and worlds.
-    const taken = new Set(store.profiles.map((profile) => path.basename(profile.directory)))
-    let folder = slug
-    let suffix = 2
-    while (taken.has(folder)) folder = `${slug}-${suffix++}`
-
-    const profile = store.addProfile({
-      name: input.name,
-      gameVersion: input.gameVersion,
-      loader: input.loader,
-      loaderVersion: input.loaderVersion,
-      icon: input.icon,
-      directory: path.join(store.settings.dataDir, 'profiles', folder),
-      memoryMb: store.settings.defaultMemoryMb
-    })
-
-    // Seed the configured game options. Only for brand new profiles — the
-    // directory is fresh here, so there is nothing to overwrite.
-    await writeProfileOptions(profile.directory, store.settings.minecraftOptions)
-    return profile
-  })
+  handle('profiles:create', (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) =>
+    createProfile(input)
+  )
 
   handle('profiles:update', (id: string, patch: Partial<Profile>) => store.updateProfile(id, patch))
 
@@ -363,6 +374,40 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   )
 
   // ----------------------------------------------------------------------- app
+
+  /**
+   * Installs a modpack into a profile of its own.
+   *
+   * The pack decides its game version and loader, so the profile starts as a
+   * placeholder and `applyMrPack` corrects it while unpacking. If anything
+   * fails, the half-made profile is removed rather than left in the library.
+   */
+  handle('content:installModpackAsProfile', async (request: {
+    projectId: string
+    versionId?: string
+    name: string
+    iconUrl?: string
+  }) => {
+    const profile = await createProfile({
+      name: request.name,
+      gameVersion: 'bilinmiyor',
+      loader: 'vanilla',
+      icon: '📦'
+    })
+
+    try {
+      await install.installContent(
+        { profileId: profile.id, projectId: request.projectId, versionId: request.versionId,
+          kind: 'modpack', name: request.name, iconUrl: request.iconUrl, anyVersion: true },
+        onProgress
+      )
+    } catch (error) {
+      store.removeProfile(profile.id)
+      await fsp.rm(profile.directory, { recursive: true, force: true })
+      throw error
+    }
+    return store.profile(profile.id)!
+  })
 
   handle('skins:texture', (url: string) => skins.textureDataUrl(url))
 

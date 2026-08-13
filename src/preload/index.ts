@@ -164,7 +164,14 @@ const api = {
     checkUpdates: (profileId: string): Promise<InstalledContent[]> =>
       ipcRenderer.invoke('content:checkUpdates', profileId),
     importLocal: (profileId: string, kind: ContentKind): Promise<InstalledContent[]> =>
-      ipcRenderer.invoke('content:import', profileId, kind)
+      ipcRenderer.invoke('content:import', profileId, kind),
+    /** Creates a profile from a modpack, using the version and loader it declares. */
+    installModpackAsProfile: (request: {
+      projectId: string
+      versionId?: string
+      name: string
+      iconUrl?: string
+    }): Promise<Profile> => ipcRenderer.invoke('content:installModpackAsProfile', request)
   },
 
   worlds: {

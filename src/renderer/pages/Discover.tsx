@@ -58,7 +58,10 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
    * case still worth interrupting for.
    */
   const startInstall = async (result: SearchResult, version?: ProjectVersion): Promise<void> => {
-    if (!locked || !profile) {
+    // A modpack always asks, even from inside a profile: it would rewrite that
+    // profile's version and loader, and installing it as its own profile is
+    // usually what was meant.
+    if (!locked || !profile || result.kind === 'modpack') {
       setInstalling({ result, version })
       return
     }

@@ -21,8 +21,9 @@ function disabledName(fileName: string): string {
 async function resolveVersion(
   projectId: string,
   versionId: string | undefined,
-  gameVersion: string,
-  loader: LoaderId
+  /** Undefined means "do not narrow" — see `InstallRequest.anyVersion`. */
+  gameVersion: string | undefined,
+  loader: LoaderId | undefined
 ): Promise<ProjectVersion> {
   const version = versionId
     ? await modrinth.getVersion(versionId)
@@ -40,6 +41,14 @@ export interface InstallRequest {
   iconUrl?: string
   /** Install required dependencies too. Defaults to true. */
   withDependencies?: boolean
+  /**
+   * Ignore the profile's game version and loader when picking a version.
+   *
+   * Used when a modpack is installed into a profile made for it: the profile has
+   * no version yet — the pack decides it — so filtering by the placeholder would
+   * match nothing.
+   */
+  anyVersion?: boolean
 }
 
 /**
@@ -60,8 +69,8 @@ export async function installContent(
     const version = await resolveVersion(
       request.projectId,
       request.versionId,
-      profile.gameVersion,
-      profile.loader
+      request.anyVersion ? undefined : profile.gameVersion,
+      request.anyVersion ? undefined : profile.loader
     )
 
     if (request.kind === 'modpack') {
