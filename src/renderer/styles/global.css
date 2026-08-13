@@ -282,6 +282,25 @@ a {
   color: var(--text-muted);
 }
 
+/* Key binding capture, in the options editor. */
+.keybind {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keybind__key {
+  min-width: 120px;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.keybind__key--listening {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 /* -------------------------------------------------------- skin & capes */
 
 .preview-bar {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   OPTION_GROUPS,
   defaultOptionsText,
@@ -10,6 +10,7 @@ import {
   writeOption,
   type OptionSpec
 } from '../../shared/options'
+import { UNBOUND, keyFromCode, keyFromMouseButton, keyLabel } from '../../shared/keys'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
@@ -228,6 +229,8 @@ function OptionRow({
           </select>
         )}
 
+        {type.kind === 'keybind' && <KeyBindButton value={value} onChange={onChange} />}
+
         {type.kind === 'text' && (
           <input
             className="input"
@@ -238,6 +241,83 @@ function OptionRow({
       </div>
     </div>
   )
+}
+
+/**
+ * Captures a key binding. While listening, events are taken in the capture phase
+ * and stopped there — otherwise Escape would reach the modal's own handler and
+ * close the dialog instead of cancelling the capture.
+ */
+function KeyBindButton({
+  value,
+  onChange
+}: {
+  value: string | undefined
+  onChange: (next: string) => void
+}): JSX.Element {
+  const [listening, setListening] = useState(false)
+  const button = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!listening) return
+
+    const finish = (next?: string): void => {
+      setListening(false)
+      if (next) onChange(next)
+    }
+
+    const onKey = (event: KeyboardEvent): void => {
+      event.preventDefault()
+      event.stopPropagation()
+      // Escape backs out without changing the binding, as the game does.
+      finish(event.code === 'Escape' ? undefined : keyFromCode(event.code))
+    }
+
+    const onMouse = (event: MouseEvent): void => {
+      // The click that started listening must not immediately bind left mouse.
+      if (event.target === button.current) return
+      event.preventDefault()
+      event.stopPropagation()
+      finish(keyFromMouseButton(event.button))
+    }
+
+    window.addEventListener('keydown', onKey, true)
+    window.addEventListener('mousedown', onMouse, true)
+    window.addEventListener('contextmenu', preventDefault, true)
+    return () => {
+      window.removeEventListener('keydown', onKey, true)
+      window.removeEventListener('mousedown', onMouse, true)
+      window.removeEventListener('contextmenu', preventDefault, true)
+    }
+  }, [listening, onChange])
+
+  const unbound = !value || value === UNBOUND
+
+  return (
+    <div className="keybind">
+      <button
+        ref={button}
+        className={listening ? 'btn btn--sm keybind__key keybind__key--listening' : 'btn btn--sm keybind__key'}
+        aria-pressed={listening}
+        onClick={() => setListening((current) => !current)}
+      >
+        {listening ? 'Bir tuşa basın…' : keyLabel(value)}
+      </button>
+      <button
+        className="btn btn--sm btn--ghost btn--icon"
+        aria-label="Atamayı kaldır"
+        disabled={unbound}
+        onClick={() => onChange(UNBOUND)}
+      >
+        <Icon name="close" size={14} />
+      </button>
+    </div>
+  )
+}
+
+function preventDefault(event: Event): void {
+  event.preventDefault()
+  event.stopPropagation()
 }
 
 function Slider({

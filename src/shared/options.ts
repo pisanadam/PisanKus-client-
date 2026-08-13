@@ -10,8 +10,12 @@
  * this build has never heard of.
  */
 
+import { KEY_BINDS, KEY_BIND_DEFAULTS } from './keys'
+
 export type OptionKind =
   | { kind: 'bool' }
+  /** A Minecraft key binding, captured by pressing the key. */
+  | { kind: 'keybind' }
   | { kind: 'int'; min: number; max: number; step?: number; unit?: string; maxLabel?: string }
   | { kind: 'float'; min: number; max: number; step?: number; percent?: boolean }
   /** Stored as -1..1 but shown in degrees, the way the game's slider does. */
@@ -169,6 +173,15 @@ export const OPTION_GROUPS: OptionGroup[] = [
       { key: 'toggleSprint', label: 'Koşma: aç/kapa', type: { kind: 'bool' } }
     ]
   },
+  // The game lists key bindings as part of Controls, so they follow it here.
+  ...KEY_BINDS.map((group) => ({
+    title: `Tuşlar · ${group.title}`,
+    options: group.binds.map((bind) => ({
+      key: bind.key,
+      label: bind.label,
+      type: { kind: 'keybind' } as OptionKind
+    }))
+  })),
   {
     title: 'Sohbet ve dil',
     options: [
@@ -176,6 +189,83 @@ export const OPTION_GROUPS: OptionGroup[] = [
       { key: 'chatScale', label: 'Sohbet ölçeği', type: { kind: 'float', min: 0, max: 1, percent: true } },
       { key: 'chatOpacity', label: 'Sohbet saydamlığı', type: { kind: 'float', min: 0, max: 1, percent: true } },
       { key: 'showSubtitles', label: 'Altyazılar', type: { kind: 'bool' } }
+    ]
+  },
+  {
+    title: 'Erişilebilirlik',
+    options: [
+      {
+        key: 'narrator',
+        label: 'Anlatıcı',
+        type: {
+          kind: 'enum',
+          values: [
+            { value: '0', label: 'Kapalı' },
+            { value: '1', label: 'Her şeyi oku' },
+            { value: '2', label: 'Yalnızca sohbet' },
+            { value: '3', label: 'Yalnızca sistem' }
+          ]
+        }
+      },
+      { key: 'highContrast', label: 'Yüksek karşıtlık', type: { kind: 'bool' } },
+      {
+        key: 'textBackgroundOpacity',
+        label: 'Yazı arka planı',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'backgroundForChatOnly',
+        label: 'Arka plan yalnızca sohbette',
+        type: { kind: 'bool' }
+      },
+      {
+        key: 'notificationDisplayTime',
+        label: 'Bildirim süresi',
+        type: { kind: 'float', min: 0.5, max: 10, step: 0.5 }
+      },
+      { key: 'hideLightningFlashes', label: 'Şimşek parlamalarını gizle', type: { kind: 'bool' } },
+      { key: 'darkMojangStudiosBackground', label: 'Koyu açılış ekranı', type: { kind: 'bool' } },
+      {
+        key: 'damageTiltStrength',
+        label: 'Hasar sarsıntısı',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'screenEffectScale',
+        label: 'Bozulma efektleri',
+        hint: 'Nether portalı ve benzeri ekran bozulmaları',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'fovEffectScale',
+        label: 'Görüş açısı efekti',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'darknessEffectScale',
+        label: 'Karanlık efekti',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'glintSpeed',
+        label: 'Büyü parıltısı hızı',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'glintStrength',
+        label: 'Büyü parıltısı şiddeti',
+        type: { kind: 'float', min: 0, max: 1, percent: true }
+      },
+      {
+        key: 'panoramaScrollSpeed',
+        label: 'Menü arka planı hızı',
+        type: { kind: 'float', min: 0.1, max: 10, step: 0.1 }
+      },
+      {
+        key: 'menuBackgroundBlurriness',
+        label: 'Menü arka planı bulanıklığı',
+        type: { kind: 'int', min: 0, max: 10 }
+      }
     ]
   },
   {
@@ -194,6 +284,7 @@ export const OPTION_SPECS: Record<string, OptionSpec> = Object.fromEntries(
 
 /** The game's own defaults, so a fresh template starts somewhere sensible. */
 export const OPTION_DEFAULTS: Record<string, string> = {
+  ...KEY_BIND_DEFAULTS,
   renderDistance: '12',
   simulationDistance: '12',
   maxFps: '120',
@@ -219,6 +310,21 @@ export const OPTION_DEFAULTS: Record<string, string> = {
   chatScale: '1.0',
   chatOpacity: '1.0',
   showSubtitles: 'false',
+  narrator: '0',
+  highContrast: 'false',
+  textBackgroundOpacity: '0.50',
+  backgroundForChatOnly: 'true',
+  notificationDisplayTime: '1.0',
+  hideLightningFlashes: 'false',
+  darkMojangStudiosBackground: 'false',
+  damageTiltStrength: '1.00',
+  screenEffectScale: '1.00',
+  fovEffectScale: '1.00',
+  darknessEffectScale: '1.00',
+  glintSpeed: '0.50',
+  glintStrength: '0.75',
+  panoramaScrollSpeed: '1.0',
+  menuBackgroundBlurriness: '5',
   ...Object.fromEntries(VOLUMES.map(([key]) => [`soundCategory_${key}`, '1.0'])),
   ...Object.fromEntries(MODEL_PARTS.map(([key]) => [`modelPart_${key}`, 'true']))
 }

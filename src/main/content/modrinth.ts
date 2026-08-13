@@ -3,17 +3,15 @@ import { fetchJson } from '../minecraft/downloader'
 
 const API = 'https://api.modrinth.com/v2'
 
-/** Modrinth project types, keyed by our own content vocabulary. */
-const PROJECT_TYPE: Record<ContentKind, string> = {
-  mod: 'mod',
-  resourcepack: 'resourcepack',
-  shader: 'shader',
-  datapack: 'datapack',
-  world: 'mod', // Modrinth has no world category; worlds arrive via modpacks or local import.
-  modpack: 'modpack'
-}
-
-const KIND_BY_PROJECT_TYPE: Record<string, ContentKind> = {
+/**
+ * Modrinth project types, keyed by our own content vocabulary.
+ *
+ * `world` has no entry because Modrinth hosts no worlds — `project_type:world`
+ * matches nothing there. It used to fall back to `mod`, which is why picking
+ * "Dünyalar" listed mods. Worlds come from a modpack's overrides or a local
+ * import, so the search UI skips Modrinth entirely for them.
+ */
+const PROJECT_TYPE: Partial<Record<ContentKind, string>> = {
   mod: 'mod',
   resourcepack: 'resourcepack',
   shader: 'shader',
@@ -50,7 +48,10 @@ interface ModrinthVersion {
 }
 
 export async function search(query: SearchQuery): Promise<SearchResult[]> {
-  const facets: string[][] = [[`project_type:${PROJECT_TYPE[query.kind]}`]]
+  const projectType = PROJECT_TYPE[query.kind]
+  if (!projectType) throw new Error(`Modrinth bu türü barındırmıyor: ${query.kind}`)
+
+  const facets: string[][] = [[`project_type:${projectType}`]]
   if (query.gameVersion) facets.push([`versions:${query.gameVersion}`])
   // Resource packs and shaders are loader-independent, so only filter mods/modpacks.
   if (query.loader && query.loader !== 'vanilla' && (query.kind === 'mod' || query.kind === 'modpack')) {
@@ -88,7 +89,10 @@ export async function search(query: SearchQuery): Promise<SearchResult[]> {
     downloads: hit.downloads,
     follows: hit.follows,
     categories: hit.categories,
-    kind: KIND_BY_PROJECT_TYPE[hit.project_type] ?? query.kind,
+    // The facet already pinned the type, and the hit's own `project_type` is the
+    // project's primary one — a datapack search returns hits labelled `mod`,
+    // which would have installed them into mods/ instead of datapacks/.
+    kind: query.kind,
     updatedAt: hit.date_modified
   }))
 }
