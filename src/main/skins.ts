@@ -1,6 +1,9 @@
+import { app } from 'electron'
+import { randomUUID } from 'node:crypto'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
-import type { Account } from '../shared/types'
+import type { Account, SavedSkin } from '../shared/types'
+import { store } from './store'
 
 const MC_API = 'https://api.minecraftservices.com/minecraft/profile'
 
@@ -215,4 +218,72 @@ async function assertValidSkin(buffer: Buffer): Promise<void> {
   if (buffer.byteLength > 24_576) {
     throw new Error('Skin dosyası 24 KB sınırını aşıyor.')
   }
+}
+
+
+// --- the player's own skin library ----------------------------------------
+
+/**
+ * Where saved skins live. Kept beside the launcher's database rather than in
+ * the game directory: the library belongs to the launcher, and moving the game
+ * directory should not lose it.
+ */
+function libraryDir(): string {
+  return path.join(app.getPath('userData'), 'skins')
+}
+
+export function savedSkins(): SavedSkin[] {
+  return store.savedSkins
+}
+
+/** Reads a saved skin back as a texture the model can draw. */
+export async function savedSkinTexture(id: string): Promise<Texture> {
+  const skin = store.savedSkins.find((candidate) => candidate.id === id)
+  if (!skin) throw new Error('Kayıtlı skin bulunamadı.')
+
+  const buffer = await fsp.readFile(path.join(libraryDir(), skin.fileName))
+  return { dataUrl: `data:image/png;base64,${buffer.toString('base64')}`, ...pngSize(buffer) }
+}
+
+/** Copies a PNG into the library. The bytes are kept, not the original path. */
+export async function saveSkinBuffer(
+  buffer: Buffer,
+  name: string,
+  variant: SkinVariant
+): Promise<SavedSkin[]> {
+  await assertValidSkin(buffer)
+
+  const id = randomUUID()
+  const fileName = `${id}.png`
+  await fsp.mkdir(libraryDir(), { recursive: true })
+  await fsp.writeFile(path.join(libraryDir(), fileName), buffer)
+
+  return store.addSavedSkin({ id, name, variant, fileName, addedAt: Date.now() })
+}
+
+/**
+ * Saves the skin currently on the account by downloading it from Mojang, so the
+ * library holds the real texture rather than a link that can go stale.
+ */
+export async function saveSkinFromUrl(
+  url: string,
+  name: string,
+  variant: SkinVariant
+): Promise<SavedSkin[]> {
+  const texture = await textureDataUrl(url)
+  const buffer = Buffer.from(texture.dataUrl.split(',')[1], 'base64')
+  return saveSkinBuffer(buffer, name, variant)
+}
+
+export async function removeSavedSkin(id: string): Promise<SavedSkin[]> {
+  const skin = store.savedSkins.find((candidate) => candidate.id === id)
+  if (skin) await fsp.rm(path.join(libraryDir(), skin.fileName), { force: true })
+  return store.removeSavedSkin(id)
+}
+
+/** Applies a library skin to the account. */
+export async function applySavedSkin(account: Account, id: string): Promise<SkinInfo> {
+  const skin = store.savedSkins.find((candidate) => candidate.id === id)
+  if (!skin) throw new Error('Kayıtlı skin bulunamadı.')
+  return uploadSkin(account, path.join(libraryDir(), skin.fileName), skin.variant)
 }

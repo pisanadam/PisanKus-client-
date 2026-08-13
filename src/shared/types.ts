@@ -102,6 +102,16 @@ export interface Settings {
   welcomeSeen: boolean
 }
 
+/** A skin the player keeps in the launcher for quick switching. */
+export interface SavedSkin {
+  id: string
+  name: string
+  variant: 'classic' | 'slim'
+  /** File name inside the launcher's `skins` folder. */
+  fileName: string
+  addedAt: number
+}
+
 export type UpdateStatus =
   | { state: 'idle' }
   | { state: 'checking' }

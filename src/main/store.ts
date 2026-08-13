@@ -2,13 +2,14 @@ import { app } from 'electron'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
-import type { Account, Profile, Settings } from '../shared/types'
+import type { Account, Profile, SavedSkin, Settings } from '../shared/types'
 
 interface Database {
   settings: Settings
   profiles: Profile[]
   accounts: Account[]
   activeAccountId?: string
+  savedSkins: SavedSkin[]
 }
 
 // Minecraft's own launcher client id. It lives on the legacy MSA platform, not
@@ -41,7 +42,7 @@ function defaultSettings(): Settings {
  */
 class Store {
   private file = ''
-  private data: Database = { settings: defaultSettings(), profiles: [], accounts: [] }
+  private data: Database = { settings: defaultSettings(), profiles: [], accounts: [], savedSkins: [] }
 
   init(): void {
     this.file = path.join(app.getPath('userData'), 'opbay-client.json')
@@ -52,7 +53,8 @@ class Store {
           settings: { ...defaultSettings(), ...(parsed.settings ?? {}) },
           profiles: parsed.profiles ?? [],
           accounts: parsed.accounts ?? [],
-          activeAccountId: parsed.activeAccountId
+          activeAccountId: parsed.activeAccountId,
+          savedSkins: parsed.savedSkins ?? []
         }
       } catch {
         // Corrupt database: keep a copy for support, then start clean.
@@ -113,6 +115,29 @@ class Store {
   removeProfile(id: string): void {
     this.data.profiles = this.data.profiles.filter((p) => p.id !== id)
     this.save()
+  }
+
+  get savedSkins(): SavedSkin[] {
+    return this.data.savedSkins
+  }
+
+  addSavedSkin(skin: SavedSkin): SavedSkin[] {
+    this.data.savedSkins.push(skin)
+    this.save()
+    return this.data.savedSkins
+  }
+
+  removeSavedSkin(id: string): SavedSkin[] {
+    this.data.savedSkins = this.data.savedSkins.filter((skin) => skin.id !== id)
+    this.save()
+    return this.data.savedSkins
+  }
+
+  renameSavedSkin(id: string, name: string): SavedSkin[] {
+    const skin = this.data.savedSkins.find((candidate) => candidate.id === id)
+    if (skin) skin.name = name
+    this.save()
+    return this.data.savedSkins
   }
 
   get accounts(): Account[] {

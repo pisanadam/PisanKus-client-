@@ -8,7 +8,14 @@ import { pipeline } from 'node:stream/promises'
 export interface DownloadItem {
   url: string
   destination: string
+  /** Mojang publishes SHA-1 for everything it serves. */
   sha1?: string
+  /**
+   * Adoptium publishes SHA-256 for its Java packages. Hashing one of those with
+   * SHA-1 can never match, which is what made every Java download fail with
+   * "Sağlama toplamı uyuşmuyor" — the algorithm has to travel with the digest.
+   */
+  sha256?: string
   size?: number
 }
 
@@ -32,10 +39,21 @@ export async function fetchJson<T>(url: string, init: RequestInit = {}): Promise
   return (await response.json()) as T
 }
 
-export async function fileSha1(file: string): Promise<string> {
-  const hash = createHash('sha1')
+export async function fileHash(file: string, algorithm: 'sha1' | 'sha256'): Promise<string> {
+  const hash = createHash(algorithm)
   await pipeline(fs.createReadStream(file), hash)
   return hash.digest('hex')
+}
+
+export async function fileSha1(file: string): Promise<string> {
+  return fileHash(file, 'sha1')
+}
+
+/** The digest an item should be checked against, if it declares one. */
+function expectedHash(item: DownloadItem): { algorithm: 'sha1' | 'sha256'; value: string } | null {
+  if (item.sha256) return { algorithm: 'sha256', value: item.sha256 }
+  if (item.sha1) return { algorithm: 'sha1', value: item.sha1 }
+  return null
 }
 
 /** True when the file already exists and matches the expected hash/size. */
@@ -44,7 +62,8 @@ async function isUpToDate(item: DownloadItem): Promise<boolean> {
     const stat = await fsp.stat(item.destination)
     if (!stat.isFile()) return false
     if (item.size != null && stat.size !== item.size) return false
-    if (item.sha1) return (await fileSha1(item.destination)) === item.sha1
+    const expected = expectedHash(item)
+    if (expected) return (await fileHash(item.destination, expected.algorithm)) === expected.value
     return item.size != null || stat.size > 0
   } catch {
     return false
@@ -66,10 +85,14 @@ export async function downloadFile(item: DownloadItem, signal?: AbortSignal): Pr
       }
       await pipeline(Readable.fromWeb(response.body as never), fs.createWriteStream(temp))
 
-      if (item.sha1) {
-        const actual = await fileSha1(temp)
-        if (actual !== item.sha1) {
-          throw new Error(`Sağlama toplamı uyuşmuyor: ${path.basename(item.destination)}`)
+      const expected = expectedHash(item)
+      if (expected) {
+        const actual = await fileHash(temp, expected.algorithm)
+        if (actual !== expected.value) {
+          throw new Error(
+            `Sağlama toplamı uyuşmuyor: ${path.basename(item.destination)} ` +
+              `(beklenen ${expected.algorithm} ${expected.value.slice(0, 12)}…, gelen ${actual.slice(0, 12)}…)`
+          )
         }
       }
       await fsp.rename(temp, item.destination)

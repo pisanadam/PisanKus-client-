@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import type { LocalSkin, SkinInfo } from '../../preload'
 import { Icon } from '../components/Icon'
+import { SkinLibrary } from '../components/SkinLibrary'
 import { SkinViewer } from '../components/SkinViewer'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
@@ -116,6 +117,14 @@ export function Skins(): JSX.Element {
               </button>
             </div>
           )}
+
+          <SkinLibrary
+            accountId={activeAccount.id}
+            hasCurrentSkin={Boolean(info?.skinUrl)}
+            busy={busy}
+            notify={notify}
+            onApply={(id) => void mutate(() => api.skins.applySaved(activeAccount.id, id))}
+          />
         </div>
 
         <div className="stack-lg">

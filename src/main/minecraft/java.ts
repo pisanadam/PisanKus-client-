@@ -152,7 +152,9 @@ export async function ensureJava(
 
   const pkg = assets[0].binary.package
   const archive = path.join(dataDir, 'runtimes', pkg.name)
-  await downloadFile({ url: pkg.link, destination: archive, sha1: pkg.checksum, size: pkg.size })
+  // Adoptium's `checksum` is SHA-256, not SHA-1 — passing it as sha1 made every
+  // Java download fail verification and left the game unable to start.
+  await downloadFile({ url: pkg.link, destination: archive, sha256: pkg.checksum, size: pkg.size })
 
   onProgress?.(`Java ${majorVersion} açılıyor…`)
   await fsp.mkdir(targetDir, { recursive: true })

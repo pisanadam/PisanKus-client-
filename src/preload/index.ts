@@ -7,6 +7,7 @@ import type {
   LoaderId,
   Profile,
   ProjectVersion,
+  SavedSkin,
   SearchQuery,
   SearchResult,
   Settings,
@@ -184,7 +185,19 @@ const api = {
     setCape: (accountId: string, capeId: string | null): Promise<SkinInfo> =>
       ipcRenderer.invoke('skins:setCape', accountId, capeId),
     /** Mojang texture fetched by the main process, returned as a data url. */
-    texture: (url: string): Promise<Texture> => ipcRenderer.invoke('skins:texture', url)
+    texture: (url: string): Promise<Texture> => ipcRenderer.invoke('skins:texture', url),
+
+    saved: (): Promise<SavedSkin[]> => ipcRenderer.invoke('skins:saved'),
+    savedTexture: (id: string): Promise<Texture> => ipcRenderer.invoke('skins:savedTexture', id),
+    saveFile: (filePath: string, name: string, variant: 'classic' | 'slim'): Promise<SavedSkin[]> =>
+      ipcRenderer.invoke('skins:saveFile', filePath, name, variant),
+    saveCurrent: (accountId: string, name: string): Promise<SavedSkin[]> =>
+      ipcRenderer.invoke('skins:saveCurrent', accountId, name),
+    removeSaved: (id: string): Promise<SavedSkin[]> => ipcRenderer.invoke('skins:removeSaved', id),
+    renameSaved: (id: string, name: string): Promise<SavedSkin[]> =>
+      ipcRenderer.invoke('skins:renameSaved', id, name),
+    applySaved: (accountId: string, id: string): Promise<SkinInfo> =>
+      ipcRenderer.invoke('skins:applySaved', accountId, id)
   },
 
   options: {

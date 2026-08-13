@@ -366,6 +366,35 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('skins:texture', (url: string) => skins.textureDataUrl(url))
 
+  // ------------------------------------------------------------ skin library
+
+  handle('skins:saved', () => skins.savedSkins())
+  handle('skins:savedTexture', (id: string) => skins.savedSkinTexture(id))
+  handle('skins:removeSaved', (id: string) => skins.removeSavedSkin(id))
+  handle('skins:renameSaved', (id: string, name: string) => store.renameSavedSkin(id, name))
+
+  /** Adds a picked file to the library without touching the account. */
+  handle('skins:saveFile', async (filePath: string, name: string, variant: skins.SkinVariant) =>
+    skins.saveSkinBuffer(await fsp.readFile(filePath), name, variant)
+  )
+
+  /** Adds whatever the account is wearing right now. */
+  handle('skins:saveCurrent', (accountId: string, name: string) =>
+    withAccount(accountId, async (account) => {
+      const info = await skins.getSkinInfo(account)
+      if (!info.skinUrl) throw new Error('Bu hesapta kaydedilecek özel bir skin yok.')
+      return skins.saveSkinFromUrl(info.skinUrl, name, info.variant)
+    })
+  )
+
+  handle('skins:applySaved', (accountId: string, id: string) =>
+    withAccount(accountId, async (account) => {
+      const info = await skins.applySavedSkin(account, id)
+      store.upsertAccount({ ...account, skinUrl: info.skinUrl })
+      return info
+    })
+  )
+
   // ------------------------------------------------------------ game options
 
   handle('options:importFile', async () => {
