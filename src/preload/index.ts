@@ -138,6 +138,9 @@ const api = {
 
   content: {
     search: (query: SearchQuery): Promise<SearchPage> => ipcRenderer.invoke('content:search', query),
+    /** Every project published by one Modrinth author. */
+    userProjects: (username: string): Promise<SearchResult[]> =>
+      ipcRenderer.invoke('content:userProjects', username),
     versions: (
       projectId: string,
       gameVersion?: string,

@@ -133,6 +133,13 @@ a {
   overflow-y: auto;
 }
 
+/* The publisher's own tab, set apart from the content-type chips beside it. */
+.chip--author[aria-pressed='true'] {
+  border-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 16%, transparent);
+  color: var(--warning);
+}
+
 /* The fixed install target, shown where the profile picker normally sits. */
 .target {
   display: flex;

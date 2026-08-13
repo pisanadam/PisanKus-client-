@@ -300,6 +300,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   // ------------------------------------------------------------------- content
 
   handle('content:search', (query: SearchQuery) => modrinth.search(query))
+  handle('content:userProjects', (username: string) => modrinth.listUserProjects(username))
 
   handle(
     'content:versions',

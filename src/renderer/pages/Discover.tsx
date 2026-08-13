@@ -15,6 +15,13 @@ const KINDS: { id: ContentKind; label: string; icon: string }[] = [
   { id: 'datapack', label: 'Veri paketleri', icon: '📜' }
 ]
 
+/**
+ * The launcher's own author tab. It reads the publisher's project list straight
+ * from Modrinth rather than searching for the name, so it shows exactly what
+ * they published — no unrelated matches, nothing missed.
+ */
+const FEATURED_AUTHOR = 'pisankusgaming'
+
 const SORTS: { id: NonNullable<SearchQuery['sort']>; label: string }[] = [
   { id: 'relevance', label: 'İlgili' },
   { id: 'downloads', label: 'İndirme' },
@@ -28,6 +35,9 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
   const pageSize = settings?.searchPageSize ?? 30
 
   const [kind, setKind] = useState<ContentKind>('mod')
+  /** `author` swaps the Modrinth search out for one publisher's project list. */
+  const [tab, setTab] = useState<'search' | 'author'>('search')
+  const [authorProjects, setAuthorProjects] = useState<SearchResult[] | null>(null)
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
   const [query, setQuery] = useState('')
   // Defaults to browse mode so opening Keşfet shows every mod, not just the ones
@@ -105,6 +115,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
 
   const runSearch = useCallback(
     async (nextOffset: number, append: boolean) => {
+      if (tab === 'author') return
       setLoading(true)
       setError(null)
       try {
@@ -127,8 +138,20 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         setLoading(false)
       }
     },
-    [query, kind, sort, filterByProfile, profile, pageSize]
+    [query, kind, sort, filterByProfile, profile, pageSize, tab]
   )
+
+  /** What the grid renders: search results, or the author list filtered locally. */
+  const shown = useMemo(() => {
+    if (tab !== 'author') return results
+    const needle = query.trim().toLocaleLowerCase('tr')
+    const list = authorProjects ?? []
+    return needle
+      ? list.filter((entry) =>
+          `${entry.title} ${entry.description}`.toLocaleLowerCase('tr').includes(needle)
+        )
+      : list
+  }, [tab, results, authorProjects, query])
 
   const sentinel = useRef<HTMLDivElement>(null)
 
@@ -147,6 +170,19 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
     observer.observe(node)
     return () => observer.disconnect()
   }, [loading, results.length, total, offset, pageSize, runSearch])
+
+  // The author's catalogue is small and fixed, so it is fetched once and then
+  // filtered in place rather than re-queried on every keystroke.
+  useEffect(() => {
+    if (tab !== 'author' || authorProjects) return
+    setLoading(true)
+    setError(null)
+    api.content
+      .userProjects(FEATURED_AUTHOR)
+      .then(setAuthorProjects)
+      .catch((caught) => setError(errorMessage(caught)))
+      .finally(() => setLoading(false))
+  }, [tab, authorProjects])
 
   // Debounce the query so typing does not fire a request per keystroke.
   useEffect(() => {
@@ -215,12 +251,23 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
               <button
                 key={entry.id}
                 className="chip"
-                aria-pressed={kind === entry.id}
-                onClick={() => setKind(entry.id)}
+                aria-pressed={tab === 'search' && kind === entry.id}
+                onClick={() => {
+                  setTab('search')
+                  setKind(entry.id)
+                }}
               >
                 <span aria-hidden="true">{entry.icon}</span> {entry.label}
               </button>
             ))}
+
+            <button
+              className="chip chip--author"
+              aria-pressed={tab === 'author'}
+              onClick={() => setTab('author')}
+            >
+              <span aria-hidden="true">⭐</span> PisankusGaming modları
+            </button>
           </div>
 
           <div className="topbar__spacer" />
@@ -256,7 +303,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       {/* The profile filter is the usual reason a mod "isn't on Modrinth": pinned
           to a snapshot, almost nothing matches. Say so instead of showing an
           empty grid. */}
-      {filterByProfile && profile && !loading && !error && total < 5 && (
+      {tab === 'search' && filterByProfile && profile && !loading && !error && total < 5 && (
         <div className="notice notice--warning" style={{ marginBottom: 16 }}>
           <Icon name="compass" size={15} />
           <div>
@@ -275,7 +322,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </div>
       )}
 
-      {results.length === 0 && !loading && !error && (
+      {shown.length === 0 && !loading && !error && (
         <div className="empty">
           <div className="empty__icon">🔍</div>
           <div className="empty__title">Sonuç yok</div>
@@ -283,8 +330,24 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </div>
       )}
 
+      {tab === 'author' && !loading && !error && (
+        <p className="faint" style={{ marginBottom: 14 }}>
+          {authorProjects?.length ?? 0} proje · Modrinth&apos;teki{' '}
+          <a
+            href="#"
+            onClick={(event) => {
+              event.preventDefault()
+              void api.app.openExternal(`https://modrinth.com/user/${FEATURED_AUTHOR}`)
+            }}
+          >
+            {FEATURED_AUTHOR}
+          </a>{' '}
+          sayfasından doğrudan alınıyor.
+        </p>
+      )}
+
       <div className="grid grid--content">
-        {results.map((result) => (
+        {shown.map((result) => (
           <ResultCard
             key={`${result.source}-${result.projectId}`}
             result={result}
@@ -303,7 +366,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
 
       {/* Scrolling to the bottom fetches the next page on its own; the button is
           only a fallback for when the observer cannot fire (no scrollbar yet). */}
-      {results.length > 0 && results.length < total && (
+      {tab === 'search' && results.length > 0 && results.length < total && (
         <div className="row" style={{ justifyContent: 'center', padding: 22 }} ref={sentinel}>
           {loading ? (
             <div className="spinner" />
@@ -315,7 +378,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </div>
       )}
 
-      {results.length > 0 && results.length >= total && (
+      {tab === 'search' && results.length > 0 && results.length >= total && (
         <p className="faint" style={{ textAlign: 'center', padding: 18 }}>
           {total} sonucun tamamı gösteriliyor.
         </p>

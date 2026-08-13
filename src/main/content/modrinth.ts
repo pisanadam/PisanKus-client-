@@ -104,6 +104,55 @@ export async function search(query: SearchQuery): Promise<SearchPage> {
   return { hits, total: response.total_hits }
 }
 
+/** Our vocabulary for the project types Modrinth reports on a project. */
+const KIND_BY_TYPE: Record<string, ContentKind> = {
+  mod: 'mod',
+  modpack: 'modpack',
+  resourcepack: 'resourcepack',
+  shader: 'shader'
+}
+
+/**
+ * Every project published by one author.
+ *
+ * Modrinth has a dedicated endpoint for this, which is why the launcher does not
+ * search for the name instead: a name search returns whatever else happens to
+ * mention it, and misses projects whose title does not.
+ */
+export async function listUserProjects(username: string): Promise<SearchResult[]> {
+  const projects = await fetchJson<
+    {
+      id: string
+      slug: string
+      title: string
+      description: string
+      icon_url: string | null
+      downloads: number
+      followers: number
+      categories: string[]
+      project_type: string
+      updated: string
+    }[]
+  >(`${API}/user/${encodeURIComponent(username)}/projects`)
+
+  return projects
+    .map((project) => ({
+      source: 'modrinth' as const,
+      projectId: project.id,
+      slug: project.slug,
+      title: project.title,
+      description: project.description,
+      author: username,
+      iconUrl: project.icon_url ?? undefined,
+      downloads: project.downloads,
+      follows: project.followers,
+      categories: project.categories,
+      kind: KIND_BY_TYPE[project.project_type] ?? ('mod' as ContentKind),
+      updatedAt: project.updated
+    }))
+    .sort((a, b) => b.downloads - a.downloads)
+}
+
 function toProjectVersion(version: ModrinthVersion): ProjectVersion {
   const file = version.files.find((candidate) => candidate.primary) ?? version.files[0]
   return {
