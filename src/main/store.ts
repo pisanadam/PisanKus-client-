@@ -25,6 +25,7 @@ function defaultSettings(): Settings {
     authMode: process.env.OPBAY_MS_CLIENT_ID ? 'azure' : 'legacy',
     msClientId: process.env.OPBAY_MS_CLIENT_ID || DEFAULT_CLIENT_ID,
     concurrentDownloads: 8,
+    searchPageSize: 30,
     keepLauncherOpen: true,
     theme: 'dark',
     accentColor: '#5b8cff',

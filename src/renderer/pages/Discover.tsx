@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ContentKind, ProjectVersion, SearchQuery, SearchResult } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { InstallDialog, checkCompatibility } from '../components/InstallDialog'
@@ -25,7 +25,8 @@ const SORTS: { id: NonNullable<SearchQuery['sort']>; label: string }[] = [
 ]
 
 export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX.Element {
-  const { profiles, notify, refreshProfiles } = useApp()
+  const { profiles, notify, refreshProfiles, settings } = useApp()
+  const pageSize = settings?.searchPageSize ?? 30
 
   const [kind, setKind] = useState<ContentKind>('mod')
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
@@ -36,9 +37,14 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
   // an incompatibility warning.
   const [installing, setInstalling] = useState<{ result: SearchResult; version?: ProjectVersion } | null>(null)
   const locked = Boolean(lockedProfileId)
-  const [filterByProfile, setFilterByProfile] = useState(true)
+  // Off by default: pinned to a profile's exact version this hides almost
+  // everything (a snapshot profile cut a 98-result search down to 1), and the
+  // install dialog already warns when something does not fit.
+  const [filterByProfile, setFilterByProfile] = useState(false)
 
   const [results, setResults] = useState<SearchResult[]>([])
+  /** Everything the current facets match, so we know when to stop loading. */
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [offset, setOffset] = useState(0)
@@ -103,16 +109,17 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       setLoading(true)
       setError(null)
       try {
-        const found = await api.content.search({
+        const page = await api.content.search({
           query,
           kind,
           sort,
           offset: nextOffset,
-          limit: 30,
+          limit: pageSize,
           gameVersion: filterByProfile ? profile?.gameVersion : undefined,
           loader: filterByProfile ? profile?.loader : undefined
         })
-        setResults((current) => (append ? [...current, ...found] : found))
+        setResults((current) => (append ? [...current, ...page.hits] : page.hits))
+        setTotal(page.total)
         setOffset(nextOffset)
       } catch (caught) {
         setError(errorMessage(caught))
@@ -121,8 +128,26 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         setLoading(false)
       }
     },
-    [query, kind, sort, filterByProfile, profile]
+    [query, kind, sort, filterByProfile, profile, pageSize]
   )
+
+  const sentinel = useRef<HTMLDivElement>(null)
+
+  // Load the next page when the end of the list scrolls into view, so finding a
+  // mod never depends on noticing a "load more" button.
+  useEffect(() => {
+    const node = sentinel.current
+    if (!node || loading || results.length === 0 || results.length >= total) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void runSearch(offset + pageSize, true)
+      },
+      { rootMargin: '400px' }
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [loading, results.length, total, offset, pageSize, runSearch])
 
   // Debounce the query so typing does not fire a request per keystroke.
   useEffect(() => {
@@ -236,6 +261,28 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </div>
       )}
 
+      {/* The profile filter is the usual reason a mod "isn't on Modrinth": pinned
+          to a snapshot, almost nothing matches. Say so instead of showing an
+          empty grid. */}
+      {kind !== 'world' && filterByProfile && profile && !loading && !error && total < 5 && (
+        <div className="notice notice--warning" style={{ marginBottom: 16 }}>
+          <Icon name="compass" size={15} />
+          <div>
+            <strong>
+              Profil süzgeci açık: {profile.gameVersion} · {profile.loader}
+            </strong>
+            Yalnızca bu sürüm ve yükleyici için yayımlanmış içerikler listeleniyor, bu yüzden
+            {total === 0 ? ' hiç sonuç çıkmadı' : ` yalnızca ${total} sonuç var`}. Süzgeci
+            kapatırsanız tümünü görebilirsiniz.
+            <div style={{ marginTop: 8 }}>
+              <button className="btn btn--sm" onClick={() => setFilterByProfile(false)}>
+                Süzgeci kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {kind === 'world' && (
         <div className="empty">
           <div className="empty__icon">🌍</div>
@@ -292,12 +339,24 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </div>
       )}
 
-      {results.length > 0 && !loading && (
-        <div className="row" style={{ justifyContent: 'center', padding: 22 }}>
-          <button className="btn" onClick={() => void runSearch(offset + 30, true)}>
-            Daha fazla yükle
-          </button>
+      {/* Scrolling to the bottom fetches the next page on its own; the button is
+          only a fallback for when the observer cannot fire (no scrollbar yet). */}
+      {results.length > 0 && results.length < total && (
+        <div className="row" style={{ justifyContent: 'center', padding: 22 }} ref={sentinel}>
+          {loading ? (
+            <div className="spinner" />
+          ) : (
+            <button className="btn" onClick={() => void runSearch(offset + pageSize, true)}>
+              Daha fazla yükle · {results.length}/{total}
+            </button>
+          )}
         </div>
+      )}
+
+      {results.length > 0 && results.length >= total && (
+        <p className="faint" style={{ textAlign: 'center', padding: 18 }}>
+          {total} sonucun tamamı gösteriliyor.
+        </p>
       )}
 
       {selected && (

@@ -138,7 +138,8 @@ export async function downloadUpdate(): Promise<UpdateStatus> {
 
 export function installUpdate(): void {
   if (status.state !== 'ready') return
-  // `isSilent: false` keeps the installer's own progress window; `isForceRunAfter`
-  // brings the launcher back up once it finishes.
-  setImmediate(() => autoUpdater.quitAndInstall(false, true))
+  // `isSilent: true` runs the installer without its wizard, reusing the install
+  // directory and shortcuts already chosen — an update should not re-ask what
+  // was answered at first install. `isForceRunAfter` brings the launcher back up.
+  setImmediate(() => autoUpdater.quitAndInstall(true, true))
 }

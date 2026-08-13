@@ -10,7 +10,6 @@ import type {
   Profile,
   ProjectVersion,
   SearchQuery,
-  SearchResult,
   Settings,
   TaskProgress
 } from '../shared/types'
@@ -254,7 +253,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   // ------------------------------------------------------------------- content
 
-  handle('content:search', (query: SearchQuery): Promise<SearchResult[]> => modrinth.search(query))
+  handle('content:search', (query: SearchQuery) => modrinth.search(query))
 
   handle(
     'content:versions',

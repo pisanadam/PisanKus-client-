@@ -51,6 +51,11 @@ export interface SkinInfo {
   capes: { id: string; alias: string; url: string; active: boolean }[]
 }
 
+export interface SearchPage {
+  hits: SearchResult[]
+  total: number
+}
+
 export interface ProjectDetail {
   id: string
   slug: string
@@ -131,7 +136,7 @@ const api = {
   },
 
   content: {
-    search: (query: SearchQuery): Promise<SearchResult[]> => ipcRenderer.invoke('content:search', query),
+    search: (query: SearchQuery): Promise<SearchPage> => ipcRenderer.invoke('content:search', query),
     versions: (
       projectId: string,
       gameVersion?: string,

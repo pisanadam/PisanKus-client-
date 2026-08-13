@@ -155,6 +155,32 @@ export function Settings(): JSX.Element {
         </section>
 
         <section className="settings-group">
+          <div className="section-title">Keşfet</div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">Arama sonucu sayısı</div>
+              <div className="faint">
+                Her sayfada kaç sonuç getirileceği. Liste sonuna gelindiğinde bir sonraki sayfa
+                kendiliğinden yükleniyor.
+              </div>
+            </div>
+            <select
+              className="select"
+              style={{ width: 130 }}
+              value={settings.searchPageSize}
+              onChange={(event) => void saveSettings({ searchPageSize: Number(event.target.value) })}
+            >
+              {[20, 30, 50, 100].map((size) => (
+                <option key={size} value={size}>
+                  {size} sonuç
+                </option>
+              ))}
+            </select>
+          </div>
+        </section>
+
+        <section className="settings-group">
           <div className="section-title">Minecraft ayarları</div>
 
           <div className="settings-row">

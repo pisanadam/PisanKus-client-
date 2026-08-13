@@ -85,6 +85,8 @@ export interface Settings {
   /** Client id presented to that platform. */
   msClientId: string
   concurrentDownloads: number
+  /** Results fetched per search page in Keşfet. Modrinth caps this at 100. */
+  searchPageSize: number
   keepLauncherOpen: boolean
   theme: 'dark' | 'light' | 'system'
   accentColor: string

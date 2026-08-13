@@ -47,7 +47,13 @@ interface ModrinthVersion {
   dependencies: { project_id: string | null; version_id: string | null; dependency_type: string }[]
 }
 
-export async function search(query: SearchQuery): Promise<SearchResult[]> {
+export interface SearchPage {
+  hits: SearchResult[]
+  /** Everything the facets match, not just this page — drives "load more". */
+  total: number
+}
+
+export async function search(query: SearchQuery): Promise<SearchPage> {
   const projectType = PROJECT_TYPE[query.kind]
   if (!projectType) throw new Error(`Modrinth bu türü barındırmıyor: ${query.kind}`)
 
@@ -77,8 +83,8 @@ export async function search(query: SearchQuery): Promise<SearchResult[]> {
     limit: String(query.limit ?? 30)
   })
 
-  const response = await fetchJson<{ hits: ModrinthHit[] }>(`${API}/search?${params}`)
-  return response.hits.map((hit) => ({
+  const response = await fetchJson<{ hits: ModrinthHit[]; total_hits: number }>(`${API}/search?${params}`)
+  const hits = response.hits.map((hit) => ({
     source: 'modrinth' as const,
     projectId: hit.project_id,
     slug: hit.slug,
@@ -95,6 +101,7 @@ export async function search(query: SearchQuery): Promise<SearchResult[]> {
     kind: query.kind,
     updatedAt: hit.date_modified
   }))
+  return { hits, total: response.total_hits }
 }
 
 function toProjectVersion(version: ModrinthVersion): ProjectVersion {
