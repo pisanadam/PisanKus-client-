@@ -31,7 +31,9 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
   const [kind, setKind] = useState<ContentKind>('mod')
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
   const [query, setQuery] = useState('')
-  const [profileId, setProfileId] = useState(lockedProfileId ?? profiles[0]?.id ?? '')
+  // Defaults to browse mode so opening Keşfet shows every mod, not just the ones
+  // one profile happens to accept.
+  const [profileId, setProfileId] = useState(lockedProfileId ?? '')
   // Set while the install dialog is open. When the store was opened from inside
   // a profile the target is already settled, so the dialog only appears to carry
   // an incompatibility warning.
@@ -40,7 +42,13 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
   // Off by default: pinned to a profile's exact version this hides almost
   // everything (a snapshot profile cut a 98-result search down to 1), and the
   // install dialog already warns when something does not fit.
-  const [filterByProfile, setFilterByProfile] = useState(false)
+  /**
+   * Browse mode is the empty profile id: nothing is filtered and no profile is
+   * pre-chosen, so the store lists everything Modrinth has. Picking a profile in
+   * the same dropdown narrows the search to what that profile can run.
+   */
+  const BROWSE = ''
+  const filterByProfile = profileId !== BROWSE
 
   const [results, setResults] = useState<SearchResult[]>([])
   /** Everything the current facets match, so we know when to stop loading. */
@@ -95,10 +103,6 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       notify(errorMessage(caught), 'error')
     }
   }
-
-  useEffect(() => {
-    if (!profileId && profiles[0]) setProfileId(profiles[0].id)
-  }, [profiles, profileId])
 
   const runSearch = useCallback(
     async (nextOffset: number, append: boolean) => {
@@ -163,7 +167,9 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       <header className="page__header">
         <div>
           <h1 className="page__title">Keşfet</h1>
-          <p className="page__subtitle">Modrinth içeriklerini doğrudan profillerinize kurun</p>
+          <p className="page__subtitle">
+            Gezinti modunda her şey listelenir; bir profil seçerseniz yalnızca ona uyanlar gösterilir
+          </p>
         </div>
       </header>
 
@@ -196,12 +202,12 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           ) : (
             <select
               className="select"
-              style={{ width: 210 }}
+              style={{ width: 230 }}
               value={profileId}
               onChange={(event) => setProfileId(event.target.value)}
               aria-label="Hedef profil"
             >
-              {profiles.length === 0 && <option value="">Profil yok</option>}
+              <option value="">Gezinti modu (filtresiz)</option>
               {profiles.map((entry) => (
                 <option key={entry.id} value={entry.id}>
                   {entry.name} · {entry.gameVersion}
@@ -226,15 +232,6 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           </div>
 
           <div className="topbar__spacer" />
-
-          <button
-            className="chip"
-            aria-pressed={filterByProfile}
-            onClick={() => setFilterByProfile((value) => !value)}
-            title="Yalnızca seçili profille uyumlu içerikleri göster"
-          >
-            {profile ? `${profile.gameVersion} · ${profile.loader}` : 'Profil filtresi'}
-          </button>
 
           <select
             className="select"
@@ -278,8 +275,8 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             {total === 0 ? ' hiç sonuç çıkmadı' : ` yalnızca ${total} sonuç var`}. Süzgeci
             kapatırsanız tümünü görebilirsiniz.
             <div style={{ marginTop: 8 }}>
-              <button className="btn btn--sm" onClick={() => setFilterByProfile(false)}>
-                Süzgeci kapat
+              <button className="btn btn--sm" onClick={() => setProfileId(BROWSE)}>
+                Gezinti moduna dön
               </button>
             </div>
           </div>
