@@ -6,6 +6,13 @@ const MC_API = 'https://api.minecraftservices.com/minecraft/profile'
 
 export type SkinVariant = 'classic' | 'slim'
 
+/** A texture the renderer can paint directly, with its real pixel size. */
+export interface Texture {
+  dataUrl: string
+  width: number
+  height: number
+}
+
 export interface SkinInfo {
   skinUrl?: string
   variant: SkinVariant
@@ -21,6 +28,65 @@ export interface SkinInfo {
 export function httpsTexture(url: string | undefined): string | undefined {
   if (!url) return undefined
   return url.replace(/^http:\/\//i, 'https://')
+}
+
+/**
+ * Only Mojang's own texture hosts may be fetched on the renderer's behalf.
+ * Without this the IPC below would be a general-purpose proxy that lets the page
+ * pull any url it likes through the main process, straight past the content
+ * policy that exists to stop exactly that.
+ */
+const TEXTURE_HOSTS = /(^|\.)(minecraft\.net|mojang\.com)$/i
+
+// Skins are a few kilobytes each and rarely change during a session.
+const textureCache = new Map<string, Texture>()
+const TEXTURE_CACHE_LIMIT = 48
+
+/**
+ * Fetches a skin or cape texture and returns it as a data url.
+ *
+ * The renderer used to point `background-image` straight at the texture url,
+ * which meant every avatar depended on the page's own network access and on the
+ * url surviving the content policy — an account stored before the https fix
+ * kept an http url and simply rendered an empty square. Handing over the bytes
+ * removes both failure modes.
+ */
+export async function textureDataUrl(rawUrl: string): Promise<Texture> {
+  const url = httpsTexture(rawUrl)!
+  const cached = textureCache.get(url)
+  if (cached) return cached
+
+  const parsed = new URL(url)
+  if (parsed.protocol !== 'https:' || !TEXTURE_HOSTS.test(parsed.hostname)) {
+    throw new Error(`Bu adresten doku yüklenemez: ${parsed.hostname}`)
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Doku indirilemedi (${response.status}).`)
+
+  const buffer = Buffer.from(await response.arrayBuffer())
+  const texture: Texture = {
+    dataUrl: `data:image/png;base64,${buffer.toString('base64')}`,
+    ...pngSize(buffer)
+  }
+
+  if (textureCache.size >= TEXTURE_CACHE_LIMIT) {
+    textureCache.delete(textureCache.keys().next().value as string)
+  }
+  textureCache.set(url, texture)
+  return texture
+}
+
+/**
+ * Reads the dimensions out of a PNG's IHDR chunk, which always comes first.
+ *
+ * The model needs these to place UV cuts: skins are 64×64, but capes are 64×32
+ * and old accounts still carry 64×32 skins. Guessing would misalign every face.
+ */
+function pngSize(buffer: Buffer): { width: number; height: number } {
+  const signature = buffer.subarray(0, 8).toString('hex')
+  if (signature !== '89504e470d0a1a0a') throw new Error('Doku PNG değil.')
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) }
 }
 
 interface ProfileResponse {
@@ -64,6 +130,29 @@ export async function getSkinInfo(account: Account): Promise<SkinInfo> {
       url: httpsTexture(cape.url) ?? cape.url,
       active: cape.state === 'ACTIVE'
     }))
+  }
+}
+
+export interface LocalSkin {
+  path: string
+  name: string
+  texture: Texture
+}
+
+/**
+ * Validates a picked PNG and hands it back for preview. Nothing is sent to
+ * Mojang until the user presses apply.
+ */
+export async function readLocalSkin(filePath: string): Promise<LocalSkin> {
+  const buffer = await fsp.readFile(filePath)
+  await assertValidSkin(buffer)
+  return {
+    path: filePath,
+    name: path.basename(filePath),
+    texture: {
+      dataUrl: `data:image/png;base64,${buffer.toString('base64')}`,
+      ...pngSize(buffer)
+    }
   }
 }
 

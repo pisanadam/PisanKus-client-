@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import type { Texture } from '../../preload'
+import { useTexture } from '../lib/useTexture'
 
 /**
  * Renders a Minecraft skin as a real 3D model out of CSS-transformed boxes.
@@ -21,6 +23,13 @@ interface Box {
   /** Overlay boxes are drawn slightly larger so they sit on top of the base layer. */
   inflate?: number
   className?: string
+  /** Rotation of the whole box about its own centre, in degrees. */
+  spinX?: number
+  spinY?: number
+  /** Which texture the box samples. Defaults to the skin. */
+  source?: 'skin' | 'cape'
+  /** Flips the box, so a legacy skin's single arm can serve both sides. */
+  mirror?: boolean
 }
 
 type FaceName = 'top' | 'bottom' | 'right' | 'front' | 'left' | 'back'
@@ -85,11 +94,16 @@ function faceSize(face: FaceName, w: number, h: number, d: number): [number, num
   }
 }
 
-function BoxPart({ box, skinUrl, scale }: { box: Box; skinUrl: string; scale: number }): JSX.Element {
+function BoxPart({ box, texture, scale }: { box: Box; texture: Texture; scale: number }): JSX.Element {
   const inflate = box.inflate ?? 0
   const w = (box.width + inflate * 2) * scale
   const h = (box.height + inflate * 2) * scale
   const d = (box.depth + inflate * 2) * scale
+
+  const spin =
+    (box.spinY ? ` rotateY(${box.spinY}deg)` : '') +
+    (box.spinX ? ` rotateX(${box.spinX}deg)` : '') +
+    (box.mirror ? ' scaleX(-1)' : '')
 
   return (
     <div
@@ -99,7 +113,7 @@ function BoxPart({ box, skinUrl, scale }: { box: Box; skinUrl: string; scale: nu
         height: 0,
         left: '50%',
         top: 0,
-        transform: `translate3d(${box.x * scale}px, ${box.y * scale}px, ${box.z * scale}px)`
+        transform: `translate3d(${box.x * scale}px, ${box.y * scale}px, ${box.z * scale}px)${spin}`
       }}
     >
       {FACES.map((face) => {
@@ -114,8 +128,10 @@ function BoxPart({ box, skinUrl, scale }: { box: Box; skinUrl: string; scale: nu
           width: faceW,
           height: faceH,
           transform: faceTransform(face, w, h, d),
-          backgroundImage: `url(${skinUrl})`,
-          backgroundSize: `${64 * pixel}px ${64 * pixelV}px`,
+          backgroundImage: `url(${texture.dataUrl})`,
+          // Scaled from the texture's real size: skins are 64×64 but capes are
+          // 64×32, and a hardcoded 64 would misplace every cape face.
+          backgroundSize: `${texture.width * pixel}px ${texture.height * pixelV}px`,
           backgroundPosition: `${-uv.u * pixel}px ${-uv.v * pixelV}px`
         }
         return <div key={face} className="skin-face" style={style} />
@@ -124,9 +140,65 @@ function BoxPart({ box, skinUrl, scale }: { box: Box; skinUrl: string; scale: nu
   )
 }
 
-function buildModel(slim: boolean): Box[] {
+/**
+ * The cape box. Its texture is a separate 64×32 image whose standard unwrap
+ * happens to be exactly `faceUv` at u=0, v=0 for a 10×16×1 box.
+ *
+ * It hangs off the player's back, and the decorated side is the one you see
+ * from behind — which is the `back` face in world terms but the `front` face of
+ * the unwrap, so the box is spun 180° about Y. The 8° tilt is the lean the game
+ * gives a cape at rest.
+ */
+const CAPE: Box = {
+  width: 10,
+  height: 16,
+  depth: 1,
+  u: 0,
+  v: 0,
+  x: 0,
+  y: 16,
+  z: -3,
+  spinY: 180,
+  spinX: -8,
+  source: 'cape',
+  className: 'cape'
+}
+
+/**
+ * Builds the box list for a skin.
+ *
+ * `legacy` covers the original 64×32 texture, which a fair number of old
+ * accounts still have. It carries no left arm, left leg, or body overlays — the
+ * right limbs are mirrored onto the left — so a modern model laid over it would
+ * sample empty space for half the body.
+ */
+function buildModel(slim: boolean, legacy: boolean): Box[] {
   const armWidth = slim ? 3 : 4
   const armOffset = 4 + armWidth / 2
+
+  if (legacy) {
+    return [
+      { width: 8, height: 8, depth: 8, u: 0, v: 0, x: 0, y: 4, z: 0 },
+      { width: 8, height: 12, depth: 4, u: 16, v: 16, x: 0, y: 14, z: 0 },
+      { width: armWidth, height: 12, depth: 4, u: 40, v: 16, x: -armOffset, y: 14, z: 0, className: 'arm arm--right' },
+      {
+        width: armWidth,
+        height: 12,
+        depth: 4,
+        u: 40,
+        v: 16,
+        x: armOffset,
+        y: 14,
+        z: 0,
+        mirror: true,
+        className: 'arm arm--left'
+      },
+      { width: 4, height: 12, depth: 4, u: 0, v: 16, x: -2, y: 26, z: 0, className: 'leg leg--right' },
+      { width: 4, height: 12, depth: 4, u: 0, v: 16, x: 2, y: 26, z: 0, mirror: true, className: 'leg leg--left' },
+      // The hat is the one overlay the old format does have.
+      { width: 8, height: 8, depth: 8, u: 32, v: 0, x: 0, y: 4, z: 0, inflate: 0.5, className: 'skin-part--overlay' }
+    ]
+  }
 
   return [
     // Base layer
@@ -193,6 +265,10 @@ function buildModel(slim: boolean): Box[] {
 
 export interface SkinViewerProps {
   skinUrl?: string
+  /** Already-loaded texture, used to preview a file before it is applied. */
+  skinTexture?: Texture
+  /** Texture of the cape to hang on the model, if any. */
+  capeUrl?: string
   slim?: boolean
   /** Pixels per skin pixel. */
   scale?: number
@@ -203,11 +279,16 @@ export interface SkinViewerProps {
 
 export function SkinViewer({
   skinUrl,
+  skinTexture,
+  capeUrl,
   slim = false,
   scale = 9,
   className,
   loading = false
 }: SkinViewerProps): JSX.Element {
+  const fetched = useTexture(skinTexture ? undefined : skinUrl)
+  const skin = skinTexture ?? fetched
+  const cape = useTexture(capeUrl)
   const [rotation, setRotation] = useState({ x: -12, y: 22 })
   const [dragging, setDragging] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
@@ -243,18 +324,21 @@ export function SkinViewer({
     }
   }, [dragging])
 
-  if (!skinUrl) {
+  if (!skin) {
+    const fetching = loading || Boolean(skinUrl)
     return (
       <div className={`skin-stage ${className ?? ''}`}>
         <div className="empty" style={{ border: 'none' }}>
           <div className="empty__icon">🧍</div>
-          <div className="muted">{loading ? 'Skin yükleniyor…' : 'Bu hesapta özel skin yok.'}</div>
+          <div className="muted">{fetching ? 'Skin yükleniyor…' : 'Bu hesapta özel skin yok.'}</div>
         </div>
       </div>
     )
   }
 
-  const boxes = buildModel(slim)
+  // A 64×32 texture is the legacy layout; 64×64 is the modern one.
+  const boxes = buildModel(slim, skin.height < 64)
+  if (cape) boxes.push(CAPE)
   const modelHeight = 32 * scale
 
   return (
@@ -276,7 +360,12 @@ export function SkinViewer({
         }}
       >
         {boxes.map((box, index) => (
-          <BoxPart key={index} box={box} skinUrl={skinUrl} scale={scale} />
+          <BoxPart
+            key={index}
+            box={box}
+            texture={box.source === 'cape' ? cape! : skin}
+            scale={scale}
+          />
         ))}
       </div>
     </div>
@@ -294,7 +383,11 @@ export function SkinHead({
   /** Falls back to this player's initial, so the slot is never blank. */
   name?: string
 }): JSX.Element {
-  if (!skinUrl) {
+  const skin = useTexture(skinUrl)
+
+  // Shown while the texture is still being fetched too, so the slot never sits
+  // empty the way it did when a stale http url silently failed to load.
+  if (!skin) {
     return (
       <div
         className="avatar"
@@ -316,6 +409,12 @@ export function SkinHead({
   }
 
   const pixel = size / 8
+  const sheet = {
+    backgroundImage: `url(${skin.dataUrl})`,
+    backgroundSize: `${skin.width * pixel}px ${skin.height * pixel}px`,
+    imageRendering: 'pixelated' as const
+  }
+
   return (
     <div
       className="avatar"
@@ -323,10 +422,8 @@ export function SkinHead({
         width: size,
         height: size,
         position: 'relative',
-        backgroundImage: `url(${skinUrl})`,
-        backgroundSize: `${64 * pixel}px ${64 * pixel}px`,
-        backgroundPosition: `${-8 * pixel}px ${-8 * pixel}px`,
-        imageRendering: 'pixelated'
+        ...sheet,
+        backgroundPosition: `${-8 * pixel}px ${-8 * pixel}px`
       }}
     >
       {/* Hat layer on top of the face. */}
@@ -334,10 +431,8 @@ export function SkinHead({
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: `url(${skinUrl})`,
-          backgroundSize: `${64 * pixel}px ${64 * pixel}px`,
-          backgroundPosition: `${-40 * pixel}px ${-8 * pixel}px`,
-          imageRendering: 'pixelated'
+          ...sheet,
+          backgroundPosition: `${-40 * pixel}px ${-8 * pixel}px`
         }}
       />
     </div>

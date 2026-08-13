@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { SkinInfo } from '../../preload'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
+import type { LocalSkin, SkinInfo } from '../../preload'
 import { Icon } from '../components/Icon'
 import { SkinViewer } from '../components/SkinViewer'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
+import { useTexture } from '../lib/useTexture'
 import { useApp } from '../state/AppContext'
+
+/** A skin chosen but not yet sent to Mojang. */
+type Pending =
+  | { kind: 'file'; file: LocalSkin }
+  | { kind: 'url'; url: string }
 
 export function Skins(): JSX.Element {
   const { activeAccount, refreshAccounts, notify } = useApp()
@@ -13,6 +19,7 @@ export function Skins(): JSX.Element {
   const [busy, setBusy] = useState(false)
   const [variant, setVariant] = useState<'classic' | 'slim'>('classic')
   const [urlInput, setUrlInput] = useState('')
+  const [pending, setPending] = useState<Pending | null>(null)
 
   const load = useCallback(async () => {
     if (!activeAccount) return
@@ -40,6 +47,7 @@ export function Skins(): JSX.Element {
       if (updated) {
         setInfo(updated)
         setVariant(updated.variant)
+        setPending(null)
         await refreshAccounts()
         notify('Skin güncellendi.')
       }
@@ -60,19 +68,55 @@ export function Skins(): JSX.Element {
     )
   }
 
+  const activeCape = info?.capes.find((cape) => cape.active)
+
+  const apply = (): void => {
+    if (!pending) return
+    void mutate(() =>
+      pending.kind === 'file'
+        ? api.skins.upload(activeAccount.id, pending.file.path, variant)
+        : api.skins.setUrl(activeAccount.id, pending.url, variant)
+    )
+  }
+
   return (
     <div className="page">
       <header className="page__header">
         <div>
           <h1 className="page__title">Skin</h1>
           <p className="page__subtitle">
-            {activeAccount.name} · değişiklikler Minecraft hesabınıza doğrudan uygulanır
+            {activeAccount.name} · seçtiğiniz skini önce burada görün, sonra uygulayın
           </p>
         </div>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(320px, 420px)', gap: 22 }}>
-        <SkinViewer skinUrl={info?.skinUrl} slim={variant === 'slim'} scale={10} loading={loading} />
+        <div className="stack">
+          <SkinViewer
+            skinUrl={pending?.kind === 'url' ? undefined : info?.skinUrl}
+            skinTexture={pending?.kind === 'file' ? pending.file.texture : undefined}
+            capeUrl={activeCape?.url}
+            slim={variant === 'slim'}
+            scale={10}
+            loading={loading}
+          />
+          {pending && (
+            <div className="preview-bar">
+              <Icon name="image" size={15} />
+              <span className="preview-bar__text">
+                {pending.kind === 'file' ? pending.file.name : 'Bağlantıdaki skin'} · önizleme,
+                henüz uygulanmadı
+              </span>
+              <button className="btn btn--sm btn--ghost" onClick={() => setPending(null)} disabled={busy}>
+                Vazgeç
+              </button>
+              <button className="btn btn--sm btn--primary" onClick={apply} disabled={busy}>
+                {busy ? <div className="spinner" /> : <Icon name="check" size={14} />}
+                Uygula
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="stack-lg">
           <div className="settings-group">
@@ -96,7 +140,7 @@ export function Skins(): JSX.Element {
               </button>
             </div>
             <p className="faint">
-              Model seçimi yeni skin yüklerken uygulanır. Önizlemeyi sürükleyerek modeli döndürebilirsiniz.
+              Model seçimi skini uygularken gönderilir. Önizlemeyi sürükleyerek modeli döndürebilirsiniz.
             </p>
           </div>
 
@@ -104,12 +148,19 @@ export function Skins(): JSX.Element {
             <div className="section-title">Skin değiştir</div>
 
             <button
-              className="btn btn--primary"
+              className="btn"
               disabled={busy}
-              onClick={() => void mutate(() => api.skins.upload(activeAccount.id, variant))}
+              onClick={async () => {
+                try {
+                  const picked = await api.skins.pickFile()
+                  if (picked) setPending({ kind: 'file', file: picked })
+                } catch (error) {
+                  notify(errorMessage(error), 'error')
+                }
+              }}
             >
-              {busy ? <div className="spinner" /> : <Icon name="image" size={16} />}
-              PNG dosyası yükle
+              <Icon name="image" size={16} />
+              PNG dosyası seç
             </button>
             <p className="faint">64×64 (veya eski biçim 64×32) boyutunda, en fazla 24 KB bir PNG seçin.</p>
 
@@ -128,17 +179,18 @@ export function Skins(): JSX.Element {
                 <button
                   className="btn"
                   disabled={busy || !/^https?:\/\//i.test(urlInput)}
-                  onClick={() =>
-                    void mutate(async () => {
-                      const updated = await api.skins.setUrl(activeAccount.id, urlInput.trim(), variant)
-                      setUrlInput('')
-                      return updated
-                    })
-                  }
+                  onClick={() => {
+                    setPending({ kind: 'url', url: urlInput.trim() })
+                    setUrlInput('')
+                  }}
                 >
-                  Uygula
+                  Seç
                 </button>
               </div>
+              <p className="faint">
+                Bağlantıdaki skin önizlenemez; Mojang dosyayı kendisi indirir. Uygula&apos;ya bastıktan
+                sonra modelde görünür.
+              </p>
             </div>
 
             <button
@@ -156,39 +208,33 @@ export function Skins(): JSX.Element {
             {loading ? (
               <div className="spinner" />
             ) : info && info.capes.length > 0 ? (
-              <div className="list">
-                <div className="list__row">
-                  <div className="list__main">
-                    <div className="list__title">Pelerin yok</div>
-                  </div>
+              <>
+                <div className="capes">
                   <button
-                    className="btn btn--sm"
-                    disabled={busy || !info.capes.some((cape) => cape.active)}
+                    className="cape-card"
+                    aria-pressed={!activeCape}
+                    disabled={busy}
                     onClick={() => void mutate(() => api.skins.setCape(activeAccount.id, null))}
                   >
-                    Kaldır
+                    <span className="cape-card__art cape-card__art--none">
+                      <Icon name="close" size={18} />
+                    </span>
+                    <span className="cape-card__name">Pelerinsiz</span>
                   </button>
+
+                  {info.capes.map((cape) => (
+                    <CapeCard
+                      key={cape.id}
+                      alias={cape.alias}
+                      url={cape.url}
+                      active={cape.active}
+                      disabled={busy}
+                      onSelect={() => void mutate(() => api.skins.setCape(activeAccount.id, cape.id))}
+                    />
+                  ))}
                 </div>
-                {info.capes.map((cape) => (
-                  <div key={cape.id} className="list__row">
-                    <img className="list__icon" src={cape.url} alt="" style={{ objectFit: 'contain' }} />
-                    <div className="list__main">
-                      <div className="list__title">{cape.alias}</div>
-                    </div>
-                    {cape.active ? (
-                      <span className="badge badge--success">Etkin</span>
-                    ) : (
-                      <button
-                        className="btn btn--sm"
-                        disabled={busy}
-                        onClick={() => void mutate(() => api.skins.setCape(activeAccount.id, cape.id))}
-                      >
-                        Kullan
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                <p className="faint">Seçtiğiniz pelerin hem modelde hem oyunda anında görünür.</p>
+              </>
             ) : (
               <p className="faint">Bu hesaba tanımlı pelerin bulunmuyor.</p>
             )}
@@ -198,3 +244,51 @@ export function Skins(): JSX.Element {
     </div>
   )
 }
+
+/**
+ * One cape in the picker. The art is the cape's own front panel, cut out of the
+ * texture the same way the model does it, so the card shows the actual design
+ * rather than the raw unwrapped sheet.
+ */
+function CapeCard({
+  alias,
+  url,
+  active,
+  disabled,
+  onSelect
+}: {
+  alias: string
+  url: string
+  active: boolean
+  disabled: boolean
+  onSelect: () => void
+}): JSX.Element {
+  const texture = useCapeTexture(url)
+
+  return (
+    <button className="cape-card" aria-pressed={active} disabled={disabled} onClick={onSelect}>
+      <span className="cape-card__art" style={texture}>
+        {!texture && <div className="spinner" />}
+      </span>
+      <span className="cape-card__name">{alias}</span>
+      {active && <span className="cape-card__tick"><Icon name="check" size={13} /></span>}
+    </button>
+  )
+}
+
+/** Crops the 10×16 front panel out of a cape sheet, scaled to the card. */
+function useCapeTexture(url: string): CSSProperties | undefined {
+  const texture = useTexture(url)
+  if (!texture) return undefined
+
+  // The panel sits at (1,1) and the card is 10 cape-pixels wide.
+  const pixel = CAPE_CARD_WIDTH / 10
+  return {
+    backgroundImage: `url(${texture.dataUrl})`,
+    backgroundSize: `${texture.width * pixel}px ${texture.height * pixel}px`,
+    backgroundPosition: `${-1 * pixel}px ${-1 * pixel}px`,
+    imageRendering: 'pixelated'
+  }
+}
+
+const CAPE_CARD_WIDTH = 50

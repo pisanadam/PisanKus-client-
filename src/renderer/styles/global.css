@@ -133,6 +133,102 @@ a {
   overflow-y: auto;
 }
 
+/* -------------------------------------------------------- skin & capes */
+
+.preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12.5px;
+}
+
+.preview-bar__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+}
+
+.capes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 10px;
+}
+
+.cape-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  transition: border-color 0.14s, background 0.14s;
+}
+
+.cape-card:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.cape-card[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.cape-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* 10×16 cape pixels at 5px each — the proportions of the real panel. */
+.cape-card__art {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 80px;
+  border-radius: 4px;
+  background-color: var(--surface-active);
+}
+
+.cape-card__art--none {
+  color: var(--text-faint);
+}
+
+.cape-card__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.cape-card[aria-pressed='true'] .cape-card__name {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.cape-card__tick {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+}
+
 /* ------------------------------------------------------- update banner */
 
 .update {

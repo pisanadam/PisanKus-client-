@@ -30,7 +30,13 @@ export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { ex
 
 function toPublic(account: Account): PublicAccount {
   const { accessToken: _accessToken, refreshToken: _refreshToken, ...rest } = account
-  return { ...rest, expired: account.expiresAt <= Date.now() }
+  return {
+    ...rest,
+    // Accounts stored before the https fix still hold an http texture url, and
+    // upgrading only at sign-in would leave them broken until the next login.
+    skinUrl: skins.httpsTexture(rest.skinUrl),
+    expired: account.expiresAt <= Date.now()
+  }
 }
 
 const sessions = new Map<string, GameSession>()
@@ -305,7 +311,10 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('skins:get', (accountId: string) => withAccount(accountId, skins.getSkinInfo))
 
-  handle('skins:upload', async (accountId: string, variant: skins.SkinVariant) => {
+  // Picking and applying are separate steps so the chosen file can be previewed
+  // on the model first — uploading straight from the file dialog gave no way to
+  // see what you were about to put on your account.
+  handle('skins:pickFile', async () => {
     const window = getWindow()
     if (!window) throw new Error('Pencere bulunamadı.')
     const result = await dialog.showOpenDialog(window, {
@@ -313,13 +322,16 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       filters: [{ name: 'Skin (PNG)', extensions: ['png'] }]
     })
     if (result.canceled) return null
+    return skins.readLocalSkin(result.filePaths[0])
+  })
 
-    return withAccount(accountId, async (account) => {
-      const info = await skins.uploadSkin(account, result.filePaths[0], variant)
+  handle('skins:upload', async (accountId: string, filePath: string, variant: skins.SkinVariant) =>
+    withAccount(accountId, async (account) => {
+      const info = await skins.uploadSkin(account, filePath, variant)
       store.upsertAccount({ ...account, skinUrl: info.skinUrl })
       return info
     })
-  })
+  )
 
   handle('skins:setUrl', (accountId: string, url: string, variant: skins.SkinVariant) =>
     withAccount(accountId, async (account) => {
@@ -346,6 +358,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   )
 
   // ----------------------------------------------------------------------- app
+
+  handle('skins:texture', (url: string) => skins.textureDataUrl(url))
 
   handle('app:version', () => app.getVersion())
 

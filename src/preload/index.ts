@@ -33,6 +33,18 @@ export interface PublicAccount {
   expired: boolean
 }
 
+export interface Texture {
+  dataUrl: string
+  width: number
+  height: number
+}
+
+export interface LocalSkin {
+  path: string
+  name: string
+  texture: Texture
+}
+
 export interface SkinInfo {
   skinUrl?: string
   variant: 'classic' | 'slim'
@@ -157,13 +169,17 @@ const api = {
 
   skins: {
     get: (accountId: string): Promise<SkinInfo> => ipcRenderer.invoke('skins:get', accountId),
-    upload: (accountId: string, variant: 'classic' | 'slim'): Promise<SkinInfo | null> =>
-      ipcRenderer.invoke('skins:upload', accountId, variant),
+    /** Opens the file dialog and returns the picked skin for preview, or null. */
+    pickFile: (): Promise<LocalSkin | null> => ipcRenderer.invoke('skins:pickFile'),
+    upload: (accountId: string, filePath: string, variant: 'classic' | 'slim'): Promise<SkinInfo> =>
+      ipcRenderer.invoke('skins:upload', accountId, filePath, variant),
     setUrl: (accountId: string, url: string, variant: 'classic' | 'slim'): Promise<SkinInfo> =>
       ipcRenderer.invoke('skins:setUrl', accountId, url, variant),
     reset: (accountId: string): Promise<SkinInfo> => ipcRenderer.invoke('skins:reset', accountId),
     setCape: (accountId: string, capeId: string | null): Promise<SkinInfo> =>
-      ipcRenderer.invoke('skins:setCape', accountId, capeId)
+      ipcRenderer.invoke('skins:setCape', accountId, capeId),
+    /** Mojang texture fetched by the main process, returned as a data url. */
+    texture: (url: string): Promise<Texture> => ipcRenderer.invoke('skins:texture', url)
   },
 
   tasks: {
