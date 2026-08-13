@@ -99,6 +99,25 @@ interface ProfileResponse {
   capes?: { id: string; state: string; url: string; alias: string }[]
 }
 
+/** Mojang sends no Retry-After, so this is the wait we assume. */
+export const DEFAULT_COOLDOWN = 60
+
+/**
+ * Mojang refused because the account changed its skin too often.
+ *
+ * Carries the wait so the interface can count it down instead of letting the
+ * player press again and extend the cooldown.
+ */
+export class RateLimitError extends Error {
+  constructor(readonly retryAfterSeconds: number) {
+    super(
+      `Mojang skin değiştirme sınırına takıldı. ${retryAfterSeconds} saniye sonra tekrar deneyin. ` +
+        'Bu sınır Mojang tarafında ve kayıtlı skinleri silmekle geçmez.'
+    )
+    this.name = 'RateLimitError'
+  }
+}
+
 async function authorized<T>(account: Account, url: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(url, {
     ...init,
@@ -111,6 +130,12 @@ async function authorized<T>(account: Account, url: string, init: RequestInit = 
 
   if (response.status === 401) {
     throw new Error('Oturum süresi doldu. Hesabınızı yeniden bağlayın.')
+  }
+  if (response.status === 429) {
+    // Mojang rate-limits skin and cape changes hard, and the limit is a
+    // server-side cooldown: it does not clear by undoing anything locally.
+    const seconds = Number.parseInt(response.headers.get('retry-after') ?? '', 10)
+    throw new RateLimitError(Number.isFinite(seconds) && seconds > 0 ? seconds : DEFAULT_COOLDOWN)
   }
   if (!response.ok) {
     const detail = await response.text().catch(() => '')

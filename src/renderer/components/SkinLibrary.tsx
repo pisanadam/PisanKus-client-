@@ -173,9 +173,16 @@ function SavedSkinCard({
           }}
         />
       ) : (
-        <button className="skin-shelf__name" onDoubleClick={() => setEditing(true)} onClick={onApply}>
+        /* Not a second apply button: double-clicking to rename also fired two
+           clicks, so renaming sent Mojang two skin changes back to back and
+           tripped its rate limit. Applying happens on the tile only. */
+        <span
+          className="skin-shelf__name"
+          title="Yeniden adlandırmak için çift tıklayın"
+          onDoubleClick={() => setEditing(true)}
+        >
           {skin.name}
-        </button>
+        </span>
       )}
 
       {confirming ? (

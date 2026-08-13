@@ -88,6 +88,41 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   // The renderer draws the update button straight from these.
   updater.initUpdater((status) => send('updates:status', status))
 
+  /**
+   * Runs a skin or cape change, waiting out Mojang's rate limit rather than
+   * failing on it. Mojang refuses rapid changes with 429 and the limit is a
+   * timed cooldown, so the right answer is to send it again when the wait is
+   * over — the way the official launcher does — instead of making the player
+   * watch a disabled button.
+   */
+  async function applyWaitingOutLimit<T>(label: string, run: () => Promise<T>): Promise<T> {
+    const taskId = `skin-change-${Date.now()}`
+
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const result = await run()
+        if (attempt > 0) {
+          onProgress({ id: taskId, label: `${label} uygulandı`, progress: 1, state: 'done' })
+        }
+        return result
+      } catch (error) {
+        // Two waits is plenty; beyond that something else is wrong.
+        if (!(error instanceof skins.RateLimitError) || attempt >= 2) throw error
+
+        for (let left = error.retryAfterSeconds; left > 0; left--) {
+          onProgress({
+            id: taskId,
+            label,
+            progress: 1 - left / error.retryAfterSeconds,
+            detail: `Mojang sınırı: ${left} sn sonra kendiliğinden gönderilecek`,
+            state: 'running'
+          })
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+      }
+    }
+  }
+
   /** Wraps a handler so thrown errors reach the renderer as readable messages. */
   const handle = <T extends unknown[], R>(
     channel: string,
@@ -342,19 +377,23 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   })
 
   handle('skins:upload', async (accountId: string, filePath: string, variant: skins.SkinVariant) =>
-    withAccount(accountId, async (account) => {
-      const info = await skins.uploadSkin(account, filePath, variant)
-      store.upsertAccount({ ...account, skinUrl: info.skinUrl })
-      return info
-    })
+    withAccount(accountId, async (account) =>
+      applyWaitingOutLimit('Skin uygulanıyor', async () => {
+        const info = await skins.uploadSkin(account, filePath, variant)
+        store.upsertAccount({ ...account, skinUrl: info.skinUrl })
+        return info
+      })
+    )
   )
 
   handle('skins:setUrl', (accountId: string, url: string, variant: skins.SkinVariant) =>
-    withAccount(accountId, async (account) => {
-      const info = await skins.setSkinFromUrl(account, url, variant)
-      store.upsertAccount({ ...account, skinUrl: info.skinUrl })
-      return info
-    })
+    withAccount(accountId, async (account) =>
+      applyWaitingOutLimit('Skin uygulanıyor', async () => {
+        const info = await skins.setSkinFromUrl(account, url, variant)
+        store.upsertAccount({ ...account, skinUrl: info.skinUrl })
+        return info
+      })
+    )
   )
 
   handle('skins:reset', (accountId: string) =>
@@ -434,11 +473,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   )
 
   handle('skins:applySaved', (accountId: string, id: string) =>
-    withAccount(accountId, async (account) => {
-      const info = await skins.applySavedSkin(account, id)
-      store.upsertAccount({ ...account, skinUrl: info.skinUrl })
-      return info
-    })
+    withAccount(accountId, async (account) =>
+      applyWaitingOutLimit('Skin uygulanıyor', async () => {
+        const info = await skins.applySavedSkin(account, id)
+        store.upsertAccount({ ...account, skinUrl: info.skinUrl })
+        return info
+      })
+    )
   )
 
   // ------------------------------------------------------------ game options

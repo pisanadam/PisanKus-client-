@@ -337,7 +337,9 @@ a {
 }
 
 .skin-shelf__name {
+  display: block;
   max-width: 76px;
+  cursor: default;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
