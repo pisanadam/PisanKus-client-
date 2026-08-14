@@ -1,9 +1,9 @@
-import extract from 'extract-zip'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import type { DownloadItem } from './downloader'
 import type { Artifact, Library, Rule, VersionJson } from './versions'
+import { extractZip } from '../archive'
 
 export type OsName = 'windows' | 'osx' | 'linux'
 
@@ -158,19 +158,10 @@ export async function extractNatives(
   await fsp.mkdir(targetDir, { recursive: true })
 
   for (const native of natives) {
-    await extract(native.file, {
+    await extractZip(native.file, {
       dir: targetDir,
-      onEntry: (entry) => {
-        const skip =
-          entry.fileName.endsWith('/') ||
-          native.exclude.some((prefix) => entry.fileName.startsWith(prefix))
-        if (skip) {
-          // extract-zip has no per-entry filter, so rename unwanted entries into a
-          // scratch folder that is removed right after.
-          entry.fileName = path.posix.join('__skipped__', entry.fileName)
-        }
-      }
+      filter: (entryName) =>
+        !entryName.endsWith('/') && !native.exclude.some((prefix) => entryName.startsWith(prefix))
     })
   }
-  await fsp.rm(path.join(targetDir, '__skipped__'), { recursive: true, force: true })
 }

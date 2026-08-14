@@ -1,4 +1,3 @@
-import extract from 'extract-zip'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -7,6 +6,8 @@ import { downloadAll, downloadFile, fileSha1 } from '../minecraft/downloader'
 import { defaultOptionsText } from '../../shared/options'
 import { fillMissingOptions } from '../minecraft/options'
 import { store } from '../store'
+import { requireLeafName, resolveInside } from '../pathSafety'
+import { extractZip } from '../archive'
 import * as modrinth from './modrinth'
 
 export type ProgressReporter = (task: TaskProgress) => void
@@ -116,7 +117,7 @@ export async function installContent(
     await downloadAll(
       queue.map((entry) => ({
         url: entry.version.fileUrl,
-        destination: path.join(targetDir, entry.version.fileName),
+        destination: resolveInside(targetDir, requireLeafName(entry.version.fileName, 'İndirilecek dosya adı')),
         sha1: entry.version.sha1,
         size: entry.version.fileSize
       })),
@@ -191,7 +192,7 @@ async function installModpack(
     await downloadFile({ url: version.fileUrl, destination: archive, sha1: version.sha1, size: version.fileSize })
 
     const unpacked = path.join(workDir, 'unpacked')
-    await extract(archive, { dir: unpacked })
+    await extractZip(archive, { dir: unpacked })
 
     const mrpackIndex = path.join(unpacked, 'modrinth.index.json')
     if (!(await exists(mrpackIndex))) {
@@ -237,8 +238,9 @@ async function applyMrPack(
   const downloads = index.files
     .filter((file) => file.env?.client !== 'unsupported')
     .map((file) => ({
-      // `path` is pack-relative and already includes mods/, resourcepacks/ etc.
-      destination: path.join(profile.directory, ...file.path.split('/')),
+      // Pack paths are untrusted input. Keep every download inside the profile
+      // even if a malformed index contains `..`, an absolute path or a drive.
+      destination: resolveInside(profile.directory, file.path, 'Mod paketi dosya yolu'),
       url: file.downloads[0],
       sha1: file.hashes.sha1,
       size: file.fileSize
@@ -305,8 +307,9 @@ export async function setContentEnabled(
   if (entry.enabled === enabled) return entry
 
   const dir = contentDir(profile, entry.kind)
-  const from = path.join(dir, entry.enabled ? entry.fileName : disabledName(entry.fileName))
-  const to = path.join(dir, enabled ? entry.fileName : disabledName(entry.fileName))
+  const fileName = requireLeafName(entry.fileName, 'İçerik dosya adı')
+  const from = resolveInside(dir, entry.enabled ? fileName : disabledName(fileName))
+  const to = resolveInside(dir, enabled ? fileName : disabledName(fileName))
   await fsp.rename(from, to)
 
   entry.enabled = enabled
@@ -320,15 +323,27 @@ export async function removeContent(profileId: string, contentId: string): Promi
   const entry = profile.content.find((item) => item.id === contentId)
   if (!entry) return
 
-  const dir = contentDir(profile, entry.kind)
-  if (entry.kind === 'world') {
-    await fsp.rm(path.join(dir, entry.fileName), { recursive: true, force: true })
-  } else if (entry.kind !== 'modpack') {
-    await fsp.rm(path.join(dir, entry.fileName), { force: true })
-    await fsp.rm(path.join(dir, disabledName(entry.fileName)), { force: true })
-  }
-
+  await removeContentFiles(profile, entry)
   store.updateProfile(profileId, { content: profile.content.filter((item) => item.id !== contentId) })
+}
+
+/** Removes an entry's files without changing the profile database. */
+async function removeContentFiles(
+  profile: Profile,
+  entry: InstalledContent,
+  preserve = new Set<string>()
+): Promise<void> {
+  const dir = contentDir(profile, entry.kind)
+  const fileName = requireLeafName(entry.fileName, 'İçerik dosya adı')
+  if (entry.kind === 'world') {
+    if (!preserve.has(fileName)) {
+      await fsp.rm(resolveInside(dir, fileName), { recursive: true, force: true })
+    }
+  } else if (entry.kind !== 'modpack') {
+    const disabled = disabledName(fileName)
+    if (!preserve.has(fileName)) await fsp.rm(resolveInside(dir, fileName), { force: true })
+    if (!preserve.has(disabled)) await fsp.rm(resolveInside(dir, disabled), { force: true })
+  }
 }
 
 /** Flags every installed item that has a newer version for the profile's game/loader. */
@@ -363,8 +378,9 @@ export async function updateContent(
     throw new Error('Bu içerik güncellenemiyor.')
   }
 
-  await removeContent(profileId, contentId)
-  return installContent(
+  // Keep the working version until the replacement has downloaded, passed its
+  // checksum and been recorded. A failed update must leave the old mod usable.
+  const installed = await installContent(
     {
       profileId,
       projectId: entry.projectId,
@@ -375,6 +391,10 @@ export async function updateContent(
     },
     onProgress
   )
+  const replacement = installed.find((item) => item.id === contentId)
+  const preserve = new Set(replacement ? [replacement.fileName] : [])
+  await removeContentFiles(profile, entry, preserve)
+  return installed
 }
 
 /**
@@ -511,7 +531,7 @@ export async function inferKind(filePath: string): Promise<ContentKind> {
 
   const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-sniff-'))
   try {
-    await extract(filePath, { dir: staging })
+    await extractZip(filePath, { dir: staging })
 
     const names = await fsp.readdir(staging)
     // A single wrapper folder is common in every one of these formats.
@@ -548,7 +568,7 @@ async function hashOf(filePath: string): Promise<string> {
 async function importWorld(zipPath: string, savesDir: string): Promise<string> {
   const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-world-'))
   try {
-    await extract(zipPath, { dir: staging })
+    await extractZip(zipPath, { dir: staging })
 
     let worldRoot = staging
     if (!(await exists(path.join(staging, 'level.dat')))) {

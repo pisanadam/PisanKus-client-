@@ -61,7 +61,11 @@ export class GameSession extends EventEmitter {
     this.child.kill('SIGTERM')
     // Minecraft occasionally ignores SIGTERM while shutting down a world.
     setTimeout(() => {
-      if (!this.child.killed) this.child.kill('SIGKILL')
+      // `child.killed` only means a signal was sent; it does not mean the
+      // process exited. The exit fields stay null while it is actually alive.
+      if (this.child.exitCode === null && this.child.signalCode === null) {
+        this.child.kill('SIGKILL')
+      }
     }, 5000)
   }
 }
