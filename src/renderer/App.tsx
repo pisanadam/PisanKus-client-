@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Icon, type IconName } from './components/Icon'
 import { LoginGate } from './components/LoginGate'
 import { SkinHead } from './components/SkinViewer'
+import { SupportStrip } from './components/SupportStrip'
 import { TaskTray } from './components/TaskTray'
 import { UpdateBanner } from './components/UpdateBanner'
 import { Welcome } from './components/Welcome'
@@ -124,6 +125,8 @@ export function App(): JSX.Element {
         )}
 
         <div className="sidebar__spacer" />
+
+        <SupportStrip />
 
         <button className="account-chip" onClick={() => setRoute({ page: 'accounts' })}>
           <SkinHead skinUrl={activeAccount?.skinUrl} size={26} name={activeAccount?.name} />
