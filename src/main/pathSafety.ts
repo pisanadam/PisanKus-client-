@@ -35,6 +35,7 @@ export function requireLeafName(candidate: string, label = 'Dosya adı'): string
     candidate.includes('\0') ||
     candidate === '.' ||
     candidate === '..' ||
+    /[\\/]/.test(candidate) ||
     path.basename(candidate) !== candidate
   ) {
     throw new Error(`${label} geçersiz.`)
