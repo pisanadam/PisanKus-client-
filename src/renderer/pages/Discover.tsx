@@ -3,6 +3,8 @@ import type { ContentKind, ProjectVersion, SearchQuery, SearchResult } from '../
 import { Icon } from '../components/Icon'
 import { InstallDialog, checkCompatibility } from '../components/InstallDialog'
 import { Modal } from '../components/Modal'
+import { PackDialog } from '../components/PackDialog'
+import { PACK_MODS, PACK_NAME, PACK_SUMMARY } from '../../shared/curatedPack'
 import { api } from '../lib/api'
 import { errorMessage, formatBytes, formatCount, formatRelative } from '../lib/format'
 import { useApp } from '../state/AppContext'
@@ -37,6 +39,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
   const [kind, setKind] = useState<ContentKind>('mod')
   /** `author` swaps the Modrinth search out for one publisher's project list. */
   const [tab, setTab] = useState<'search' | 'author'>('search')
+  const [packOpen, setPackOpen] = useState(false)
   const [authorProjects, setAuthorProjects] = useState<SearchResult[] | null>(null)
   const [sort, setSort] = useState<NonNullable<SearchQuery['sort']>>('relevance')
   const [query, setQuery] = useState('')
@@ -346,6 +349,29 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         </p>
       )}
 
+      {/* The launcher's own pack sits above the Modrinth results rather than
+          among them: it is not a Modrinth project, and burying it in a grid
+          sorted by download count would make it unfindable. */}
+      {tab === 'search' && kind === 'modpack' && (
+        <button className="featured" onClick={() => setPackOpen(true)}>
+          <div className="featured__mark">OP</div>
+          <div className="featured__text">
+            <div className="featured__title">
+              {PACK_NAME}
+              <span className="badge badge--success">Opbay</span>
+            </div>
+            <p className="featured__desc">{PACK_SUMMARY}</p>
+            <div className="featured__meta">
+              Fabric · {PACK_MODS.length} mod · oyun ayarları ve JVM argümanları dahil
+            </div>
+          </div>
+          <span className="btn btn--primary btn--sm featured__action">
+            <Icon name="download" size={15} />
+            Kur
+          </span>
+        </button>
+      )}
+
       <div className="grid grid--content">
         {shown.map((result) => (
           <ResultCard
@@ -382,6 +408,17 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
         <p className="faint" style={{ textAlign: 'center', padding: 18 }}>
           {total} sonucun tamamı gösteriliyor.
         </p>
+      )}
+
+      {packOpen && (
+        <PackDialog
+          onClose={() => setPackOpen(false)}
+          onInstalled={() => {
+            setPackOpen(false)
+            void refreshProfiles()
+            notify(`${PACK_NAME} profili oluşturuldu.`)
+          }}
+        />
       )}
 
       {selected && (

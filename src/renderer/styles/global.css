@@ -1797,6 +1797,114 @@ button.update--ready:hover {
   object-fit: cover;
 }
 
+/* The launcher's own pack, pinned above the Modrinth grid. */
+.featured {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  text-align: left;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--accent) 14%, var(--surface)),
+    var(--surface) 62%
+  );
+}
+
+.featured:hover {
+  border-color: var(--accent);
+}
+
+.featured__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: 0.02em;
+}
+
+.featured__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.featured__title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 16px;
+  font-weight: 680;
+}
+
+.featured__desc {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted, var(--text-faint));
+}
+
+.featured__meta {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.featured__action {
+  flex: none;
+}
+
+/* Mod list inside the pack dialog. */
+.pack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  list-style: none;
+}
+
+.pack-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 5px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  font-size: 13px;
+}
+
+.pack-list__item:last-child {
+  border-bottom: none;
+}
+
+.pack-list__item--skipped {
+  color: var(--text-faint);
+}
+
+.pack-list__ok {
+  color: var(--success, #3fb98a);
+  align-self: center;
+}
+
+.pack-list__name {
+  flex: none;
+  min-width: 132px;
+  font-weight: 600;
+}
+
+.pack-list__role {
+  color: var(--text-faint);
+  font-size: 12.5px;
+}
+
 /* Sidebar support strip. Sits above the account chip, quiet by default so it
    never competes with the navigation. */
 .support {

@@ -201,6 +201,31 @@ export async function bestVersion(
   return versions.find((version) => version.channel === 'release') ?? versions[0]
 }
 
+/**
+ * Looks up several projects at once. Accepts slugs as readily as ids, which is
+ * what lets the curated pack be written as a list of readable names.
+ *
+ * Projects that do not exist are simply absent from the answer — the caller
+ * decides whether a missing one matters.
+ */
+export async function getProjects(
+  idsOrSlugs: string[]
+): Promise<{ id: string; slug: string; title: string; gameVersions: string[] }[]> {
+  if (idsOrSlugs.length === 0) return []
+
+  const params = new URLSearchParams({ ids: JSON.stringify(idsOrSlugs) })
+  const projects = await fetchJson<
+    { id: string; slug: string; title: string; game_versions: string[] }[]
+  >(`${API}/projects?${params}`)
+
+  return projects.map((project) => ({
+    id: project.id,
+    slug: project.slug,
+    title: project.title,
+    gameVersions: project.game_versions
+  }))
+}
+
 export async function getVersion(versionId: string): Promise<ProjectVersion> {
   return toProjectVersion(await fetchJson<ModrinthVersion>(`${API}/version/${encodeURIComponent(versionId)}`))
 }

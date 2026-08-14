@@ -74,6 +74,15 @@ export interface ProjectDetail {
   issuesUrl?: string
 }
 
+export interface PackInstallResult {
+  profile: Profile
+  report: {
+    installed: { name: string; role: string }[]
+    /** Mods with no build for the chosen Minecraft version. */
+    skipped: { name: string; reason: string }[]
+  }
+}
+
 export interface WorldSummary {
   folderName: string
   displayName: string
@@ -168,6 +177,11 @@ const api = {
       ipcRenderer.invoke('content:checkUpdates', profileId),
     importLocal: (profileId: string, kind: ContentKind): Promise<InstalledContent[]> =>
       ipcRenderer.invoke('content:import', profileId, kind),
+    /** Minecraft versions the launcher's own performance pack supports. */
+    packVersions: (): Promise<string[]> => ipcRenderer.invoke('content:packVersions'),
+    /** Builds the "Oppie Optimized" profile from scratch. */
+    installPack: (request: { gameVersion: string; name: string }): Promise<PackInstallResult> =>
+      ipcRenderer.invoke('content:installPack', request),
     /** Creates a profile from a modpack, using the version and loader it declares. */
     installModpackAsProfile: (request: {
       projectId: string

@@ -16,6 +16,7 @@ import type {
 import { reauthError } from '../shared/authErrors'
 import { defaultOptionsText } from '../shared/options'
 import * as auth from './auth/microsoft'
+import * as curated from './content/curated'
 import * as install from './content/install'
 import * as modrinth from './content/modrinth'
 import { discoverJava } from './minecraft/java'
@@ -467,6 +468,40 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       throw error
     }
     return store.profile(profile.id)!
+  })
+
+  // --------------------------------------------------------- curated pack
+
+  handle('content:packVersions', () => curated.packVersions())
+
+  /**
+   * Builds the whole "Oppie Optimized" profile: a Fabric profile on the chosen
+   * version, the curated mods, and the pack's game and JVM tuning. A failure at
+   * any point removes the profile again, since a half-built one would look
+   * finished from the library.
+   */
+  handle('content:installPack', async (request: { gameVersion: string; name: string }) => {
+    const loaderVersion = (await listLoaderVersions('fabric', request.gameVersion))[0]?.version
+    if (!loaderVersion) {
+      throw new Error(`Fabric bu Minecraft sürümünü desteklemiyor: ${request.gameVersion}`)
+    }
+
+    const profile = await createProfile({
+      name: request.name,
+      gameVersion: request.gameVersion,
+      loader: 'fabric',
+      loaderVersion,
+      icon: '🚀'
+    })
+
+    try {
+      const report = await curated.installPackInto(profile.id, onProgress)
+      return { profile: store.profile(profile.id)!, report }
+    } catch (error) {
+      store.removeProfile(profile.id)
+      await fsp.rm(profile.directory, { recursive: true, force: true })
+      throw error
+    }
   })
 
   handle('skins:texture', (url: string) => skins.textureDataUrl(url))
