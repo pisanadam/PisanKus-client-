@@ -22,6 +22,18 @@ import type { LoaderId } from './types'
 export interface PackMod {
   /** Modrinth slug — stable, and readable in the code. */
   slug: string
+  /**
+   * Fetch this one from a maven repository instead of Modrinth.
+   *
+   * Needed where a project's Modrinth release is a single jar covering every
+   * Minecraft version it ever supported. Legacy Fabric API is exactly that: its
+   * Modrinth file bundles the modules for 1.3.2 through 1.12.2 in one 2 MB jar,
+   * and Fabric refuses to start because most of those modules declare a
+   * Minecraft version that is not the one running. The project's own maven
+   * publishes a per-version artifact — 5 KB instead of 2 MB — which is what
+   * actually belongs in a profile.
+   */
+  maven?: { base: string; group: string; artifact: string }
   name: string
   /** Shown while installing, so the player sees what each piece is for. */
   role: string
@@ -144,7 +156,17 @@ const PVP_189: CuratedPack = {
     'Bu paket OptiFine’ın asıl kullanıldığı özellikleri ayrı modlarla veriyor. Yine de OptiFine isterseniz ' +
     'Keşfet’ten “Legacy OptiFabric” kurup jar’ı mods klasörüne kendiniz koyabilirsiniz.',
   mods: [
-    { slug: 'legacy-fabric-api', name: 'Legacy Fabric API', role: 'Diğer modların dayandığı temel', essential: true },
+    {
+      slug: 'legacy-fabric-api',
+      name: 'Legacy Fabric API',
+      role: 'Diğer modların dayandığı temel',
+      essential: true,
+      maven: {
+        base: 'https://maven.legacyfabric.net',
+        group: 'net/legacyfabric/legacy-fabric-api',
+        artifact: 'legacy-fabric-api'
+      }
+    },
 
     // --- performance ------------------------------------------------------
     { slug: 'radium-mod', name: 'Radium', role: 'Lithium’un 1.8.9 karşılığı — oyun mantığını hızlandırır', essential: true },
@@ -175,7 +197,9 @@ const PVP_189: CuratedPack = {
     { slug: 'ears', name: 'Ears', role: 'Skin eklentileri — kuyruk, kulak, kanat' },
 
     // --- compatibility and comfort ----------------------------------------
-    { slug: 'viafabric', name: 'ViaFabric', role: '1.8.9 istemcisiyle yeni sürüm sunucularına bağlanır' },
+    // ViaFabric is deliberately absent: its 1.8.9 release carries a 1.12.2
+    // module in the same jar, and Fabric stops the game over it rather than
+    // ignoring it. Keşfet can still install it for anyone who wants to try.
     { slug: 'yosbr', name: 'YOSBR', role: 'Ayarlarınızın sıfırlanmasını engeller' },
     { slug: 'legacy-mod-menu', name: 'Mod Menu', role: 'Kurulu modları oyun içinden yönetir' },
     { slug: 'mod-loading-screen', name: 'Mod Loading Screen', role: 'Açılışta ne yüklendiğini gösterir' },

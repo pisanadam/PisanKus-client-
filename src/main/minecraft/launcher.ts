@@ -8,7 +8,28 @@ import { downloadAll, type DownloadItem } from './downloader'
 import { ensureJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
+import { writeProfileOptions } from './options'
+import { defaultOptionsText } from '../../shared/options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
+
+/**
+ * The Java version to run this profile on.
+ *
+ * Mojang's manifest answers for vanilla, and for 1.8.9 it says Java 8. Legacy
+ * Fabric changes that: its `legacy-lwjgl3` module replaces the ancient LWJGL 2
+ * that cannot run on a modern JVM, and refuses to load on anything below 17.
+ * Running such a profile on Java 8 fails before the game window ever appears.
+ *
+ * The check is for the module rather than the loader, because a Legacy Fabric
+ * profile *without* it still needs Java 8 — LWJGL 2 is what would break then.
+ */
+export function requiredJava(profile: Profile, fromManifest: number | undefined): number {
+  const declared = fromManifest ?? 21
+  const hasLegacyLwjgl = profile.content.some(
+    (entry) => entry.enabled && /legacy[-_]?lwjgl3/i.test(entry.fileName)
+  )
+  return hasLegacyLwjgl ? Math.max(declared, 17) : declared
+}
 
 const LAUNCHER_NAME = 'OpbayClient'
 const LAUNCHER_VERSION = '1.0.0'
@@ -142,12 +163,18 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     const javaPath =
       profile.javaPath ??
       settings.javaPath ??
-      (await ensureJava(dataDir, version.javaVersion?.majorVersion ?? 21, (detail) =>
+      (await ensureJava(dataDir, requiredJava(profile, version.javaVersion?.majorVersion), (detail) =>
         report('Java hazırlanıyor', -1, detail)
       ))
     log(`Java: ${javaPath}`)
 
     await fsp.mkdir(profile.directory, { recursive: true })
+
+    // Guarantees the game always starts against a real options.txt. It is
+    // normally written when the profile is created, but a profile made by an
+    // older build — or one whose folder was cleaned out — would otherwise start
+    // with nothing, and the settings editor would have nothing to show.
+    await writeProfileOptions(profile.directory, settings.minecraftOptions || defaultOptionsText())
 
     const classpath = [...libraries.classpath, clientJar]
     const values: Record<string, string> = {

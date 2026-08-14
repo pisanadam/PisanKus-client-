@@ -42,6 +42,16 @@ export interface InstallRequest {
   /** Install required dependencies too. Defaults to true. */
   withDependencies?: boolean
   /**
+   * Modrinth project ids never to pull in as a dependency.
+   *
+   * Used where the caller has already installed a better build of that project
+   * from somewhere else. Legacy Fabric API is the case in point: the profile
+   * gets the per-version artifact from Legacy Fabric's own maven, and letting a
+   * dependency drag in Modrinth's all-versions bundle alongside it puts the
+   * game back in the state that would not start.
+   */
+  skipDependencies?: string[]
+  /**
    * Ignore the profile's game version and loader when picking a version.
    *
    * Used when a modpack is installed into a profile made for it: the profile has
@@ -85,6 +95,7 @@ export async function installContent(
 
     if (request.withDependencies !== false && request.kind === 'mod') {
       for (const dependency of version.dependencies.filter((entry) => entry.required && entry.projectId)) {
+        if (request.skipDependencies?.includes(dependency.projectId!)) continue
         // A dependency already present in the profile does not need reinstalling.
         const already = profile.content.some((entry) => entry.projectId === dependency.projectId)
         if (already) continue
