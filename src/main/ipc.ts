@@ -92,7 +92,16 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   const onState = (state: GameState): void => send('game:state', state)
 
   // The renderer draws the update button straight from these.
-  updater.initUpdater((status) => send('updates:status', status))
+  updater.initUpdater(
+    (status) => send('updates:status', status),
+    () => {
+      const window = getWindow()
+      if (!window) return
+      if (window.isMinimized()) window.restore()
+      window.show()
+      window.focus()
+    }
+  )
 
   /**
    * Runs a skin or cape change, waiting out Mojang's rate limit rather than

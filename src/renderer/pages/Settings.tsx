@@ -211,6 +211,12 @@ export function Settings(): JSX.Element {
               </button>
             </div>
           </div>
+
+          <p className="faint" style={{ lineHeight: 1.5 }}>
+            Kontrol yalnızca launcher açılırken bir kez ve bu düğmeye bastığınızda yapılır. Arka planda açık
+            kalan bir bağlantı ya da yinelenen bir yoklama yok. Yeni sürüm bulunursa launcher başka bir
+            pencerenin arkasındayken de görebilesiniz diye masaüstü bildirimi gönderilir.
+          </p>
         </section>
 
         <section className="settings-group">

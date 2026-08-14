@@ -1,4 +1,4 @@
-import { app, shell } from 'electron'
+import { app, Notification, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { UpdateStatus } from '../shared/types'
 
@@ -17,18 +17,56 @@ const canSelfUpdate = process.platform !== 'darwin'
 
 let status: UpdateStatus = { state: 'idle' }
 let publish: (status: UpdateStatus) => void = () => undefined
+let focusWindow: () => void = () => undefined
+
+/**
+ * The launcher never holds a connection open and never polls. It asks GitHub
+ * once, a few seconds after the window appears, and that is the whole of its
+ * update traffic — nothing is contacted again until the player presses the
+ * button in Ayarlar or restarts the launcher.
+ *
+ * So the desktop notification exists precisely because there is no background
+ * chatter: the single answer that check produced is worth surfacing even if the
+ * launcher is behind another window.
+ */
+let announceNext = false
+let announcedVersion: string | null = null
 
 function set(next: UpdateStatus): void {
   status = next
   publish(next)
+
+  if (next.state === 'available' && announceNext && next.version !== announcedVersion) {
+    announcedVersion = next.version
+    announce(next.version)
+  }
+}
+
+/** One system notification per new version, never repeated for the same one. */
+function announce(version: string): void {
+  if (!Notification.isSupported()) return
+
+  try {
+    const notification = new Notification({
+      title: 'Opbay Client güncellemesi',
+      body: `Sürüm ${version} yayınlandı. Kurmak için launcher'ı açın.`,
+      silent: false
+    })
+    notification.on('click', focusWindow)
+    notification.show()
+  } catch {
+    // A desktop that refuses notifications must not take the update with it —
+    // the sidebar button says the same thing.
+  }
 }
 
 export function currentStatus(): UpdateStatus {
   return status
 }
 
-export function initUpdater(onStatus: (status: UpdateStatus) => void): void {
+export function initUpdater(onStatus: (status: UpdateStatus) => void, focus: () => void): void {
   publish = onStatus
+  focusWindow = focus
 
   autoUpdater.autoDownload = false
   // The user restarts when they choose to; quitting the launcher out from under
@@ -114,6 +152,10 @@ export async function checkForUpdates(manual = false): Promise<UpdateStatus> {
   // an error toast on every `npm run dev`.
   if (!manual && !app.isPackaged && !process.env.OPBAY_FORCE_UPDATE_CHECK) return status
   if (status.state === 'downloading' || status.state === 'ready') return status
+
+  // A check the player pressed themselves needs no notification — they are
+  // already looking at the answer.
+  announceNext = !manual
 
   set({ state: 'checking' })
   try {

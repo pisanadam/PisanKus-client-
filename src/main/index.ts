@@ -72,6 +72,9 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   app.whenReady().then(() => {
+    // Windows files toast notifications under this id and drops them silently
+    // when it is missing, which is why the update notice needs it set here.
+    app.setAppUserModelId('com.opbay.client')
     store.init()
     registerIpc(() => mainWindow)
     createWindow()
