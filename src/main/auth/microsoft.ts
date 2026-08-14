@@ -285,12 +285,10 @@ export async function signIn(clientId: string, mode: AuthMode): Promise<Account>
     client_id: clientId,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: endpoints.redirect
+    redirect_uri: endpoints.redirect,
+    scope: endpoints.scope
   }
-  if (pkce) {
-    body.code_verifier = pkce.verifier
-    body.scope = endpoints.scope
-  }
+  if (pkce) body.code_verifier = pkce.verifier
 
   return completeMinecraftLogin(await postForm<MsToken>(endpoints.token, body), mode)
 }
@@ -302,15 +300,38 @@ export async function refresh(account: Account, clientId: string): Promise<Accou
   const mode = account.authMode ?? 'legacy'
   const endpoints = ENDPOINTS[mode]
 
+  if (!account.refreshToken) {
+    throw new AuthError(
+      'Bu hesabın oturumu okunamadı. Hesaplar bölümünden çıkış yapıp yeniden oturum açın.',
+      'no_refresh_token'
+    )
+  }
+
+  // `scope` is required on both platforms. Its absence is only reachable once
+  // the refresh token itself checks out, so a launcher that omitted it appeared
+  // to work for as long as the first access token lived and then failed every
+  // action at once with "must include a 'scope' input parameter".
   const body: Record<string, string> = {
     client_id: clientId,
     grant_type: 'refresh_token',
     refresh_token: account.refreshToken,
-    redirect_uri: endpoints.redirect
+    redirect_uri: endpoints.redirect,
+    scope: endpoints.scope
   }
-  if (endpoints.usePkce) body.scope = endpoints.scope
 
-  const msToken = await postForm<MsToken>(endpoints.token, body)
+  const msToken = await postForm<MsToken>(endpoints.token, body).catch((error: unknown) => {
+    // A rejected refresh token cannot be recovered from in the background, and
+    // Microsoft's own wording ("input parameter 'refresh_token' or 'assertion'")
+    // tells the player nothing about what to do.
+    if (error instanceof AuthError && error.code === 'invalid_grant') {
+      throw new AuthError(
+        'Microsoft oturumunuzun süresi doldu. Hesaplar bölümünden yeniden oturum açın.',
+        error.code
+      )
+    }
+    throw error
+  })
+
   const renewed = await completeMinecraftLogin(msToken, mode)
   return { ...renewed, addedAt: account.addedAt }
 }
