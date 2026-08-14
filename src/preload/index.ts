@@ -177,11 +177,15 @@ const api = {
       ipcRenderer.invoke('content:checkUpdates', profileId),
     importLocal: (profileId: string, kind: ContentKind): Promise<InstalledContent[]> =>
       ipcRenderer.invoke('content:import', profileId, kind),
-    /** Minecraft versions the launcher's own performance pack supports. */
-    packVersions: (): Promise<string[]> => ipcRenderer.invoke('content:packVersions'),
-    /** Builds the "Oppie Optimized" profile from scratch. */
-    installPack: (request: { gameVersion: string; name: string }): Promise<PackInstallResult> =>
-      ipcRenderer.invoke('content:installPack', request),
+    /** Minecraft versions one of the launcher's own packs supports. */
+    packVersions: (packId: string): Promise<string[]> =>
+      ipcRenderer.invoke('content:packVersions', packId),
+    /** Builds a whole profile from one of the launcher's packs. */
+    installPack: (request: {
+      packId: string
+      gameVersion: string
+      name: string
+    }): Promise<PackInstallResult> => ipcRenderer.invoke('content:installPack', request),
     /** Creates a profile from a modpack, using the version and loader it declares. */
     installModpackAsProfile: (request: {
       projectId: string

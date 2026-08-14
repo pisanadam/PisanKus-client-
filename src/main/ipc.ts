@@ -14,6 +14,7 @@ import type {
   TaskProgress
 } from '../shared/types'
 import { reauthError } from '../shared/authErrors'
+import { packById } from '../shared/curatedPack'
 import { defaultOptionsText } from '../shared/options'
 import * as auth from './auth/microsoft'
 import * as curated from './content/curated'
@@ -472,30 +473,33 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   // --------------------------------------------------------- curated pack
 
-  handle('content:packVersions', () => curated.packVersions())
+  handle('content:packVersions', (packId: string) => curated.packVersions(packId))
 
   /**
-   * Builds the whole "Oppie Optimized" profile: a Fabric profile on the chosen
-   * version, the curated mods, and the pack's game and JVM tuning. A failure at
+   * Builds a whole profile from one of the launcher's packs: the loader the
+   * pack asks for on the chosen version, then its curated mods. A failure at
    * any point removes the profile again, since a half-built one would look
    * finished from the library.
    */
-  handle('content:installPack', async (request: { gameVersion: string; name: string }) => {
-    const loaderVersion = (await listLoaderVersions('fabric', request.gameVersion))[0]?.version
+  handle('content:installPack', async (request: { packId: string; gameVersion: string; name: string }) => {
+    const pack = packById(request.packId)
+    if (!pack) throw new Error(`Paket bulunamadı: ${request.packId}`)
+
+    const loaderVersion = (await listLoaderVersions(pack.loader, request.gameVersion))[0]?.version
     if (!loaderVersion) {
-      throw new Error(`Fabric bu Minecraft sürümünü desteklemiyor: ${request.gameVersion}`)
+      throw new Error(`${pack.loader} bu Minecraft sürümünü desteklemiyor: ${request.gameVersion}`)
     }
 
     const profile = await createProfile({
       name: request.name,
       gameVersion: request.gameVersion,
-      loader: 'fabric',
+      loader: pack.loader,
       loaderVersion,
-      icon: '🚀'
+      icon: pack.icon
     })
 
     try {
-      const report = await curated.installPackInto(profile.id, onProgress)
+      const report = await curated.installPackInto(pack.id, profile.id, onProgress)
       return { profile: store.profile(profile.id)!, report }
     } catch (error) {
       store.removeProfile(profile.id)

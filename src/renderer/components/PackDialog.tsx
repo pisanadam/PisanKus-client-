@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { PackInstallResult } from '../../preload'
-import { PACK_MODS, PACK_NAME, PACK_SUMMARY, RECOMMENDED_VERSIONS } from '../../shared/curatedPack'
+import type { CuratedPack } from '../../shared/curatedPack'
 import { api } from '../lib/api'
-import { errorMessage } from '../lib/format'
+import { errorMessage, loaderLabel } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
 
@@ -14,44 +14,48 @@ import { Modal } from './Modal'
  * actually available depends on the version picked here.
  */
 export function PackDialog({
+  pack,
   onClose,
   onInstalled
 }: {
+  pack: CuratedPack
   onClose: () => void
   onInstalled: (profileId: string) => void
 }): JSX.Element {
   const [versions, setVersions] = useState<string[] | null>(null)
   const [gameVersion, setGameVersion] = useState('')
-  const [name, setName] = useState(PACK_NAME)
+  const [name, setName] = useState(pack.name)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<PackInstallResult | null>(null)
 
   useEffect(() => {
     api.content
-      .packVersions()
+      .packVersions(pack.id)
       .then((list) => {
         setVersions(list)
         // Start on the newest recommended version that the pack can actually be
         // built for today, falling back to whatever is newest.
-        const recommended = RECOMMENDED_VERSIONS.find((entry) => list.includes(entry.version))
-        setGameVersion(recommended?.version ?? list[0] ?? '')
+        const first = pack.recommended.find((entry) => list.includes(entry.version))
+        setGameVersion(first?.version ?? list[0] ?? '')
       })
       .catch((caught) => setError(errorMessage(caught)))
-  }, [])
+  }, [pack])
 
   const available = versions ?? []
-  const recommended = RECOMMENDED_VERSIONS.filter((entry) => available.includes(entry.version))
+  const recommended = pack.recommended.filter((entry) => available.includes(entry.version))
   const others = available.filter(
     (version) => !recommended.some((entry) => entry.version === version)
   )
-  const why = RECOMMENDED_VERSIONS.find((entry) => entry.version === gameVersion)?.why
+  const why = pack.recommended.find((entry) => entry.version === gameVersion)?.why
 
   const install = async (): Promise<void> => {
     setBusy(true)
     setError(null)
     try {
-      setResult(await api.content.installPack({ gameVersion, name: name.trim() || PACK_NAME }))
+      setResult(
+        await api.content.installPack({ packId: pack.id, gameVersion, name: name.trim() || pack.name })
+      )
     } catch (caught) {
       setError(errorMessage(caught))
     } finally {
@@ -74,8 +78,8 @@ export function PackDialog({
         }
       >
         <p className="muted">
-          Minecraft {result.profile.gameVersion} · Fabric · {result.report.installed.length} mod kuruldu.
-          Oyun ayarlarınıza dokunulmadı.
+          Minecraft {result.profile.gameVersion} · {loaderLabel(result.profile.loader)} ·{' '}
+          {result.report.installed.length} mod kuruldu. Oyun ayarlarınıza dokunulmadı.
         </p>
 
         <ul className="pack-list">
@@ -111,7 +115,7 @@ export function PackDialog({
 
   return (
     <Modal
-      title={PACK_NAME}
+      title={pack.name}
       onClose={onClose}
       footer={
         <>
@@ -125,7 +129,14 @@ export function PackDialog({
         </>
       }
     >
-      <p className="muted">{PACK_SUMMARY}</p>
+      <p className="muted">{pack.summary}</p>
+
+      {pack.note && (
+        <div className="notice notice--warning" style={{ marginTop: 12 }}>
+          <Icon name="compass" size={15} />
+          <div>{pack.note}</div>
+        </div>
+      )}
 
       <div className="field">
         <label className="field__label" htmlFor="pack-version">
@@ -184,7 +195,7 @@ export function PackDialog({
         İçindekiler
       </div>
       <ul className="pack-list">
-        {PACK_MODS.map((mod) => (
+        {pack.mods.map((mod) => (
           <li key={mod.slug} className="pack-list__item">
             <span className="pack-list__name">{mod.name}</span>
             <span className="pack-list__role">{mod.role}</span>

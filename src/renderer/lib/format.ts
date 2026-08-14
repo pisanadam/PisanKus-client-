@@ -50,6 +50,7 @@ export function formatBytes(bytes: number): string {
 const LOADER_LABELS: Record<string, string> = {
   vanilla: 'Vanilla',
   fabric: 'Fabric',
+  legacyfabric: 'Legacy Fabric',
   quilt: 'Quilt',
   forge: 'Forge',
   neoforge: 'NeoForge'
