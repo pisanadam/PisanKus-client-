@@ -226,6 +226,42 @@ export async function getProjects(
   }))
 }
 
+/**
+ * Identifies files by their SHA-1.
+ *
+ * This is how a jar that arrived some other way — inside a modpack, dropped
+ * into the folder by hand — gets its real name and project back, instead of
+ * being listed as whatever the file happens to be called.
+ *
+ * Returns a map keyed by the hash that was asked for. Unknown files are simply
+ * absent.
+ */
+export async function versionsByHash(
+  hashes: string[]
+): Promise<Map<string, { projectId: string; versionId: string; versionNumber: string }>> {
+  const found = new Map<string, { projectId: string; versionId: string; versionNumber: string }>()
+  if (hashes.length === 0) return found
+
+  // The endpoint takes a bounded list, and a pack can carry far more than that.
+  for (let index = 0; index < hashes.length; index += 100) {
+    const batch = hashes.slice(index, index + 100)
+    const answer = await fetchJson<Record<string, ModrinthVersion>>(`${API}/version_files`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hashes: batch, algorithm: 'sha1' })
+    }).catch(() => ({}) as Record<string, ModrinthVersion>)
+
+    for (const [hash, version] of Object.entries(answer)) {
+      found.set(hash, {
+        projectId: version.project_id,
+        versionId: version.id,
+        versionNumber: version.version_number
+      })
+    }
+  }
+  return found
+}
+
 export async function getVersion(versionId: string): Promise<ProjectVersion> {
   return toProjectVersion(await fetchJson<ModrinthVersion>(`${API}/version/${encodeURIComponent(versionId)}`))
 }

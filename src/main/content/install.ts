@@ -408,6 +408,122 @@ export async function importLocalFile(
   return entry
 }
 
+/** Content kinds that live as single files and can therefore be scanned for. */
+const SCANNED: ContentKind[] = ['mod', 'resourcepack', 'shader', 'datapack']
+
+/**
+ * Makes the profile's content list match what is actually in its folders.
+ *
+ * Until now the list only knew about things installed one at a time. A modpack
+ * wrote thirty jars into `mods/` and recorded a single "modpack" entry, so the
+ * Modlar tab said 0 while the game happily loaded them — and files dropped into
+ * the folder outside the launcher were invisible in the same way.
+ *
+ * Unknown files are identified by their SHA-1 against Modrinth, which gives
+ * back the real project name and version rather than a file name, and makes
+ * them eligible for update checks like anything else.
+ */
+export async function syncProfileContent(profileId: string): Promise<InstalledContent[]> {
+  const profile = store.profile(profileId)
+  if (!profile) throw new Error('Profil bulunamadı.')
+
+  const known = new Map(profile.content.map((entry) => [entry.fileName, entry]))
+  const seen = new Set<string>()
+  const unknown: { file: string; fileName: string; kind: ContentKind; enabled: boolean }[] = []
+
+  for (const kind of SCANNED) {
+    const directory = contentDir(profile, kind)
+    const names = await fsp.readdir(directory).catch(() => [] as string[])
+
+    for (const fileName of names) {
+      if (!/\.(jar|zip)(\.disabled)?$/i.test(fileName)) continue
+      seen.add(fileName)
+      if (known.has(fileName)) continue
+      unknown.push({
+        file: path.join(directory, fileName),
+        fileName,
+        kind,
+        enabled: !fileName.endsWith('.disabled')
+      })
+    }
+  }
+
+  const added: InstalledContent[] = []
+  if (unknown.length > 0) {
+    const hashes = await Promise.all(unknown.map((entry) => fileSha1(entry.file).catch(() => '')))
+    const matches = await modrinth.versionsByHash(hashes.filter(Boolean))
+    const projects = await modrinth
+      .getProjects([...new Set([...matches.values()].map((match) => match.projectId))])
+      .catch(() => [])
+    const titles = new Map(projects.map((project) => [project.id, project.title]))
+
+    for (const [index, entry] of unknown.entries()) {
+      const match = hashes[index] ? matches.get(hashes[index]) : undefined
+      added.push({
+        // Falling back to the hash keeps the id stable across renames; falling
+        // back to the file name keeps it unique when even hashing failed.
+        id: match ? `modrinth:${match.projectId}` : `local:${hashes[index] || entry.fileName}`,
+        source: match ? 'modrinth' : 'local',
+        projectId: match?.projectId,
+        versionId: match?.versionId,
+        kind: entry.kind,
+        name: (match && titles.get(match.projectId)) ?? entry.fileName.replace(/\.(jar|zip)(\.disabled)?$/i, ''),
+        fileName: entry.fileName,
+        enabled: entry.enabled,
+        installedAt: Date.now()
+      })
+    }
+  }
+
+  // A modpack entry stands for the pack as a whole and has no file of its own,
+  // so it is never dropped for being missing from disk.
+  const surviving = profile.content.filter(
+    (entry) => entry.kind === 'modpack' || entry.kind === 'world' || seen.has(entry.fileName)
+  )
+
+  const merged = [...surviving.filter((entry) => !added.some((item) => item.id === entry.id)), ...added]
+  if (merged.length !== profile.content.length || added.length > 0) {
+    store.updateProfile(profileId, { content: merged })
+  }
+  return merged
+}
+
+/**
+ * Works out what a dropped file is, so the player does not have to say.
+ *
+ * Jars are mods. Zips are the ambiguous ones — resource pack, data pack, shader
+ * pack and world all share the extension — so the archive itself is asked:
+ * `level.dat` means a world, a `shaders/` folder means a shader pack, and
+ * `pack.mcmeta` alongside `data/` is a data pack rather than a resource pack.
+ */
+export async function inferKind(filePath: string): Promise<ContentKind> {
+  if (/\.jar$/i.test(filePath)) return 'mod'
+  if (!/\.zip$/i.test(filePath)) return 'mod'
+
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-sniff-'))
+  try {
+    await extract(filePath, { dir: staging })
+
+    const names = await fsp.readdir(staging)
+    // A single wrapper folder is common in every one of these formats.
+    const root =
+      names.length === 1 && (await fsp.stat(path.join(staging, names[0]))).isDirectory()
+        ? path.join(staging, names[0])
+        : staging
+
+    if (await exists(path.join(root, 'level.dat'))) return 'world'
+    if (await exists(path.join(root, 'shaders'))) return 'shader'
+    if (await exists(path.join(root, 'data'))) return 'datapack'
+    return 'resourcepack'
+  } catch {
+    // Unreadable archive: let the copy fail later with a clearer message than
+    // anything guessed here would produce.
+    return 'resourcepack'
+  } finally {
+    await fsp.rm(staging, { recursive: true, force: true })
+  }
+}
+
 async function hashOf(filePath: string): Promise<string> {
   try {
     return (await fileSha1(filePath)).slice(0, 16)

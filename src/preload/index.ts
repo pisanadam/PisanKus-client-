@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import type {
   ContentKind,
   GameLogLine,
@@ -124,6 +124,14 @@ const api = {
     update: (id: string, patch: Partial<Profile>): Promise<Profile> =>
       ipcRenderer.invoke('profiles:update', id, patch),
     duplicate: (id: string): Promise<Profile> => ipcRenderer.invoke('profiles:duplicate', id),
+    /** Opens a picker and stores the chosen png/jpg as the profile's icon. */
+    pickIcon: (id: string): Promise<Profile | null> => ipcRenderer.invoke('profiles:pickIcon', id),
+    clearIcon: (id: string): Promise<Profile> => ipcRenderer.invoke('profiles:clearIcon', id),
+    /** That profile's options.txt, and whether it already exists on disk. */
+    readOptions: (id: string): Promise<{ text: string; onDisk: boolean }> =>
+      ipcRenderer.invoke('profiles:readOptions', id),
+    writeOptions: (id: string, text: string): Promise<void> =>
+      ipcRenderer.invoke('profiles:writeOptions', id, text),
     remove: (id: string, deleteFiles: boolean): Promise<Profile[]> =>
       ipcRenderer.invoke('profiles:delete', id, deleteFiles),
     openFolder: (id: string): Promise<void> => ipcRenderer.invoke('profiles:openFolder', id)
@@ -177,6 +185,12 @@ const api = {
       ipcRenderer.invoke('content:checkUpdates', profileId),
     importLocal: (profileId: string, kind: ContentKind): Promise<InstalledContent[]> =>
       ipcRenderer.invoke('content:import', profileId, kind),
+    /** Rebuilds the content list from what is actually in the profile folders. */
+    sync: (profileId: string): Promise<InstalledContent[]> =>
+      ipcRenderer.invoke('content:sync', profileId),
+    /** Installs dropped files, deciding what each one is from the file itself. */
+    importPaths: (profileId: string, filePaths: string[]): Promise<InstalledContent[]> =>
+      ipcRenderer.invoke('content:importPaths', profileId, filePaths),
     /** Minecraft versions one of the launcher's own packs supports. */
     packVersions: (packId: string): Promise<string[]> =>
       ipcRenderer.invoke('content:packVersions', packId),
@@ -254,6 +268,12 @@ const api = {
     tokenStorage: (): Promise<{ available: boolean; backend: string }> =>
       ipcRenderer.invoke('app:tokenStorage'),
     openExternal: (url: string): Promise<void> => ipcRenderer.invoke('app:openExternal', url),
+    /**
+     * The path behind a dropped File. Electron stopped exposing `File.path` in
+     * 32, and the renderer has no other way to name the file for the main
+     * process — which is where every filesystem operation still happens.
+     */
+    pathForFile: (file: File): string => webUtils.getPathForFile(file),
     platform: process.platform,
     minimize: (): Promise<void> => ipcRenderer.invoke('window:minimize'),
     maximize: (): Promise<void> => ipcRenderer.invoke('window:maximize'),

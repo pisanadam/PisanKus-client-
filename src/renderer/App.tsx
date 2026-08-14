@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ProfileIcon } from './components/ProfileIcon'
 import { Icon, type IconName } from './components/Icon'
 import { LoginGate } from './components/LoginGate'
 import { SkinHead } from './components/SkinViewer'
@@ -102,9 +103,7 @@ export function App(): JSX.Element {
                   aria-current={route.page === 'profile' && route.profileId === profile.id}
                   onClick={() => setRoute({ page: 'profile', profileId: profile.id })}
                 >
-                  <span aria-hidden="true" style={{ fontSize: 16, width: 18, textAlign: 'center' }}>
-                    {profile.icon ?? '🎮'}
-                  </span>
+                  <ProfileIcon profile={profile} size={19} />
                   <span
                     style={{
                       overflow: 'hidden',

@@ -61,7 +61,16 @@ export interface Profile {
   loader: LoaderId
   /** Loader version; omitted means "latest for this game version". */
   loaderVersion?: string
+  /** Emoji shown when no picture is set. */
   icon?: string
+  /**
+   * A picture the player chose, stored as a small data url.
+   *
+   * Kept inline rather than as a file path because the renderer cannot read the
+   * disk: a path would need an IPC round trip every time a list was drawn. The
+   * image is downscaled before it lands here, so the database stays small.
+   */
+  iconImage?: string
   /** Absolute path to the isolated game directory. */
   directory: string
   memoryMb: number

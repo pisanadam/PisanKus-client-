@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ContentKind, InstalledContent, LoaderId } from '../../shared/types'
 import { Icon } from '../components/Icon'
+import { OptionsEditor } from '../components/OptionsEditor'
+import { ProfileIcon } from '../components/ProfileIcon'
+import { parseOptions } from '../../shared/options'
 import { Confirm } from '../components/Modal'
 import type { WorldSummary } from '../../preload'
 import { api } from '../lib/api'
@@ -29,6 +32,16 @@ export function ProfileDetail({
 }): JSX.Element {
   const { profiles, refreshProfiles, gameStates, notify } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)
+
+  // The recorded list can lag behind the folders — a modpack writes its jars
+  // straight to disk, and players drop files in themselves. Reconciling on open
+  // is what keeps the tabs honest.
+  useEffect(() => {
+    api.content
+      .sync(profileId)
+      .then(() => refreshProfiles())
+      .catch(() => undefined)
+  }, [profileId, refreshProfiles])
   const [tab, setTab] = useState<Tab>('mods')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -56,9 +69,7 @@ export function ProfileDetail({
         </button>
         <div>
           <h1 className="page__title">
-            <span aria-hidden="true" style={{ marginRight: 10 }}>
-              {profile.icon ?? '🎮'}
-            </span>
+            <ProfileIcon profile={profile} size={30} />{' '}
             {profile.name}
           </h1>
           <p className="page__subtitle">
@@ -172,8 +183,27 @@ function ContentTab({
   const { notify } = useApp()
   const [checking, setChecking] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [dropping, setDropping] = useState(false)
 
   const updatable = items.filter((item) => item.updateAvailable)
+
+  /**
+   * Takes files dropped anywhere on the tab. What each one is gets decided in
+   * the main process by looking inside the archive, so a world, a resource pack
+   * and a handful of mods can be dropped together.
+   */
+  const acceptDrop = async (event: React.DragEvent): Promise<void> => {
+    event.preventDefault()
+    setDropping(false)
+
+    const paths = [...event.dataTransfer.files].map((file) => api.app.pathForFile(file)).filter(Boolean)
+    if (paths.length === 0) return
+
+    await run('import', async () => {
+      await api.content.importPaths(profileId, paths)
+      notify(paths.length === 1 ? 'Dosya kuruldu.' : `${paths.length} dosya kuruldu.`)
+    })
+  }
 
   const run = async (id: string, action: () => Promise<unknown>): Promise<void> => {
     setBusyId(id)
@@ -188,7 +218,18 @@ function ContentTab({
   }
 
   return (
-    <div className="stack-lg">
+    <div
+      className={dropping ? 'stack-lg dropzone dropzone--over' : 'stack-lg dropzone'}
+      onDragOver={(event) => {
+        event.preventDefault()
+        setDropping(true)
+      }}
+      onDragLeave={(event) => {
+        // Moving between children fires dragleave too; only leaving the tab counts.
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropping(false)
+      }}
+      onDrop={(event) => void acceptDrop(event)}
+    >
       <div className="row" style={{ flexWrap: 'wrap' }}>
         <button className="btn btn--primary" onClick={onBrowse}>
           <Icon name="compass" size={16} />
@@ -239,10 +280,15 @@ function ContentTab({
       </div>
 
       {items.length === 0 ? (
-        <div className="empty">
-          <div className="empty__icon">📭</div>
-          <div className="empty__title">Bu profilde içerik yok</div>
-          <p>Mağazadan kurabilir ya da elinizdeki dosyaları içe aktarabilirsiniz.</p>
+        <div className="empty empty--droppable">
+          <div className="empty__icon">{dropping ? '📥' : '📭'}</div>
+          <div className="empty__title">
+            {dropping ? 'Bırakın, kuralım' : 'Bu profilde içerik yok'}
+          </div>
+          <p>
+            Mağazadan kurabilir, dosya seçebilir ya da <strong>jar, dünya, doku paketi ve shader</strong>{' '}
+            dosyalarını doğrudan buraya sürükleyebilirsiniz.
+          </p>
         </div>
       ) : (
         <div className="list">
@@ -472,6 +518,18 @@ function ProfileSettingsTab({
   const [loaderVersions, setLoaderVersions] = useState<{ version: string; stable: boolean }[]>([])
   const [loaderVersion, setLoaderVersion] = useState(profile.loaderVersion ?? '')
   const [saving, setSaving] = useState(false)
+  const [options, setOptions] = useState<{ text: string; onDisk: boolean } | null>(null)
+  const [editingOptions, setEditingOptions] = useState(false)
+
+  // Read straight from the profile's folder rather than from the global
+  // template: what matters here is the file the game will actually load.
+  const loadOptions = (): void => {
+    api.profiles
+      .readOptions(profileId)
+      .then(setOptions)
+      .catch(() => setOptions(null))
+  }
+  useEffect(loadOptions, [profileId])
 
   useEffect(() => {
     if (profile.loader === 'vanilla') return
@@ -509,8 +567,24 @@ function ProfileSettingsTab({
 
   const totalMemory = useMemo(() => 32768, [])
 
+  const optionCount = options ? parseOptions(options.text).filter((line) => !('raw' in line)).length : 0
+
   return (
     <div className="stack-lg" style={{ maxWidth: 760 }}>
+      {editingOptions && options && (
+        <OptionsEditor
+          value={options.text}
+          notify={notify}
+          onClose={() => setEditingOptions(false)}
+          onSave={async (text) => {
+            await api.profiles.writeOptions(profileId, text)
+            setOptions({ text, onDisk: true })
+            setEditingOptions(false)
+            notify('Bu profilin oyun ayarları kaydedildi.')
+          }}
+        />
+      )}
+
       <div className="settings-group">
         <div className="settings-row">
           <div>
@@ -518,6 +592,59 @@ function ProfileSettingsTab({
             <div className="faint">Kitaplıkta görünen ad</div>
           </div>
           <input className="input" value={name} onChange={(event) => setName(event.target.value)} />
+        </div>
+
+        <div className="settings-row">
+          <div>
+            <div className="settings-row__label">Simge</div>
+            <div className="faint">
+              {profile.iconImage ? 'Kendi görseliniz kullanılıyor' : 'PNG veya JPG yükleyebilirsiniz'}
+            </div>
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            <ProfileIcon profile={profile} size={34} />
+            <button
+              className="btn btn--sm"
+              onClick={async () => {
+                try {
+                  if (await api.profiles.pickIcon(profileId)) await refreshProfiles()
+                } catch (error) {
+                  notify(error, 'error')
+                }
+              }}
+            >
+              <Icon name="image" size={15} />
+              Görsel seç
+            </button>
+            {profile.iconImage && (
+              <button
+                className="btn btn--sm"
+                onClick={async () => {
+                  await api.profiles.clearIcon(profileId)
+                  await refreshProfiles()
+                }}
+              >
+                Kaldır
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="settings-row">
+          <div>
+            <div className="settings-row__label">Oyun ayarları</div>
+            <div className="faint">
+              {options === null
+                ? 'Okunuyor…'
+                : options.onDisk
+                  ? `Bu profilin options.txt dosyası · ${optionCount} ayar`
+                  : 'Bu profilde henüz options.txt yok — kaydedince oluşturulur'}
+            </div>
+          </div>
+          <button className="btn btn--sm" disabled={options === null} onClick={() => setEditingOptions(true)}>
+            <Icon name="settings" size={15} />
+            Düzenle
+          </button>
         </div>
 
         <div className="settings-row">

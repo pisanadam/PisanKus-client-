@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type {
@@ -205,6 +205,58 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('profiles:list', () => store.profiles)
 
+  /**
+   * Picks a picture for a profile and stores it inline.
+   *
+   * Downscaled to 128px first: the source is whatever the player had lying
+   * around, often a multi-megabyte photo, and the icon is never drawn larger
+   * than a list row.
+   */
+  handle('profiles:pickIcon', async (id: string) => {
+    const window = getWindow()
+    if (!window) return null
+
+    const result = await dialog.showOpenDialog(window, {
+      properties: ['openFile'],
+      filters: [{ name: 'Görsel', extensions: ['png', 'jpg', 'jpeg', 'webp'] }]
+    })
+    if (result.canceled || !result.filePaths[0]) return null
+
+    const image = nativeImage.createFromPath(result.filePaths[0])
+    if (image.isEmpty()) throw new Error('Bu dosya bir görsel olarak okunamadı.')
+
+    const { width, height } = image.getSize()
+    const scaled = width > 128 || height > 128 ? image.resize({ width: 128, height: 128 }) : image
+    return store.updateProfile(id, { iconImage: scaled.toDataURL() })
+  })
+
+  handle('profiles:clearIcon', (id: string) => store.updateProfile(id, { iconImage: undefined }))
+
+  /**
+   * That profile's own options.txt, read from its folder.
+   *
+   * Missing means the game has never written one and the launcher's template
+   * never reached it either — an empty editor would be a dead end, so the
+   * configured template (or Minecraft's defaults) is what gets edited instead.
+   */
+  handle('profiles:readOptions', async (id: string) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+
+    const file = path.join(profile.directory, 'options.txt')
+    const text = await fsp.readFile(file, 'utf8').catch(() => null)
+    return {
+      text: text ?? (store.settings.minecraftOptions || defaultOptionsText()),
+      onDisk: text !== null
+    }
+  })
+
+  handle('profiles:writeOptions', async (id: string, text: string) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    await writeProfileOptions(profile.directory, text, true)
+  })
+
   handle('profiles:create', (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) =>
     createProfile(input)
   )
@@ -341,6 +393,22 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     install.updateContent(profileId, contentId, onProgress)
   )
   handle('content:checkUpdates', (profileId: string) => install.checkForUpdates(profileId))
+
+  /** Reconciles the recorded content list with what is really in the folders. */
+  handle('content:sync', (profileId: string) => install.syncProfileContent(profileId))
+
+  /**
+   * Files dropped onto the profile. The kind is worked out per file from the
+   * archive itself, so a world, a resource pack and a shader pack can be
+   * dropped together and each still lands in the right folder.
+   */
+  handle('content:importPaths', async (profileId: string, filePaths: string[]) => {
+    for (const filePath of filePaths) {
+      const kind = await install.inferKind(filePath)
+      await install.importLocalFile(profileId, filePath, kind)
+    }
+    return store.profile(profileId)?.content ?? []
+  })
 
   handle('content:import', async (profileId: string, kind: ContentKind) => {
     const window = getWindow()

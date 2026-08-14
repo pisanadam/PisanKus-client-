@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { LoaderId, Profile, VersionSummary } from '../../shared/types'
+import { ProfileIcon } from '../components/ProfileIcon'
 import { Icon } from '../components/Icon'
 import { Modal } from '../components/Modal'
 import { api } from '../lib/api'
@@ -96,11 +97,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                   onClick={() => onOpenProfile(profile.id)}
                   aria-label={`${profile.name} profilini aç`}
                 >
-                  {profile.icon?.startsWith('http') ? (
-                    <img src={profile.icon} alt="" />
-                  ) : (
-                    <span>{profile.icon ?? '🎮'}</span>
-                  )}
+                  <ProfileIcon profile={profile} size={46} />
                   {running && (
                     <span className="profile-card__running">
                       <span className="nav-item__dot" style={{ width: 6, height: 6, background: 'currentColor' }} />
