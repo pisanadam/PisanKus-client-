@@ -8,8 +8,6 @@ import { downloadAll, type DownloadItem } from './downloader'
 import { ensureJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
-import { writeProfileOptions } from './options'
-import { defaultOptionsText } from '../../shared/options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 
 /**
@@ -170,11 +168,10 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
 
     await fsp.mkdir(profile.directory, { recursive: true })
 
-    // Guarantees the game always starts against a real options.txt. It is
-    // normally written when the profile is created, but a profile made by an
-    // older build — or one whose folder was cleaned out — would otherwise start
-    // with nothing, and the settings editor would have nothing to show.
-    await writeProfileOptions(profile.directory, settings.minecraftOptions || defaultOptionsText())
+    // Deliberately does not write options.txt. The template is seeded once, when
+    // the profile is created; from then on the file belongs to the player and
+    // the game, and the launcher only touches it when asked to from the
+    // profile's own settings.
 
     const classpath = [...libraries.classpath, clientJar]
     const values: Record<string, string> = {
