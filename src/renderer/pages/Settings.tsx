@@ -3,7 +3,7 @@ import type { JavaInfo } from '../../preload'
 import type { UpdateStatus } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
-import { parseOptions } from '../../shared/options'
+import { defaultOptionsText, parseOptions } from '../../shared/options'
 import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
@@ -66,7 +66,12 @@ export function Settings(): JSX.Element {
     <div className="page">
       {editingOptions && (
         <OptionsEditor
-          value={settings.minecraftOptions}
+          // Opening on an empty template gave the player a blank form: nothing
+          // to see, nothing to change, and saving stored nothing. Starting from
+          // Minecraft's own defaults means the editor always shows the real
+          // settings, so changing one and saving produces a template that
+          // visibly reaches the next profile.
+          value={settings.minecraftOptions || defaultOptionsText()}
           notify={notify}
           onClose={() => setEditingOptions(false)}
           onSave={async (text) => {
@@ -275,7 +280,9 @@ export function Settings(): JSX.Element {
               <div className="faint">
                 {optionCount > 0
                   ? `${optionCount} ayar tanımlı · yeni profillere otomatik kurulur`
-                  : 'Tanımlı değil · yeni profiller oyunun kendi varsayılanlarıyla başlar'}
+                  : 'Henüz kendi ayarlarınızı belirlemediniz — yeni profiller Minecraft’ın ' +
+                    'varsayılanlarıyla başlıyor. Ayarlayıp kaydedin, bundan sonraki profiller ' +
+                    'sizin ayarlarınızla açılsın.'}
               </div>
             </div>
             <button className="btn" onClick={() => setEditingOptions(true)}>
