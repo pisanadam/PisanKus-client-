@@ -1,6 +1,6 @@
 /** Types shared between the Electron main process and the React renderer. */
 
-export type LoaderId = 'vanilla' | 'fabric' | 'legacyfabric' | 'quilt' | 'forge' | 'neoforge'
+export type LoaderId = 'vanilla' | 'fabric' | 'quilt' | 'forge' | 'neoforge'
 
 export type ContentKind = 'mod' | 'resourcepack' | 'shader' | 'datapack' | 'world' | 'modpack'
 

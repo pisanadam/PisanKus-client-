@@ -1,8 +1,4 @@
-import fsp from 'node:fs/promises'
-import path from 'node:path'
-import type { InstalledContent } from '../../shared/types'
 import { packById, type CuratedPack, type PackMod } from '../../shared/curatedPack'
-import { downloadFile } from '../minecraft/downloader'
 import { store } from '../store'
 import { installContent, type ProgressReporter } from './install'
 import * as modrinth from './modrinth'
@@ -16,37 +12,8 @@ export interface PackReport {
 /** One entry, resolved to the exact build that fits this profile. */
 interface Resolved {
   mod: PackMod
-  /** Set for Modrinth entries; maven entries carry `file` instead. */
-  projectId?: string
-  versionId?: string
-  file?: { url: string; fileName: string; version: string }
-}
-
-/**
- * Finds the newest maven artifact published for this Minecraft version.
- *
- * Legacy Fabric names them `<apiVersion>+<minecraftVersion>`, so the metadata
- * listing is filtered by suffix and the last entry wins — maven-metadata keeps
- * them in release order.
- */
-async function resolveMaven(
-  maven: NonNullable<PackMod['maven']>,
-  gameVersion: string
-): Promise<Resolved['file'] | undefined> {
-  const base = `${maven.base}/${maven.group}/${maven.artifact}`
-  const response = await fetch(`${base}/maven-metadata.xml`).catch(() => null)
-  if (!response?.ok) return undefined
-
-  const metadata = await response.text()
-  const versions = [...metadata.matchAll(/<version>([^<]+)<\/version>/g)]
-    .map((match) => match[1])
-    .filter((version) => version.endsWith(`+${gameVersion}`))
-
-  const version = versions.at(-1)
-  if (!version) return undefined
-
-  const fileName = `${maven.artifact}-${version}.jar`
-  return { url: `${base}/${version}/${fileName}`, fileName, version }
+  projectId: string
+  versionId: string
 }
 
 function requirePack(packId: string): CuratedPack {
@@ -85,9 +52,7 @@ async function resolveOne(
 async function resolvePack(
   pack: CuratedPack,
   gameVersion: string
-): Promise<{ ready: Resolved[]; missing: PackReport['skipped']; skipDependencies: string[] }> {
-  // Maven entries are looked up too, purely so their project ids can be kept
-  // out of everyone else's dependency resolution.
+): Promise<{ ready: Resolved[]; missing: PackReport['skipped'] }> {
   const projects = await modrinth.getProjects(pack.mods.map((mod) => mod.slug))
   const bySlug = new Map(projects.map((project) => [project.slug, project.id]))
 
@@ -97,13 +62,6 @@ async function resolvePack(
   // Sequential on purpose: Modrinth rate-limits, and a pack install that trips
   // the limit halfway through is worse than one that takes a few seconds longer.
   for (const mod of pack.mods) {
-    if (mod.maven) {
-      const file = await resolveMaven(mod.maven, gameVersion)
-      if (file) ready.push({ mod, file })
-      else missing.push({ name: mod.name, reason: `${gameVersion} için yayınlanmamış` })
-      continue
-    }
-
     const projectId = bySlug.get(mod.slug)
     if (!projectId) {
       missing.push({ name: mod.name, reason: 'Modrinth’te bulunamadı' })
@@ -128,12 +86,7 @@ async function resolvePack(
     )
   }
 
-  const skipDependencies = pack.mods
-    .filter((mod) => mod.maven)
-    .map((mod) => bySlug.get(mod.slug))
-    .filter((id): id is string => Boolean(id))
-
-  return { ready, missing, skipDependencies }
+  return { ready, missing }
 }
 
 /** Which Minecraft versions a pack can be installed on, newest first. */
@@ -182,7 +135,7 @@ export async function installPackInto(
   const taskId = `pack-${profileId}`
   onProgress({ id: taskId, label: `${pack.name} hazırlanıyor`, progress: -1, state: 'running' })
 
-  const { ready, missing, skipDependencies } = await resolvePack(pack, profile.gameVersion)
+  const { ready, missing } = await resolvePack(pack, profile.gameVersion)
   const installed: PackReport['installed'] = []
 
   for (const [index, entry] of ready.entries()) {
@@ -195,16 +148,10 @@ export async function installPackInto(
     })
 
     try {
-      if (entry.file) {
-        await installMavenJar(profileId, entry, profile.directory)
-        installed.push({ name: entry.mod.name, role: entry.mod.role })
-        continue
-      }
-
       await installContent(
         {
           profileId,
-          projectId: entry.projectId!,
+          projectId: entry.projectId,
           versionId: entry.versionId,
           kind: 'mod',
           name: entry.mod.name,
@@ -212,8 +159,7 @@ export async function installPackInto(
           // so this normally finds them already there. It stays on for the ones
           // nobody anticipated — a missing library is a profile that will not
           // start, which is far worse than an extra jar.
-          withDependencies: true,
-          skipDependencies
+          withDependencies: true
         },
         // The per-mod progress would fight the pack's own bar for the same tray
         // slot, so only failures are worth surfacing from inside.
@@ -234,35 +180,4 @@ export async function installPackInto(
   })
 
   return { installed, skipped: missing }
-}
-
-/**
- * Downloads a maven artifact straight into the profile's `mods` folder and
- * records it, so it shows up and can be toggled like anything else.
- */
-async function installMavenJar(
-  profileId: string,
-  entry: Resolved,
-  directory: string
-): Promise<void> {
-  const file = entry.file!
-  const target = path.join(directory, 'mods', file.fileName)
-  await fsp.mkdir(path.dirname(target), { recursive: true })
-  await downloadFile({ url: file.url, destination: target })
-
-  const profile = store.profile(profileId)
-  if (!profile) return
-
-  const record: InstalledContent = {
-    id: `maven:${entry.mod.slug}`,
-    source: 'local',
-    kind: 'mod',
-    name: entry.mod.name,
-    fileName: file.fileName,
-    enabled: true,
-    installedAt: Date.now()
-  }
-  store.updateProfile(profileId, {
-    content: [...profile.content.filter((item) => item.id !== record.id), record]
-  })
 }

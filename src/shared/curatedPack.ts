@@ -22,18 +22,6 @@ import type { LoaderId } from './types'
 export interface PackMod {
   /** Modrinth slug — stable, and readable in the code. */
   slug: string
-  /**
-   * Fetch this one from a maven repository instead of Modrinth.
-   *
-   * Needed where a project's Modrinth release is a single jar covering every
-   * Minecraft version it ever supported. Legacy Fabric API is exactly that: its
-   * Modrinth file bundles the modules for 1.3.2 through 1.12.2 in one 2 MB jar,
-   * and Fabric refuses to start because most of those modules declare a
-   * Minecraft version that is not the one running. The project's own maven
-   * publishes a per-version artifact — 5 KB instead of 2 MB — which is what
-   * actually belongs in a profile.
-   */
-  maven?: { base: string; group: string; artifact: string }
   name: string
   /** Shown while installing, so the player sees what each piece is for. */
   role: string
@@ -55,10 +43,8 @@ export interface CuratedPack {
   /**
    * Modrinth loader facets to try when resolving a version, in order.
    *
-   * Old-version mods are inconsistent about which facet they publish under —
-   * the same 1.8.9 mod may be tagged `legacy-fabric`, `fabric`, or both. Trying
-   * them in turn is what makes the list resolve completely instead of dropping
-   * half of it over a tagging detail.
+   * A list rather than one value because a project may publish under more than
+   * one facet; they are tried in order and the first hit wins.
    */
   modrinthLoaders: string[]
   /** Versions worth defaulting to, newest first. Others stay selectable. */
@@ -129,19 +115,15 @@ const MODERN: CuratedPack = {
 }
 
 /**
- * There is no 1.8.9 pack, and it is not an oversight.
+ * 1.8.9 was tried and dropped, loader and all.
  *
- * Legacy Fabric carries the loader back to 1.8.9 and the launcher supports it —
- * a 1.8.9 Legacy Fabric profile can be made by hand and filled from Keşfet. But
- * a *curated* 1.8.9 pack could not be made to start. Legacy Fabric API is
- * distributed two ways and neither one works unattended: the Modrinth file is a
- * single jar carrying modules for 1.3.2 through 1.12.2, which Fabric rejects
- * because most of them declare the wrong Minecraft version, while the maven
- * artifact for 1.8.9 turned out to be an empty 5 KB marker with no modules at
- * all, so mods that need them refuse to load.
- *
- * Shipping a third guess was not worth the player's time. A 1.8.9 pack belongs
- * here only once someone has watched it reach the main menu.
+ * Legacy Fabric API is distributed two ways and neither works unattended: the
+ * Modrinth file is one jar carrying modules for 1.3.2 through 1.12.2, which
+ * Fabric rejects because most declare the wrong Minecraft version, while the
+ * maven artifact for 1.8.9 is an empty 5 KB marker with no modules at all, so
+ * mods needing them refuse to load. Two attempts reached the player and neither
+ * started the game, so the whole thing came out rather than shipping a third
+ * guess.
  */
 
 export const PACKS: CuratedPack[] = [MODERN]

@@ -8,10 +8,6 @@ import type { VersionJson } from '../versions'
 /** Meta endpoints for the loaders sharing Fabric's API shape. */
 const FABRIC_LIKE: Partial<Record<LoaderId, string>> = {
   fabric: 'https://meta.fabricmc.net/v2',
-  // Fabric proper starts at 1.14. Legacy Fabric carries the same loader back to
-  // 1.8.9 and older, and serves the identical meta shape from its own host, so
-  // everything below treats the two the same.
-  legacyfabric: 'https://meta.legacyfabric.net/v2',
   quilt: 'https://meta.quiltmc.org/v3'
 }
 
@@ -58,7 +54,6 @@ export async function listLoaderVersions(loader: LoaderId, gameVersion: string):
     case 'vanilla':
       return []
     case 'fabric':
-    case 'legacyfabric':
     case 'quilt':
       return fabricLikeVersions(FABRIC_LIKE[loader]!, gameVersion)
     case 'neoforge':
@@ -74,9 +69,6 @@ export function loaderVersionId(loader: LoaderId, gameVersion: string, loaderVer
     case 'vanilla':
       return gameVersion
     case 'fabric':
-    // Legacy Fabric publishes under the same version id — its json says
-    // `fabric-loader-…` too, so a different name here would not resolve.
-    case 'legacyfabric':
       return `fabric-loader-${loaderVersion}-${gameVersion}`
     case 'quilt':
       return `quilt-loader-${loaderVersion}-${gameVersion}`
@@ -121,7 +113,7 @@ export async function installLoader(
   onProgress?.(`${loader} ${resolved} kuruluyor…`)
 
   let json: VersionJson
-  if (loader === 'fabric' || loader === 'legacyfabric' || loader === 'quilt') {
+  if (loader === 'fabric' || loader === 'quilt') {
     json = await fetchJson<VersionJson>(
       `${FABRIC_LIKE[loader]}/versions/loader/${encodeURIComponent(gameVersion)}/${encodeURIComponent(resolved)}/profile/json`
     )
