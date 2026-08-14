@@ -1,14 +1,4 @@
-import os from 'node:os'
-import {
-  PACK_JVM_ARGS,
-  PACK_MODS,
-  PACK_NAME,
-  PACK_OPTIONS,
-  packMemoryMb,
-  type PackMod
-} from '../../shared/curatedPack'
-import { defaultOptionsText, parseOptions, serialiseOptions, writeOption } from '../../shared/options'
-import { writeProfileOptions } from '../minecraft/options'
+import { PACK_MODS, PACK_NAME, type PackMod } from '../../shared/curatedPack'
 import { store } from '../store'
 import { installContent, type ProgressReporter } from './install'
 import * as modrinth from './modrinth'
@@ -131,9 +121,11 @@ export async function installPackInto(profileId: string, onProgress: ProgressRep
           versionId: entry.versionId,
           kind: 'mod',
           name: entry.mod.name,
-          // Every dependency the pack needs is already in the list, and pulling
-          // extras in would put mods in the profile nobody chose.
-          withDependencies: false
+          // The libraries the pack knows about are listed and installed first,
+          // so this normally finds them already there. It stays on for the ones
+          // nobody anticipated — a missing library is a profile that will not
+          // start, which is far worse than an extra jar.
+          withDependencies: true
         },
         // The per-mod progress would fight the pack's own bar for the same tray
         // slot, so only failures are worth surfacing from inside.
@@ -144,8 +136,6 @@ export async function installPackInto(profileId: string, onProgress: ProgressRep
       missing.push({ name: entry.mod.name, reason: error instanceof Error ? error.message : 'kurulamadı' })
     }
   }
-
-  await applyTuning(profileId)
 
   onProgress({
     id: taskId,
@@ -158,24 +148,3 @@ export async function installPackInto(profileId: string, onProgress: ProgressRep
   return { installed, skipped: missing }
 }
 
-/**
- * Writes the pack's game settings and JVM tuning onto the profile.
- *
- * The options are merged onto whatever template the launcher already writes, so
- * a player's own settings survive except for the handful of keys the pack has
- * an opinion about.
- */
-async function applyTuning(profileId: string): Promise<void> {
-  const profile = store.profile(profileId)
-  if (!profile) return
-
-  let lines = parseOptions(store.settings.minecraftOptions || defaultOptionsText())
-  for (const [key, value] of Object.entries(PACK_OPTIONS)) lines = writeOption(lines, key, value)
-  await writeProfileOptions(profile.directory, serialiseOptions(lines), true)
-
-  // Per-profile, so the pack never changes what other profiles launch with.
-  store.updateProfile(profileId, {
-    jvmArgs: PACK_JVM_ARGS,
-    memoryMb: packMemoryMb(Math.round(os.totalmem() / 1024 / 1024))
-  })
-}

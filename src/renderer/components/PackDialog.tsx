@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { PackInstallResult } from '../../preload'
-import { PACK_MODS, PACK_NAME, PACK_SUMMARY } from '../../shared/curatedPack'
+import { PACK_MODS, PACK_NAME, PACK_SUMMARY, RECOMMENDED_VERSIONS } from '../../shared/curatedPack'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
@@ -32,10 +32,20 @@ export function PackDialog({
       .packVersions()
       .then((list) => {
         setVersions(list)
-        setGameVersion(list[0] ?? '')
+        // Start on the newest recommended version that the pack can actually be
+        // built for today, falling back to whatever is newest.
+        const recommended = RECOMMENDED_VERSIONS.find((entry) => list.includes(entry.version))
+        setGameVersion(recommended?.version ?? list[0] ?? '')
       })
       .catch((caught) => setError(errorMessage(caught)))
   }, [])
+
+  const available = versions ?? []
+  const recommended = RECOMMENDED_VERSIONS.filter((entry) => available.includes(entry.version))
+  const others = available.filter(
+    (version) => !recommended.some((entry) => entry.version === version)
+  )
+  const why = RECOMMENDED_VERSIONS.find((entry) => entry.version === gameVersion)?.why
 
   const install = async (): Promise<void> => {
     setBusy(true)
@@ -65,7 +75,7 @@ export function PackDialog({
       >
         <p className="muted">
           Minecraft {result.profile.gameVersion} · Fabric · {result.report.installed.length} mod kuruldu.
-          Oyun ayarları ve JVM argümanları da bu profile göre ayarlandı.
+          Oyun ayarlarınıza dokunulmadı.
         </p>
 
         <ul className="pack-list">
@@ -133,15 +143,28 @@ export function PackDialog({
             value={gameVersion}
             onChange={(event) => setGameVersion(event.target.value)}
           >
-            {versions.map((version) => (
-              <option key={version} value={version}>
-                {version}
-              </option>
-            ))}
+            {recommended.length > 0 && (
+              <optgroup label="Önerilen">
+                {recommended.map((entry) => (
+                  <option key={entry.version} value={entry.version}>
+                    {entry.version} — {entry.why}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            <optgroup label="Diğer sürümler">
+              {others.map((version) => (
+                <option key={version} value={version}>
+                  {version}
+                </option>
+              ))}
+            </optgroup>
           </select>
         )}
         <span className="field__hint">
-          Yalnızca paketin çekirdek modlarının yayınlandığı sürümler listelenir.
+          {why
+            ? `${why} — paket bu sürümde tam kuruluyor.`
+            : 'Yalnızca paketin çekirdek modlarının yayınlandığı sürümler listelenir.'}
         </span>
       </div>
 

@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon'
 import { InstallDialog, checkCompatibility } from '../components/InstallDialog'
 import { Modal } from '../components/Modal'
 import { PackDialog } from '../components/PackDialog'
-import { PACK_MODS, PACK_NAME, PACK_SUMMARY } from '../../shared/curatedPack'
+import { PACK_MODS, PACK_NAME, PACK_SUMMARY, RECOMMENDED_VERSIONS } from '../../shared/curatedPack'
 import { api } from '../lib/api'
 import { errorMessage, formatBytes, formatCount, formatRelative } from '../lib/format'
 import { useApp } from '../state/AppContext'
@@ -358,11 +358,12 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           <div className="featured__text">
             <div className="featured__title">
               {PACK_NAME}
-              <span className="badge badge--success">Opbay</span>
+              <span className="badge badge--success">Önerilen</span>
             </div>
             <p className="featured__desc">{PACK_SUMMARY}</p>
             <div className="featured__meta">
-              Fabric · {PACK_MODS.length} mod · oyun ayarları ve JVM argümanları dahil
+              Fabric · {PACK_MODS.length} mod ·{' '}
+              {RECOMMENDED_VERSIONS.map((entry) => entry.version).join(' · ')}
             </div>
           </div>
           <span className="btn btn--primary btn--sm featured__action">
