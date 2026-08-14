@@ -1,7 +1,7 @@
 {
   "name": "opbay-client",
-  "version": "1.0.0",
-  "description": "Opbay Client — modern Minecraft launcher with Modrinth & CurseForge content, skin editor and Microsoft authentication.",
+  "version": "1.0.1",
+  "description": "Opbay Client — modern Minecraft launcher with Modrinth content, skin editor and Microsoft authentication.",
   "main": "./out/main/index.js",
   "author": "Opbay",
   "license": "GPL-3.0",
@@ -11,6 +11,7 @@
     "start": "electron-vite preview",
     "build": "npm run typecheck && electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
     "icons": "node scripts/icons.mjs",
     "chime": "node scripts/chime.mjs",
     "dist": "npm run build && electron-builder --publish never",
@@ -19,21 +20,22 @@
     "dist:linux": "npm run build && electron-builder --linux --publish never"
   },
   "dependencies": {
-    "electron-updater": "^6.3.9",
-    "extract-zip": "^2.0.1",
-    "tar": "^7.4.3"
+    "electron-updater": "^6.8.9",
+    "tar": "^7.5.22",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^33.3.1",
-    "electron-builder": "^25.1.8",
-    "electron-vite": "^2.3.0",
+    "@types/yauzl": "^3.4.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "typescript": "^5.7.2",
-    "vite": "^5.4.11"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6"
   }
 }

@@ -35,7 +35,7 @@ function createWindow(): void {
       autoplayPolicy: 'no-user-gesture-required',
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: true
     }
   })
 
@@ -51,6 +51,13 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
+  })
+
+  // The preload API is intentionally powerful. Never leave it attached to a
+  // page that navigated away from the bundled renderer.
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault()
+    if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {

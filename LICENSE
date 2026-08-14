@@ -1,0 +1,312 @@
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+
+  The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+the GNU General Public License is intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.  We, the Free Software Foundation, use the
+GNU General Public License for most of our software; it applies also to
+any other work released this way by its authors.  You can apply it to
+your programs, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
+
+  To protect your rights, we need to prevent others from denying you
+these rights or asking you to surrender the rights.  Therefore, you have
+certain responsibilities if you distribute copies of the software, or if
+you modify it: responsibilities to respect the freedom of others.
+
+  For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must pass on to the recipients the same
+freedoms that you received.  You must make sure that they, too, receive
+or can get the source code.  And you must show them these terms so they
+know their rights.
+
+  Developers that use the GNU GPL protect your rights with two steps:
+(1) assert copyright on the software, and (2) offer you this License
+giving you legal permission to copy, distribute and/or modify it.
+
+  For the developers' and authors' protection, the GPL clearly explains
+that there is no warranty for this free software.  For both users' and
+authors' sake, the GPL requires that modified versions be marked as
+changed, so that their problems will not be attributed erroneously to
+authors of previous versions.
+
+  Some devices are designed to deny users access to install or run
+modified versions of the software inside them, although the manufacturer
+can do so.  This is fundamentally incompatible with the aim of
+protecting users' freedom to change the software.  The systematic
+pattern of such abuse occurs in the area of products for individuals to
+use, which is precisely where it is most unacceptable.  Therefore, we
+have designed this version of the GPL to prohibit the practice for those
+products.  If such problems arise substantially in other domains, we
+stand ready to extend this provision to those domains in future versions
+of the GPL, as needed to protect the freedom of users.
+
+  Finally, every program is threatened constantly by software patents.
+States should not allow patents to restrict development and use of
+software on general-purpose computers, but in those that do, we wish to
+avoid the special danger that patents applied to a free program could
+make it effectively proprietary.  To prevent this, the GPL assures that
+patents cannot be used to render the program non-free.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.
+
+                       TERMS AND CONDITIONS
+
+  0. Definitions.
+
+  "This License" refers to version 3 of the GNU General Public License.
+
+  "Copyright" also means copyright-like laws that apply to other kinds of
+works, such as semiconductor masks.
+
+  "The Program" refers to any copyrightable work licensed under this
+License.  Each licensee is addressed as "you".  "Licensees" and
+"recipients" may be individuals or organizations.
+
+  To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of an
+exact copy.  The resulting work is called a "modified version" of the
+earlier work or a work "based on" the earlier work.
+
+  A "covered work" means either the unmodified Program or a work based
+on the Program.
+
+  To "propagate" a work means to do anything with it that, without
+permission, would make you directly or secondarily liable for
+infringement under applicable copyright law, except executing it on a
+computer or modifying a private copy.  Propagation includes copying,
+distribution (with or without modification), making available to the
+public, and in some countries other activities as well.
+
+  To "convey" a work means any kind of propagation that enables other
+parties to make or receive copies.  Mere interaction with a user through
+a computer network, with no transfer of a copy, is not conveying.
+
+  An interactive user interface displays "Appropriate Legal Notices"
+to the extent that it includes a convenient and prominently visible
+feature that (1) displays an appropriate copyright notice, and (2)
+tells the user that there is no warranty for the work (except to the
+extent that warranties are provided), that licensees may convey the
+work under this License, and how to view a copy of this License.  If
+the interface presents a list of user commands or options, such as a
+menu, a prominent item in the list meets this criterion.
+
+  1. Source Code.
+
+  The "source code" for a work means the preferred form of the work
+for making modifications to it.  "Object code" means any non-source
+form of a work.
+
+  A "Standard Interface" means an interface that either is an official
+standard defined by a recognized standards body, or, in the case of
+interfaces specified for a particular programming language, one that
+is widely used among developers working in that language.
+
+  The "System Libraries" of an executable work include anything, other
+than the work as a whole, that (a) is included in the normal form of
+packaging a Major Component, but which is not part of that Major
+Component, and (b) serves only to enable use of the work with that
+Major Component, or to implement a Standard Interface for which an
+implementation is available to the public in source code form.  A
+"Major Component", in this context, means a major essential component
+(kernel, window system, and so on) of the specific operating system
+(if any) on which the executable work runs, or a compiler used to
+produce the work, or an object code interpreter used to run it.
+
+  The "Corresponding Source" for a work in object code form means all
+the source code needed to generate, install, and (for an executable
+work) run the object code and to modify the work, including scripts to
+control those activities.  However, it does not include the work's
+System Libraries, or general-purpose tools or generally available free
+programs which are used unmodified in performing those activities but
+which are not part of the work.  For example, Corresponding Source
+includes interface definition files associated with source files for
+the work, and the source code for shared libraries and dynamically
+linked subprograms that the work is specifically designed to require,
+such as by intimate data communication or control flow between those
+subprograms and other parts of the work.
+
+  The Corresponding Source need not include anything that users
+can regenerate automatically from other parts of the Corresponding
+Source.
+
+  The Corresponding Source for a work in source code form is that
+same work.
+
+  2. Basic Permissions.
+
+  All rights granted under this License are granted for the term of
+copyright on the Program, and are irrevocable provided the stated
+conditions are met.  This License explicitly affirms your unlimited
+permission to run the unmodified Program.  The output from running a
+covered work is covered by this License only if the output, given its
+content, constitutes a covered work.  This License acknowledges your
+rights of fair use or other equivalent, as provided by copyright law.
+
+  You may make, run and propagate covered works that you do not
+convey, without conditions so long as your license otherwise remains
+in force.  You may convey covered works to others for the sole purpose
+of having them make modifications exclusively for you, or provide you
+with facilities for running those works, provided that you comply with
+the terms of this License in conveying all material for which you do
+not control copyright.  Those thus making or running the covered works
+for you must do so exclusively on your behalf, under your direction
+and control, on terms that prohibit them from making any copies of
+your copyrighted material outside their relationship with you.
+
+  Conveying under any other circumstances is permitted solely under
+the conditions stated below.  Sublicensing is not allowed; section 10
+makes it unnecessary.
+
+  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+
+  No covered work shall be deemed part of an effective technological
+measure under any applicable law fulfilling obligations under article
+11 of the WIPO copyright treaty adopted on 20 December 1996, or
+similar laws prohibiting or restricting circumvention of such
+measures.
+
+  When you convey a covered work, you waive any legal power to forbid
+circumvention of technological measures to the extent such circumvention
+is effected by exercising rights under this License with respect to
+the covered work, and you disclaim any intention to limit operation or
+modification of the work as a means of enforcing, against the work's
+users, your or third parties' legal rights to forbid circumvention of
+technological measures.
+
+  4. Conveying Verbatim Copies.
+
+  You may convey verbatim copies of the Program's source code as you
+receive it, in any medium, provided that you conspicuously and
+appropriately publish on each copy an appropriate copyright notice;
+keep intact all notices stating that this License and any
+non-permissive terms added in accord with section 7 apply to the code;
+keep intact all notices of the absence of any warranty; and give all
+recipients a copy of this License along with the Program.
+
+  You may charge any price or no price for each copy that you convey,
+and you may offer support or warranty protection for a fee.
+
+  5. Conveying Modified Source Versions.
+
+  You may convey a work based on the Program, or the modifications to
+produce it from the Program, in the form of source code under the
+terms of section 4, provided that you also meet all of these conditions:
+
+    a) The work must carry prominent notices stating that you modified
+    it, and giving a relevant date.
+
+    b) The work must carry prominent notices stating that it is
+    released under this License and any conditions added under section
+    7.  This requirement modifies the requirement in section 4 to
+    "keep intact all notices".
+
+    c) You must license the entire work, as a whole, under this
+    License to anyone who comes into possession of a copy.  This
+    License will therefore apply, along with any applicable section 7
+    additional terms, to the whole of the work, and all its parts,
+    regardless of how they are packaged.  This License gives no
+    permission to license the work in any other way, but it does not
+    invalidate such permission if you have separately received it.
+
+    d) If the work has interactive user interfaces, each must display
+    Appropriate Legal Notices; however, if the Program has interactive
+    interfaces that do not display Appropriate Legal Notices, your
+    work need not make them do so.
+
+  A compilation of a covered work with other separate and independent
+works, which are not by their nature extensions of the covered work,
+and which are not combined with it such as to form a larger program,
+in or on a volume of a storage or distribution medium, is called an
+"aggregate" if the compilation and its resulting copyright are not
+used to limit the access or legal rights of the compilation's users
+beyond what the individual works permit.  Inclusion of a covered work
+in an aggregate does not cause this License to apply to the other
+parts of the aggregate.
+
+  6. Conveying Non-Source Forms.
+
+  You may convey a covered work in object code form under the terms
+of sections 4 and 5, provided that you also convey the
+machine-readable Corresponding Source under the terms of this License,
+in one of these ways:
+
+    a) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by the
+    Corresponding Source fixed on a durable physical medium
+    customarily used for software interchange.
+
+    b) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by a
+    written offer, valid for at least three years and valid for as
+    long as you offer spare parts or customer support for that product
+    model, to give anyone who possesses the object code either (1) a
+    copy of the Corresponding Source for all the software in the
+    product that is covered by this License, on a durable physical
+    medium customarily used for software interchange, for a price no
+    more than your reasonable cost of physically performing this
+    conveying of source, or (2) access to copy the
+    Corresponding Source from a network server at no charge.
+
+    c) Convey individual copies of the object code with a copy of the
+    written offer to provide the Corresponding Source.  This
+    alternative is allowed only occasionally and noncommercially, and
+    only if you received the object code with such an offer, in accord
+    with subsection 6b.
+
+    d) Convey the object code by offering access from a designated
+    place (gratis or for a charge), and offer equivalent access to the
+    Corresponding Source in the same way through the same place at no
+    further charge.  You need not require recipients to copy the
+    Corresponding Source along with the object code.  If the place to
+    copy the object code is a network server, the Corresponding Source
+    may be on a different server (operated by you or a third party)
+    that supports equivalent copying facilities, provided you maintain
+    clear directions next to the object code saying where to find the
+    Corresponding Source.  Regardless of what server hosts the
+    Corresponding Source, you remain obligated to ensure that it is
+    available for as long as needed to satisfy these requirements.
+
+    e) Convey the object code using peer-to-peer transmission, provided
+    you inform other peers where the object code and Corresponding
+    Source of the work are being offered to the general public at no
+    charge under subsection 6d.
+
+  A separable portion of the object code, whose source code is excluded
+from the Corresponding Sourc×½{¶‰ËkºwµçHH›ÙÜ˜[H\È[İBœ™XÙZ]™Y]Üˆ[H\Ùˆ]ÛÛZ[œÈH›İXÙHİ][™È]]\Â™Ûİ™\›™YH\ÈXÙ[œÙH[Û™ÈÚ]H\›H]\ÈH\\‚œ™\İšXİ[Û‹[İHX^H™[[İ™H]\›KˆYˆHXÙ[œÙHØİ[Y[ÛÛZ[œÂ˜H\\ˆ™\İšXİ[Ûˆ]\›Z]È™[XÙ[œÚ[™ÈÜˆÛÛ™^Z[™È[™\ˆ\Â“XÙ[œÙK[İHX^HYÈHÛİ™\™YÛÜšÈX]\šX[Ûİ™\›™YHH\›\Â›Ùˆ]XÙ[œÙHØİ[Y[›İšYY]H\\ˆ™\İšXİ[ÛˆÙ\Â››İİ\š]™HİXÚ™[XÙ[œÚ[™ÈÜˆÛÛ™^Z[™Ë‚‚ˆYˆ[İHY\›\ÈÈHÛİ™\™YÛÜšÈ[ˆXØÛÜ™Ú]\ÈÙXİ[Û‹[İB›]\İXÙK[ˆH™[]˜[Ûİ\˜ÙHš[\ËHİ][Y[ÙˆB˜Y][Û˜[\›\È]\HÈÜÙHš[\ËÜˆH›İXÙH[™XØ][™ÂÚ\™HÈš[™H\XØX›H\›\Ë‚‚ˆY][Û˜[\›\Ë\›Z\ÜÚ]™HÜˆ›Û‹\\›Z\ÜÚ]™KX^H™Hİ]Y[ˆB™›Ü›HÙˆHÙ\\˜][HÜš][ˆXÙ[œÙKÜˆİ]Y\È^Ù\[ÛœÎÂHX›İ™H™\]Z\™[Y[È\HZ]\ˆØ^K‚‚ˆˆ\›Z[˜][Û‹‚‚ˆ[İHX^H›İ›ÜYØ]HÜˆ[ÙYHHÛİ™\™YÛÜšÈ^Ù\\È^™\ÜÛBœ›İšYY[™\ˆ\ÈXÙ[œÙKˆ[H][\İ\Ú\ÙHÈ›ÜYØ]HÜ‚›[ÙYH]\È›ÚY[™Ú[]]ÛX]XØ[H\›Z[˜]H[İ\ˆšYÚÈ[™\‚\ÈXÙ[œÙH
+[˜ÛY[™È[H][XÙ[œÙ\ÈÜ˜[Y[™\ˆH\™œ\˜YÜ˜\ÙˆÙXİ[ÛˆLJK‚‚ˆİÙ]™\‹Yˆ[İHÙX\ÙH[š[Û][ÛˆÙˆ\ÈXÙ[œÙK[ˆ[İ\‚›XÙ[œÙHœ›ÛHH\Xİ[\ˆÛÜ\šYÚÛ\ˆ\È™Z[œİ]Y
+JBœ›İš\Ú[Û˜[K[›\ÜÈ[™[[HÛÜ\šYÚÛ\ˆ^XÚ]H[™™š[˜[H\›Z[˜]\È[İ\ˆXÙ[œÙK[™
+ŠH\›X[™[KYˆHÛÜ\šYÚšÛ\ˆ˜Z[ÈÈ›İYH[İHÙˆHš[Û][ÛˆHÛÛYH™X\ÛÛ˜X›HYX[œÂœš[ÜˆÈŒ^\ÈY\ˆHÙ\ÜØ][Û‹‚‚ˆ[Ü™[İ™\‹[İ\ˆXÙ[œÙHœ›ÛHH\Xİ[\ˆÛÜ\šYÚÛ\ˆ\Âœ™Z[œİ]Y\›X[™[HYˆHÛÜ\šYÚÛ\ˆ›İYšY\È[İHÙˆBš[Û][ÛˆHÛÛYH™X\ÛÛ˜X›HYX[œË\È\ÈHš\œİ[YH[İH]™Bœ™XÙZ]™Y›İXÙHÙˆš[Û][ÛˆÙˆ\ÈXÙ[œÙH
+›Üˆ[HÛÜšÊHœ›ÛH]˜ÛÜ\šYÚÛ\‹[™[İHİ\™HHš[Û][Ûˆš[ÜˆÈÌ^\ÈY\‚[İ\ˆ™XÙZ\ÙˆH›İXÙK‚‚ˆ\›Z[˜][ÛˆÙˆ[İ\ˆšYÚÈ[™\ˆ\ÈÙXİ[ÛˆÙ\È›İ\›Z[˜]HB›XÙ[œÙ\ÈÙˆ\Y\ÈÚÈ]™H™XÙZ]™YÛÜY\ÈÜˆšYÚÈœ›ÛH[İH[™\‚\ÈXÙ[œÙKˆYˆ[İ\ˆšYÚÈ]™H™Y[ˆ\›Z[˜]Y[™›İ\›X[™[Bœ™Z[œİ]Y[İHÈ›İ]X[YHÈ™XÙZ]™H™]ÈXÙ[œÙ\È›ÜˆHØ[YB›X]\šX[[™\ˆÙXİ[ÛˆL‚‚ˆKˆXØÙ\[˜ÙH›İ™\]Z\™Y›Üˆ]š[™ÈÛÜY\Ë‚‚ˆ[İH\™H›İ™\]Z\™YÈXØÙ\\ÈXÙ[œÙH[ˆÜ™\ˆÈ™XÙZ]™HÜ‚œ[ˆHÛÜHÙˆH›ÙÜ˜[Kˆ[˜Ú[\H›ÜYØ][ÛˆÙˆHÛİ™\™YÛÜšÂ›ØØİ\œš[™ÈÛÛ[H\ÈHÛÛœÙ\]Y[˜ÙHÙˆ\Ú[™ÈY\‹]Ë\Y\ˆ˜[œÛZ\ÜÚ[Û‚È™XÙZ]™HHÛÜHZÙ]Ú\ÙHÙ\È›İ™\]Z\™HXØÙ\[˜ÙKˆİÙ]™\‹››İ[™Èİ\ˆ[ˆ\ÈXÙ[œÙHÜ˜[È[İH\›Z\ÜÚ[ÛˆÈ›ÜYØ]HÜ‚›[ÙYH[HÛİ™\™YÛÜšËˆ\ÙHXİ[ÛœÈ[™œš[™ÙHÛÜ\šYÚYˆ[İHÂ››İXØÙ\\ÈXÙ[œÙKˆ\™Y›Ü™KH[ÙYZ[™ÈÜˆ›ÜYØ][™ÈB˜Ûİ™\™YÛÜšË[İH[™XØ]H[İ\ˆXØÙ\[˜ÙHÙˆ\ÈXÙ[œÙHÈÈÛË‚‚ˆLˆ]]ÛX]XÈXÙ[œÚ[™ÈÙˆİÛœİ™X[H™XÚ\Y[Ë‚‚ˆXXÚ[YH[İHÛÛ™^HHÛİ™\™YÛÜšËH™XÚ\Y[]]ÛX]XØ[Bœ™XÙZ]™\ÈHXÙ[œÙHœ›ÛHHÜšYÚ[˜[XÙ[œÛÜœËÈ[‹[ÙYH[™œ›ÜYØ]H]ÛÜšËİXš™XİÈ\ÈXÙ[œÙKˆ[İH\™H›İ™\ÜÛœÚX›B™›Üˆ[™›Ü˜Ú[™ÈÛÛ\X[˜ÙHH\™\Y\ÈÚ]\ÈXÙ[œÙK‚‚ˆ[ˆ™[]H˜[œØXİ[Ûˆˆ\ÈH˜[œØXİ[Ûˆ˜[œÙ™\œš[™ÈÛÛ›ÛÙˆ[‚›Ü™Ø[š^˜][Û‹ÜˆİXœİ[X[H[\ÜÙ]ÈÙˆÛ™KÜˆİX™]šY[™È[‚›Ü™Ø[š^˜][Û‹ÜˆY\™Ú[™ÈÜ™Ø[š^˜][ÛœËˆYˆ›ÜYØ][ÛˆÙˆHÛİ™\™YÛÜšÈ™\İ[Èœ›ÛH[ˆ[]H˜[œØXİ[Û‹XXÚ\HÈ]˜[œØXİ[ÛˆÚÈ™XÙZ]™\ÈHÛÜHÙˆHÛÜšÈ[ÛÈ™XÙZ]™\ÈÚ]]™\‚›XÙ[œÙ\ÈÈHÛÜšÈH\IÜÈ™YXÙ\ÜÛÜˆ[ˆ[\™\İYÜˆÛİ[™Ú]™H[™\ˆH™]š[İ\È\˜YÜ˜\\ÈHšYÚÈÜÜÙ\ÜÚ[ÛˆÙˆBÛÜœ™\ÜÛ™[™ÈÛİ\˜ÙHÙˆHÛÜšÈœ›ÛHH™YXÙ\ÜÛÜˆ[ˆ[\™\İY‚H™YXÙ\ÜÛÜˆ\È]ÜˆØ[ˆÙ]]Ú]™X\ÛÛ˜X›HY™›ÜË‚‚ˆ[İHX^H›İ[\ÜÙH[H\\ˆ™\İšXİ[ÛœÈÛˆH^\˜Ú\ÙHÙˆBœšYÚÈÜ˜[YÜˆY™š\›YY[™\ˆ\ÈXÙ[œÙKˆ›Üˆ^[\K[İHX^B››İ[\ÜÙHHXÙ[œÙH™YK›ŞX[KÜˆİ\ˆÚ\™ÙH›Üˆ^\˜Ú\ÙHÙ‚œšYÚÈÜ˜[Y[™\ˆ\ÈXÙ[œÙK[™[İHX^H›İ[š]X]H]YØ][Û‚Š[˜ÛY[™ÈHÜ›ÜÜËXÛZ[HÜˆÛİ[\˜ÛZ[H[ˆH]ÜİZ]
+H[YÚ[™È]˜[H][ÛZ[H\È[™œš[™ÙYHXZÚ[™Ë\Ú[™ËÙ[[™ËÙ™™\š[™È›Ü‚œØ[KÜˆ[\Ü[™ÈH›ÙÜ˜[HÜˆ[HÜ[ÛˆÙˆ]‚‚ˆLKˆ][Ë‚‚ˆH˜ÛÛšX]Üˆˆ\ÈHÛÜ\šYÚÛ\ˆÚÈ]]Üš^™\È\ÙH[™\ˆ\Â“XÙ[œÙHÙˆH›ÙÜ˜[HÜˆHÛÜšÈÛˆÚXÚH›ÙÜ˜[H\È˜\ÙYˆBÛÜšÈ\ÈXÙ[œÙY\ÈØ[YHÛÛšX]Ü‰ÜÈ˜ÛÛšX]Üˆ™\œÚ[Ûˆ‹‚‚ˆHÛÛšX]Ü‰ÜÈ™\ÜÙ[X[][ÛZ[\Èˆ\™H[][ÛZ[\Â›İÛ™YÜˆÛÛ›ÛYHHÛÛšX]Ü‹Ú]\ˆ[™XYHXÜ]Z\™YÜ‚š\™XY\ˆXÜ]Z\™Y]Ûİ[™H[™œš[™ÙYHÛÛYHX[›™\‹\›Z]Y˜H\ÈXÙ[œÙKÙˆXZÚ[™Ë\Ú[™ËÜˆÙ[[™È]ÈÛÛšX]Üˆ™\œÚ[Û‹˜]È›İ[˜ÛYHÛZ[\È]Ûİ[™H[™œš[™ÙYÛ›H\ÈB˜ÛÛœÙ\]Y[˜ÙHÙˆ\\ˆ[ÙYšXØ][ÛˆÙˆHÛÛšX]Üˆ™\œÚ[Û‹ˆ›Ü‚œ\œÜÙ\ÈÙˆ\ÈYš[š][Û‹˜ÛÛ›Ûˆ[˜ÛY\ÈHšYÚÈÜ˜[œ][İX›XÙ[œÙ\È[ˆHX[›™\ˆÛÛœÚ\İ[Ú]H™\]Z\™[Y[ÈÙ‚\ÈXÙ[œÙK‚‚ˆXXÚÛÛšX]ÜˆÜ˜[È[İHH›Û‹Y^Û\Ú]™KÛÜ›ÚYK›ŞX[KYœ™YBœ][XÙ[œÙH[™\ˆHÛÛšX]Ü‰ÜÈ\ÜÙ[X[][ÛZ[\ËÂ›XZÙK\ÙKÙ[Ù™™\ˆ›ÜˆØ[K[\Ü[™İ\Ú\ÙH[‹[ÙYH[™œ›ÜYØ]HHÛÛ[ÈÙˆ]ÈÛÛšX]Üˆ™\œÚ[Û‹‚‚ˆ[ˆH›ÛİÚ[™È™YH\˜YÜ˜\ËHœ][XÙ[œÙHˆ\È[H^™\ÜÂ˜YÜ™Y[Y[ÜˆÛÛ[Z]Y[İÙ]™\ˆ[›ÛZ[˜]Y›İÈ[™›Ü˜ÙHH][ŠİXÚ\È[ˆ^™\ÜÈ\›Z\ÜÚ[ÛˆÈ˜XİXÙHH][ÜˆÛİ™[˜[›İÂœİYH›Üˆ][[™œš[™Ù[Y[
+KˆÈ™Ü˜[ˆİXÚH][XÙ[œÙHÈBœ\HYX[œÈÈXZÙHİXÚ[ˆYÜ™Y[Y[ÜˆÛÛ[Z]Y[›İÈ[™›Ü˜ÙHBœ][YØZ[œİH\K‚‚ˆYˆ[İHÛÛ™^HHÛİ™\™YÛÜšËÛ›İÚ[™ÛH™[Z[™ÈÛˆH][XÙ[œÙK˜[™HÛÜœ™\ÜÛ™[™ÈÛİ\˜ÙHÙˆHÛÜšÈ\È›İ]˜Z[X›H›Üˆ[[Û™BÈÛÜKœ™YHÙˆÚ\™ÙH[™[™\ˆH\›\ÈÙˆ\ÈXÙ[œÙK›İYÚBœX›XÛH]˜Z[X›H™]ÛÜšÈÙ\™\ˆÜˆİ\ˆ™XY[HXØÙ\ÜÚX›HYX[œË[ˆ[İH]\İZ]\ˆ
+JHØ]\ÙHHÛÜœ™\ÜÛ™[™ÈÛİ\˜ÙHÈ™HÛÂ˜]˜Z[X›KÜˆ
+ŠH\œ˜[™ÙHÈ\š]™H[İ\œÙ[ˆÙˆH™[™Yš]ÙˆBœ][XÙ[œÙH›Üˆ\È\Xİ[\ˆÛÜšËÜˆ
+ÊH\œ˜[™ÙK[ˆHX[›™\‚˜ÛÛœÚ\İ[Ú]H™\]Z\™[Y[ÈÙˆ\ÈXÙ[œÙKÈ^[™H][›XÙ[œÙHÈİÛœİ™X[H™XÚ\Y[Ëˆ’Û›İÚ[™ÛH™[Z[™ÈˆYX[œÈ[İH]™B˜XİX[Û›İÛYÙH]]›ÜˆH][XÙ[œÙK[İ\ˆÛÛ™^Z[™ÈB˜Ûİ™\™YÛÜšÈ[ˆHÛİ[KÜˆ[İ\ˆ™XÚ\Y[	ÜÈ\ÙHÙˆHÛİ™\™YÛÜšÂš[ˆHÛİ[KÛİ[[™œš[™ÙHÛ™HÜˆ[Ü™HY[YšXX›H][È[ˆ]˜Ûİ[H][İH]™H™X\ÛÛˆÈ™[Y]™H\™H˜[Y‚‚ˆY‹\œİX[ÈÜˆ[ˆÛÛ›™Xİ[ÛˆÚ]HÚ[™ÛH˜[œØXİ[ÛˆÜ‚˜\œ˜[™Ù[Y[[İHÛÛ™^KÜˆ›ÜYØ]HH›Øİ\š[™ÈÛÛ™^X[˜ÙHÙ‹B˜Ûİ™\™YÛÜšË[™Ü˜[H][XÙ[œÙHÈÛÛYHÙˆH\Y\Âœ™XÙZ]š[™ÈHÛİ™\™YÛÜšÈ]]Üš^š[™È[HÈ\ÙK›ÜYØ]K[ÙYB›ÜˆÛÛ™^HHÜXÚYšXÈÛÜHÙˆHÛİ™\™YÛÜšË[ˆH][XÙ[œÙB[İHÜ˜[\È]]ÛX]XØ[H^[™YÈ[™XÚ\Y[ÈÙˆHÛİ™\™YÛÜšÈ[™ÛÜšÜÈ˜\ÙYÛˆ]‚‚ˆH][XÙ[œÙH\È™\ØÜš[Z[˜]ÜHˆYˆ]Ù\È›İ[˜ÛYHÚ][‚HØÛÜHÙˆ]ÈÛİ™\˜YÙK›ÚXš]ÈH^\˜Ú\ÙHÙ‹Üˆ\Â˜ÛÛ™][Û™YÛˆH›Û‹Y^\˜Ú\ÙHÙˆÛ™HÜˆ[Ü™HÙˆHšYÚÈ]\™BœÜXÚYšXØ[HÜ˜[Y[™\ˆ\ÈXÙ[œÙKˆ[İHX^H›İÛÛ™^HHÛİ™\™YÛÜšÈYˆ[İH\™HH\HÈ[ˆ\œ˜[™Ù[Y[Ú]H\™\H]\Âš[ˆH\Ú[™\ÜÈÙˆ\İšX][™ÈÛÙØ\™K[™\ˆÚXÚ[İHXZÙH^[Y[ÈH\™\H˜\ÙYÛˆH^[Ùˆ[İ\ˆXİ]š]HÙˆÛÛ™^Z[™ÂHÛÜšË[™[™\ˆÚXÚH\™\HÜ˜[ËÈ[HÙˆBœ\Y\ÈÚÈÛİ[™XÙZ]™HHÛİ™\™YÛÜšÈœ›ÛH[İKH\ØÜš[Z[˜]ÜBœ][XÙ[œÙH
+JH[ˆÛÛ›™Xİ[ÛˆÚ]ÛÜY\ÈÙˆHÛİ™\™YÛÜšÂ˜ÛÛ™^YYH[İH
+ÜˆÛÜY\ÈXYHœ›ÛHÜÙHÛÜY\ÊKÜˆ
+ŠHš[X\š[B™›Üˆ[™[ˆÛÛ›™Xİ[ÛˆÚ]ÜXÚYšXÈ›ÙXİÈÜˆÛÛ\[][ÛœÈ]˜ÛÛZ[ˆHÛİ™\™YÛÜšË[›\ÜÈ[İH[\™Y[È]\œ˜[™Ù[Y[›Üˆ]][XÙ[œÙHØ\ÈÜ˜[Yš[ÜˆÈX\˜ÚŒË‚‚ˆ›İ[™È[ˆ\ÈXÙ[œÙHÚ[™HÛÛœİYY\È^ÛY[™ÈÜˆ[Z][™Â˜[H[\YYXÙ[œÙHÜˆİ\ˆY™[œÙ\ÈÈ[™œš[™Ù[Y[]X^B›İ\Ú\ÙH™H]˜Z[X›HÈ[İH[™\ˆ\XØX›H][]Ë‚‚ˆL‹ˆ›Èİ\œ™[™\ˆÙˆİ\œÉÈœ™YYÛK‚‚ˆYˆÛÛ™][ÛœÈ\™H[\ÜÙYÛˆ[İH
+Ú]\ˆHÛİ\Ü™\‹YÜ™Y[Y[Ü‚›İ\Ú\ÙJH]ÛÛ˜YXİHÛÛ™][ÛœÈÙˆ\ÈXÙ[œÙK^HÈ›İ™^İ\ÙH[İHœ›ÛHHÛÛ™][ÛœÈÙˆ\ÈXÙ[œÙKˆYˆ[İHØ[››İÛÛ™^HB˜Ûİ™\™YÛÜšÈÛÈ\ÈÈØ]\ÙHÚ[][[™[İ\ÛH[İ\ˆØ›YØ][ÛœÈ[™\ˆ\Â“XÙ[œÙH[™[Hİ\ˆ\[™[Ø›YØ][ÛœË[ˆ\ÈHÛÛœÙ\]Y[˜ÙH[İHX^B››İÛÛ™^H]][ˆ›Üˆ^[\KYˆ[İHYÜ™YHÈ\›\È]Ø›YØ]H[İBÈÛÛXİH›ŞX[H›Üˆ\\ˆÛÛ™^Z[™Èœ›ÛHÜÙHÈÚÛH[İHÛÛ™^BH›ÙÜ˜[KHÛ›HØ^H[İHÛİ[Ø]\ÙH›İÜÙH\›\È[™\Â“XÙ[œÙHÛİ[™HÈ™Yœ˜Z[ˆ[\™[Hœ›ÛHÛÛ™^Z[™ÈH›ÙÜ˜[K‚‚ˆLËˆ\ÙHÚ]HÓ•HY™™\›ÈÙ[™\˜[X›XÈXÙ[œÙK‚‚ˆ›İÚ]İ[™[™È[Hİ\ˆ›İš\Ú[ÛˆÙˆ\ÈXÙ[œÙK[İH]™Bœ\›Z\ÜÚ[ÛˆÈ[šÈÜˆÛÛXš[™H[HÛİ™\™YÛÜšÈÚ]HÛÜšÈXÙ[œÙY[™\ˆ™\œÚ[ÛˆÈÙˆHÓ•HY™™\›ÈÙ[™\˜[X›XÈXÙ[œÙH[ÈHÚ[™ÛB˜ÛÛXš[™YÛÜšË[™ÈÛÛ™^HH™\İ[[™ÈÛÜšËˆH\›\ÈÙˆ\Â“XÙ[œÙHÚ[ÛÛ[YHÈ\HÈH\ÚXÚ\ÈHÛİ™\™YÛÜšË˜]HÜXÚX[™\]Z\™[Y[ÈÙˆHÓ•HY™™\›ÈÙ[™\˜[X›XÈXÙ[œÙKœÙXİ[ÛˆLËÛÛ˜Ù\›š[™È[\˜Xİ[Ûˆ›İYÚH™]ÛÜšÈÚ[\HÈB˜ÛÛXš[˜][Ûˆ\ÈİXÚ‚‚ˆMˆ™]š\ÙY™\œÚ[ÛœÈÙˆ\ÈXÙ[œÙK‚‚ˆHœ™YHÛÙØ\™H›İ[™][ÛˆX^HX›\Ú™]š\ÙY[™ÛÜˆ™]È™\œÚ[ÛœÈÙ‚HÓ•HÙ[™\˜[X›XÈXÙ[œÙHœ›ÛH[YHÈ[YKˆİXÚ™]È™\œÚ[ÛœÈÚ[˜™HÚ[Z[\ˆ[ˆÜ\š]ÈH™\Ù[™\œÚ[Û‹]X^HY™™\ˆ[ˆ]Z[Â˜Y™\ÜÈ™]È›Ø›[\ÈÜˆÛÛ˜Ù\›œË‚‚ˆXXÚ™\œÚ[Ûˆ\ÈÚ]™[ˆH\İ[™İZ\Ú[™È™\œÚ[Ûˆ[X™\‹ˆYˆB”›ÙÜ˜[HÜXÚYšY\È]HÙ\Z[ˆ[X™\™Y™\œÚ[ÛˆÙˆHÓ•HÙ[™\˜[”X›XÈXÙ[œÙH›Üˆ[H]\ˆ™\œÚ[Ûˆˆ\Y\ÈÈ][İH]™HB›Ü[ÛˆÙˆ›ÛİÚ[™ÈH\›\È[™ÛÛ™][ÛœÈZ]\ˆÙˆ][X™\™Y™\œÚ[ÛˆÜˆÙˆ[H]\ˆ™\œÚ[ÛˆX›\ÚYHHœ™YHÛÙØ\™B‘›İ[™][Û‹ˆYˆH›ÙÜ˜[HÙ\È›İÜXÚYHH™\œÚ[Ûˆ[X™\ˆÙˆB‘Ó•HÙ[™\˜[X›XÈXÙ[œÙK[İHX^HÚÛÜÙH[H™\œÚ[Ûˆ]™\ˆX›\ÚY˜HHœ™YHÛÙØ\™H›İ[™][Û‹‚‚ˆYˆH›ÙÜ˜[HÜXÚYšY\È]H›ŞHØ[ˆXÚYHÚXÚ]\™B™\œÚ[ÛœÈÙˆHÓ•HÙ[™\˜[X›XÈXÙ[œÙHØ[ˆ™H\ÙY]›ŞIÜÂœX›XÈİ][Y[ÙˆXØÙ\[˜ÙHÙˆH™\œÚ[Ûˆ\›X[™[H]]Üš^™\È[İBÈÚÛÜÙH]™\œÚ[Ûˆ›ÜˆH›ÙÜ˜[K‚‚ˆ]\ˆXÙ[œÙH™\œÚ[ÛœÈX^HÚ]™H[İHY][Û˜[ÜˆY™™\™[œ\›Z\ÜÚ[ÛœËˆİÙ]™\‹›ÈY][Û˜[Ø›YØ][ÛœÈ\™H[\ÜÙYÛˆ[B˜]]ÜˆÜˆÛÜ\šYÚÛ\ˆ\ÈH™\İ[Ùˆ[İ\ˆÚÛÜÚ[™ÈÈ›ÛİÈB›]\ˆ™\œÚ[Û‹‚‚ˆMKˆ\ØÛZ[Y\ˆÙˆØ\œ˜[K‚‚ˆT‘HTÈ“ÈĞT”S•H“ÔˆH“ÑÔSKÈHVS•T“RUQ–BTPĞP“HUËˆVÑTÒSˆÕT•ÒTÑHÕUQSˆÔ’US‘ÈHÓÔT’QÒ’ÓT”ÈS‘ÓÔˆÕTˆT•QTÈ“Õ’QHH“ÑÔSHTÈTÈˆÒUÕUĞT”S•B“ÑˆS–HÒS‘RUTˆV‘TÔÑQÔˆSTQQSÓQS‘Ë•U“ÕSRUQË•HSTQQĞT”S•QTÈÑˆQTÒS•P’SUHS‘’U‘TÔÈ“ÔˆHT•PÕST‚”T”ÔÑKˆHS•T‘H’TÒÈTÈÈHUPSUHS‘T‘“Ô“PSÑHÑˆH“ÑÔSB’TÈÒUSÕKˆÒÕSH“ÑÔSH“Õ‘HQ‘PÕU‘KSÕHTÔÕSQHHÓÔÕÑ‚S‘PÑTÔĞT–HÑT•’PÒS‘Ë‘TRTˆÔˆÓÔ”‘PÕSÓ‹‚‚ˆM‹ˆ[Z]][ÛˆÙˆXXš[]K‚‚ˆSˆ“ÈU‘S•S“TÔÈ‘TURT‘Q–HTPĞP“HUÈÔˆQÔ‘QQÈSˆÔ’US‘Â•ÒSS–HÓÔT’QÒÓT‹ÔˆS–HÕTˆT•HÒÈSÑQ’QTÈS‘ÓÔˆÓÓ•‘VTÂ•H“ÑÔSHTÈT“RUQP“Õ‘K‘HPP“HÈSÕH“ÔˆSPQÑTËSÓQS‘ÈS–B‘ÑS‘TSÔPÒPSSÒQS•SÔˆÓÓ”ÑTUQS•PSSPQÑTÈT’TÒS‘ÈÕUÑˆB•TÑHÔˆSP’SUHÈTÑHH“ÑÔSH
+SÓQS‘È•U“ÕSRUQÈÔÔÈÑ‚‘UHÔˆUH‘RS‘È‘S‘T‘QSPĞÕTUHÔˆÔÔÑTÈÕTÕRS‘Q–HSÕHÔˆT‘”T•QTÈÔˆHRST‘HÑˆH“ÑÔSHÈÔTUHÒUS–HÕTˆ“ÑÔSTÊK‘U‘SˆQˆÕPÒÓTˆÔˆÕTˆT•HTÈ‘QSˆQ’TÑQÑˆHÔÔÒP’SUHÑ‚”ÕPÒSPQÑTË‚‚ˆMËˆ[\œ™]][ÛˆÙˆÙXİ[ÛœÈMH[™M‹‚‚ˆYˆH\ØÛZ[Y\ˆÙˆØ\œ˜[H[™[Z]][ÛˆÙˆXXš[]H›İšYY˜X›İ™HØ[››İ™HÚ]™[ˆØØ[YØ[Y™™XİXØÛÜ™[™ÈÈZ\ˆ\›\Ëœ™]šY]Ú[™ÈÛİ\ÈÚ[\HØØ[]È][ÜİÛÜÙ[H\›Ş[X]\Â˜[ˆXœÛÛ]HØZ]™\ˆÙˆ[Ú]š[XXš[]H[ˆÛÛ›™Xİ[ÛˆÚ]B”›ÙÜ˜[K[›\ÜÈHØ\œ˜[HÜˆ\Üİ[\[ÛˆÙˆXXš[]HXØÛÛ\[šY\ÈB˜ÛÜHÙˆH›ÙÜ˜[H[ˆ™]\›ˆ›ÜˆH™YK‚‚ˆS‘ÑˆT“TÈS‘ÓÓ‘USÓ”Â‚ˆİÈÈ\H\ÙH\›\ÈÈ[İ\ˆ™]È›ÙÜ˜[\Â‚ˆYˆ[İH]™[ÜH™]È›ÙÜ˜[K[™[İHØ[]È™HÙˆHÜ™X]\İœÜÜÚX›H\ÙHÈHX›XËH™\İØ^HÈXÚY]™H\È\ÈÈXZÙH]™œ™YHÛÙØ\™HÚXÚ]™\[Û™HØ[ˆ™Y\İšX]H[™Ú[™ÙH[™\ˆ\ÙH\›\Ë‚‚ˆÈÈÛË]XÚH›ÛİÚ[™È›İXÙ\ÈÈH›ÙÜ˜[Kˆ]\ÈØY™\İÈ]XÚ[HÈHİ\ÙˆXXÚÛİ\˜ÙHš[HÈ[ÜİY™™Xİ]™[Bœİ]HH^Û\Ú[ÛˆÙˆØ\œ˜[NÈ[™XXÚš[HÚİ[]™H]X\İH˜ÛÜ\šYÚˆ[™H[™HÚ[\ˆÈÚ\™HH[›İXÙH\È›İ[™‚‚ˆÛ™H[™HÈÚ]™HH›ÙÜ˜[IÜÈ˜[YH[™HœšYYˆYXHÙˆÚ]]Ù\Ë‚ˆÛÜ\šYÚ
+ÊHYX\ˆ˜[YHÙˆ]]Ü‚‚ˆ\È›ÙÜ˜[H\Èœ™YHÛÙØ\™Nˆ[İHØ[ˆ™Y\İšX]H][™ÛÜˆ[ÙYBˆ][™\ˆH\›\ÈÙˆHÓ•HÙ[™\˜[X›XÈXÙ[œÙH\ÈX›\ÚYBˆHœ™YHÛÙØ\™H›İ[™][Û‹Z]\ˆ™\œÚ[ÛˆÈÙˆHXÙ[œÙKÜ‚ˆ
+][İ\ˆÜ[ÛŠH[H]\ˆ™\œÚ[Û‹‚‚ˆ\È›ÙÜ˜[H\È\İšX]Y[ˆHÜH]]Ú[™H\ÙY[ˆ]ÒUÕUS–HĞT”S•NÈÚ]İ]]™[ˆH[\YYØ\œ˜[HÙ‚ˆQTÒS•P’SUHÜˆ’U‘TÔÈ“ÔˆHT•PÕSTˆT”ÔÑKˆÙYHBˆÓ•HÙ[™\˜[X›XÈXÙ[œÙH›Üˆ[Ü™H]Z[Ë‚‚ˆ[İHÚİ[]™H™XÙZ]™YHÛÜHÙˆHÓ•HÙ[™\˜[X›XÈXÙ[œÙBˆ[Û™ÈÚ]\È›ÙÜ˜[KˆYˆ›İÙYHÎ‹ËİİİË™ÛK›Ü™ËÛXÙ[œÙ\ËÏ‹‚‚[ÛÈY[™›Ü›X][ÛˆÛˆİÈÈÛÛXİ[İHH[Xİ›ÛšXÈ[™\\ˆXZ[‚‚ˆYˆH›ÙÜ˜[HÙ\È\›Z[˜[[\˜Xİ[Û‹XZÙH]İ]]HÚÜ››İXÙHZÙH\ÈÚ[ˆ]İ\È[ˆ[ˆ[\˜Xİ]™H[ÙN‚‚ˆ›ÙÜ˜[OˆÛÜ\šYÚ
+ÊHYX\ˆ˜[YHÙˆ]]Ü‚ˆ\È›ÙÜ˜[HÛÛY\ÈÚ]P”ÓÓUSH“ÈĞT”S•NÈ›Üˆ]Z[È\HÚİÈÉË‚ˆ\È\Èœ™YHÛÙØ\™K[™[İH\™HÙ[ÛÛYHÈ™Y\İšX]H]ˆ[™\ˆÙ\Z[ˆÛÛ™][ÛœÎÈ\HÚİÈÉÈ›Üˆ]Z[Ë‚‚•H\İ]XØ[ÛÛ[X[™ÈÚİÈÉÈ[™ÚİÈÉÈÚİ[ÚİÈH\›ÜšX]Bœ\ÈÙˆHÙ[™\˜[X›XÈXÙ[œÙKˆÙˆÛİ\œÙK[İ\ˆ›ÙÜ˜[IÜÈÛÛ[X[™Â›ZYÚ™HY™™\™[È›ÜˆHÕRH[\™˜XÙK[İHÛİ[\ÙH[ˆ˜X›İ]›Ş‹‚‚ˆ[İHÚİ[[ÛÈÙ][İ\ˆ[\ŞY\ˆ
+Yˆ[İHÛÜšÈ\ÈH›ÙÜ˜[[Y\ŠHÜˆØÚÛÛšYˆ[KÈÚYÛˆH˜ÛÜ\šYÚ\ØÛZ[Y\ˆˆ›ÜˆH›ÙÜ˜[KYˆ™XÙ\ÜØ\K‚‘›Üˆ[Ü™H[™›Ü›X][ÛˆÛˆ\Ë[™İÈÈ\H[™›ÛİÈHÓ•HÔÙYBÎ‹ËİİİË™ÛK›Ü™ËÛXÙ[œÙ\ËÏ‹‚‚ˆHÓ•HÙ[™\˜[X›XÈXÙ[œÙHÙ\È›İ\›Z][˜ÛÜœÜ˜][™È[İ\ˆ›ÙÜ˜[Bš[È›ÜšY]\H›ÙÜ˜[\ËˆYˆ[İ\ˆ›ÙÜ˜[H\ÈHİXœ›İ][™HXœ˜\K[İB›X^HÛÛœÚY\ˆ][Ü™H\ÙY[È\›Z][šÚ[™È›ÜšY]\H\XØ][ÛœÈÚ]HXœ˜\KˆYˆ\È\ÈÚ][İHØ[ÈË\ÙHHÓ•H\ÜÙ\ˆÙ[™\˜[”X›XÈXÙ[œÙH[œİXYÙˆ\ÈXÙ[œÙKˆ]š\œİX\ÙH™XYÎ‹ËİİİË™ÛK›Ü™ËÛXÙ[œÙ\ËİÚK[›İ[Üš[‹‚

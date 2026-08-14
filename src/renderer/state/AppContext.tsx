@@ -15,6 +15,7 @@ import type { PublicAccount } from '../../preload'
 
 interface AppValue {
   ready: boolean
+  startupError: string | null
   settings: Settings | null
   saveSettings: (patch: Partial<Settings>) => Promise<void>
 
@@ -45,6 +46,7 @@ const MAX_LOG_LINES = 2000
 
 export function AppProvider({ children }: { children: ReactNode }): JSX.Element {
   const [ready, setReady] = useState(false)
+  const [startupError, setStartupError] = useState<string | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [accounts, setAccounts] = useState<PublicAccount[]>([])
   const [activeId, setActiveId] = useState<string | undefined>()
@@ -71,15 +73,20 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
 
   useEffect(() => {
     void (async () => {
-      const [loadedSettings, running] = await Promise.all([
-        api.settings.get(),
-        api.game.running(),
-        refreshAccounts(),
-        refreshProfiles()
-      ])
-      setSettings(loadedSettings)
-      setGameStates(Object.fromEntries(running.map((id) => [id, 'running' as const])))
-      setReady(true)
+      try {
+        const [loadedSettings, running] = await Promise.all([
+          api.settings.get(),
+          api.game.running(),
+          refreshAccounts(),
+          refreshProfiles()
+        ])
+        setSettings(loadedSettings)
+        setGameStates(Object.fromEntries(running.map((id) => [id, 'running' as const])))
+      } catch (error) {
+        setStartupError(errorMessage(error))
+      } finally {
+        setReady(true)
+      }
     })()
   }, [refreshAccounts, refreshProfiles])
 
@@ -204,6 +211,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
   const value = useMemo<AppValue>(
     () => ({
       ready,
+      startupError,
       settings,
       saveSettings,
       accounts,
@@ -223,6 +231,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     }),
     [
       ready,
+      startupError,
       settings,
       saveSettings,
       accounts,

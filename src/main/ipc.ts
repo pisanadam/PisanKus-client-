@@ -28,6 +28,7 @@ import * as skins from './skins'
 import { store } from './store'
 import * as updater from './updater'
 import { writeProfileOptions } from './minecraft/options'
+import { requireLeafName, requireProfileDirectory, resolveInside } from './pathSafety'
 
 /** Account shape safe to hand to the renderer — tokens stay in the main process. */
 export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { expired: boolean }
@@ -147,8 +148,12 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     channel: string,
     handler: (...args: T) => Promise<R> | R
   ): void => {
-    ipcMain.handle(channel, async (_event, ...args) => {
+    ipcMain.handle(channel, async (event, ...args) => {
       try {
+        const window = getWindow()
+        if (!window || event.sender !== window.webContents || event.senderFrame !== event.sender.mainFrame) {
+          throw new Error('Yetkisiz IPC çağrısı reddedildi.')
+        }
         return await handler(...(args as T))
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -263,7 +268,18 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     createProfile(input)
   )
 
-  handle('profiles:update', (id: string, patch: Partial<Profile>) => store.updateProfile(id, patch))
+  handle('profiles:update', (id: string, patch: Partial<Profile>) => {
+    const allowed: Partial<Profile> = {}
+    if (typeof patch.name === 'string') allowed.name = patch.name.slice(0, 120)
+    if (typeof patch.memoryMb === 'number' && Number.isFinite(patch.memoryMb)) {
+      allowed.memoryMb = Math.max(512, Math.min(65_536, Math.round(patch.memoryMb)))
+    }
+    if (patch.jvmArgs === undefined || typeof patch.jvmArgs === 'string') allowed.jvmArgs = patch.jvmArgs
+    if (patch.loaderVersion === undefined || typeof patch.loaderVersion === 'string') {
+      allowed.loaderVersion = patch.loaderVersion
+    }
+    return store.updateProfile(id, allowed)
+  })
 
   handle('profiles:duplicate', async (id: string) => {
     const source = store.profile(id)
@@ -281,7 +297,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('profiles:delete', async (id: string, deleteFiles: boolean) => {
     const profile = store.profile(id)
     if (profile && deleteFiles) {
-      await fsp.rm(profile.directory, { recursive: true, force: true })
+      await fsp.rm(requireProfileDirectory(profile.directory), { recursive: true, force: true })
     }
     store.removeProfile(id)
     return store.profiles
@@ -438,7 +454,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('worlds:delete', async (profileId: string, folderName: string) => {
     const profile = store.profile(profileId)
     if (!profile) throw new Error('Profil bulunamadı.')
-    await fsp.rm(path.join(profile.directory, 'saves', folderName), { recursive: true, force: true })
+    const saves = path.join(profile.directory, 'saves')
+    await fsp.rm(resolveInside(saves, requireLeafName(folderName, 'Dünya klasörü')), {
+      recursive: true,
+      force: true
+    })
     return install.listWorlds(profileId)
   })
 

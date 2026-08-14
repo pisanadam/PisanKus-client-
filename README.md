@@ -39,9 +39,10 @@ Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/Opbay-cl
 ## Geliştirme
 
 ```bash
-npm install
+npm ci
 npm run dev        # Electron + Vite geliştirme sunucusu
 npm run typecheck  # TypeScript denetimi
+npm test           # Güvenlik ve yardımcı işlev testleri
 npm run build      # main / preload / renderer derlemesi
 npm run dist       # Bulunduğun platform için kurulum paketi
 ```

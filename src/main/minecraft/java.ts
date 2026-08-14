@@ -2,9 +2,9 @@ import { spawn } from 'node:child_process'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import * as tar from 'tar'
-import extract from 'extract-zip'
 import { downloadFile, fetchJson } from './downloader'
 import { currentOs } from './libraries'
+import { extractZip } from '../archive'
 
 const ADOPTIUM = 'https://api.adoptium.net/v3'
 
@@ -159,7 +159,7 @@ export async function ensureJava(
   onProgress?.(`Java ${majorVersion} açılıyor…`)
   await fsp.mkdir(targetDir, { recursive: true })
   if (pkg.name.endsWith('.zip')) {
-    await extract(archive, { dir: targetDir })
+    await extractZip(archive, { dir: targetDir })
   } else {
     await tar.x({ file: archive, cwd: targetDir })
   }

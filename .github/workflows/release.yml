@@ -44,6 +44,11 @@ jobs:
 
       - run: npm ci
 
+      - name: Security and behavior checks
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm test
+
       # electron-updater compares the version inside latest*.yml against the
       # version of the installed build. package.json alone never changes, so
       # every rolling build would look identical to the one already installed

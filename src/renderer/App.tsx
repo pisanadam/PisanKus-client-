@@ -31,15 +31,32 @@ const NAV: { page: Route['page']; label: string; icon: IconName }[] = [
 ]
 
 export function App(): JSX.Element {
-  const { ready, settings, saveSettings, accounts, activeAccount, profiles, gameStates } = useApp()
+  const { ready, startupError, settings, saveSettings, accounts, activeAccount, profiles, gameStates } = useApp()
   const [route, setRoute] = useState<Route>({ page: 'library' })
   // Kept locally as well so the panel can animate out before the flag round-trips.
   const [welcomed, setWelcomed] = useState(false)
 
-  if (!ready || !settings) {
+  if (!ready) {
     return (
       <div className="gate">
         <div className="spinner" style={{ width: 26, height: 26 }} />
+      </div>
+    )
+  }
+
+  if (startupError || !settings) {
+    return (
+      <div className="gate">
+        <div className="gate__panel">
+          <div className="gate__mark">OP</div>
+          <div>
+            <h1 className="gate__title">Başlatma tamamlanamadı</h1>
+            <p className="gate__text">
+              Launcher verileri okunamadı. Uygulamayı yeniden başlatın; sorun sürerse aşağıdaki hatayı paylaşın.
+            </p>
+          </div>
+          <div className="gate__error">{startupError ?? 'Ayarlar yüklenemedi.'}</div>
+        </div>
       </div>
     )
   }

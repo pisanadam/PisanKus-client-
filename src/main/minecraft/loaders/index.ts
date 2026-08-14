@@ -1,9 +1,9 @@
-import extract from 'extract-zip'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type { LoaderId } from '../../../shared/types'
 import { downloadFile, fetchJson } from '../downloader'
 import type { VersionJson } from '../versions'
+import { extractZip } from '../../archive'
 
 /** Meta endpoints for the loaders sharing Fabric's API shape. */
 const FABRIC_LIKE: Partial<Record<LoaderId, string>> = {
@@ -149,7 +149,7 @@ async function installFromInstaller(dataDir: string, url: string, versionId: str
 
   const unpacked = path.join(dataDir, 'installers', versionId)
   await fsp.rm(unpacked, { recursive: true, force: true })
-  await extract(installerJar, { dir: unpacked })
+  await extractZip(installerJar, { dir: unpacked })
 
   const versionJsonPath = path.join(unpacked, 'version.json')
   try {
