@@ -129,85 +129,22 @@ const MODERN: CuratedPack = {
 }
 
 /**
- * The 1.8.9 PvP pack.
+ * There is no 1.8.9 pack, and it is not an oversight.
  *
- * Fabric proper begins at 1.14, so this one runs on Legacy Fabric, which
- * carries the same loader back to 1.8.9.
+ * Legacy Fabric carries the loader back to 1.8.9 and the launcher supports it —
+ * a 1.8.9 Legacy Fabric profile can be made by hand and filled from Keşfet. But
+ * a *curated* 1.8.9 pack could not be made to start. Legacy Fabric API is
+ * distributed two ways and neither one works unattended: the Modrinth file is a
+ * single jar carrying modules for 1.3.2 through 1.12.2, which Fabric rejects
+ * because most of them declare the wrong Minecraft version, while the maven
+ * artifact for 1.8.9 turned out to be an empty 5 KB marker with no modules at
+ * all, so mods that need them refuse to load.
  *
- * There is no Sodium for 1.8.9 and there never will be, so the frame rate comes
- * from the pieces that do exist on this version: Radium for game logic,
- * Phosphor for lighting, FPS Plus and Graphite for rendering. What OptiFine is
- * usually installed for — zoom, freelook, fullbright, a configurable HUD — is
- * covered here by separate mods, which is the only way to ship it: OptiFine's
- * licence forbids redistribution, so no launcher may install it for you.
+ * Shipping a third guess was not worth the player's time. A 1.8.9 pack belongs
+ * here only once someone has watched it reach the main menu.
  */
-const PVP_189: CuratedPack = {
-  id: 'oppie-189',
-  name: 'Oppie 1.8.9 PvP',
-  summary:
-    '1.8.9 PvP için Legacy Fabric paketi. OptiFine gerekmeden zoom, freelook, tam parlaklık ve ' +
-    'özelleştirilebilir HUD; üstüne bu sürümde çalışan performans modları.',
-  icon: '⚔️',
-  loader: 'legacyfabric',
-  modrinthLoaders: ['legacy-fabric', 'fabric'],
-  recommended: [{ version: '1.8.9', why: 'PvP’nin standart sürümü' }],
-  note:
-    'OptiFine lisansı yeniden dağıtıma izin vermediği için hiçbir launcher onu sizin yerinize kuramaz. ' +
-    'Bu paket OptiFine’ın asıl kullanıldığı özellikleri ayrı modlarla veriyor. Yine de OptiFine isterseniz ' +
-    'Keşfet’ten “Legacy OptiFabric” kurup jar’ı mods klasörüne kendiniz koyabilirsiniz.',
-  mods: [
-    {
-      slug: 'legacy-fabric-api',
-      name: 'Legacy Fabric API',
-      role: 'Diğer modların dayandığı temel',
-      essential: true,
-      maven: {
-        base: 'https://maven.legacyfabric.net',
-        group: 'net/legacyfabric/legacy-fabric-api',
-        artifact: 'legacy-fabric-api'
-      }
-    },
 
-    // --- performance ------------------------------------------------------
-    { slug: 'radium-mod', name: 'Radium', role: 'Lithium’un 1.8.9 karşılığı — oyun mantığını hızlandırır', essential: true },
-    { slug: 'phosphor-legacy', name: 'Phosphor', role: 'Işık motorunu hızlandırır, takılmaları keser' },
-    { slug: 'fpspluslf', name: 'FPS Plus', role: 'Çizim tarafındaki israfı temizler' },
-    { slug: 'graphite', name: 'Graphite', role: 'Render yolunda ek optimizasyon' },
-    { slug: 'menufpsunlocker', name: 'MenuFPSUnlocker', role: 'Menüde boşuna güç harcamaz' },
-    { slug: 'ksyxis', name: 'Ksyxis', role: 'Dünyaya girişi belirgin şekilde hızlandırır' },
-    { slug: 'legacy-fabric-fixes', name: 'Legacy Fabric Fixes', role: 'Bu sürümün bilinen hatalarını kapatır' },
-
-    // --- input, which is what PvP actually lives on -----------------------
-    { slug: 'rawmouseinput', name: 'Raw Mouse Input', role: 'Fareyi işletim sistemi ivmesinden kurtarır' },
-    { slug: 'legacy-mouse-tweaks', name: 'Mouse Tweaks', role: 'Envanterde fare ile hızlı taşıma' },
-    { slug: 'togglesprint', name: 'ToggleSprint', role: 'Koşma ve sinsi yürüme kilidi' },
-    { slug: 'modernkeybinding', name: 'Modern KeyBinding', role: 'Tuş atamalarını yeni sürümlerdeki gibi yapar' },
-
-    // --- what OptiFine is usually installed for ---------------------------
-    { slug: 'zume', name: 'Zume', role: 'Yakınlaştırma — OptiFine zoom’unun yerine' },
-    { slug: 'omnilook', name: 'Omnilook', role: 'Serbest bakış — OptiFine freelook’unun yerine' },
-    { slug: 'gamma-five', name: 'Gamma 5', role: 'Tam parlaklık' },
-
-    // --- HUD and appearance -----------------------------------------------
-    { slug: 'axolotlclient', name: 'AxolotlClient', role: 'Özelleştirilebilir HUD, kozmetikler, PvP göstergeleri' },
-    { slug: 'tab-was-taken', name: 'TAB', role: 'Sunucu oyuncu listesini düzgün gösterir' },
-    { slug: 'legacy-better-ping-display', name: 'Better Ping Display', role: 'Ping’i sayı olarak gösterir' },
-    { slug: 'fpsdisplay', name: 'FPS Display', role: 'Kare hızını ekranda tutar' },
-    { slug: 'customskinloader', name: 'CustomSkinLoader', role: 'Skin’lerin her sunucuda görünmesini sağlar' },
-    { slug: 'ears', name: 'Ears', role: 'Skin eklentileri — kuyruk, kulak, kanat' },
-
-    // --- compatibility and comfort ----------------------------------------
-    // ViaFabric is deliberately absent: its 1.8.9 release carries a 1.12.2
-    // module in the same jar, and Fabric stops the game over it rather than
-    // ignoring it. Keşfet can still install it for anyone who wants to try.
-    { slug: 'yosbr', name: 'YOSBR', role: 'Ayarlarınızın sıfırlanmasını engeller' },
-    { slug: 'legacy-mod-menu', name: 'Mod Menu', role: 'Kurulu modları oyun içinden yönetir' },
-    { slug: 'mod-loading-screen', name: 'Mod Loading Screen', role: 'Açılışta ne yüklendiğini gösterir' },
-    { slug: 'crash-assistant', name: 'Crash Assistant', role: 'Çökme olursa sebebini okunur biçimde söyler' }
-  ]
-}
-
-export const PACKS: CuratedPack[] = [MODERN, PVP_189]
+export const PACKS: CuratedPack[] = [MODERN]
 
 export function packById(id: string): CuratedPack | undefined {
   return PACKS.find((pack) => pack.id === id)

@@ -4,7 +4,6 @@ import type { UpdateStatus } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { parseOptions } from '../../shared/options'
-import { DISCLAIMER, isUsableSupportUrl } from '../../shared/support'
 import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
@@ -474,62 +473,7 @@ export function Settings(): JSX.Element {
           )}
         </section>
 
-        <section className="settings-group">
-          <div className="section-title">Destek</div>
-
-          <div className="settings-row">
-            <div>
-              <div className="settings-row__label">Kenar çubuğunda göster</div>
-              <div className="faint">Bağış ve proje bağlantılarını içeren küçük bölüm</div>
-            </div>
-            <div className="chips">
-              <button
-                className="chip"
-                aria-pressed={settings.supportStrip}
-                onClick={() => void saveSettings({ supportStrip: true })}
-              >
-                Açık
-              </button>
-              <button
-                className="chip"
-                aria-pressed={!settings.supportStrip}
-                onClick={() => void saveSettings({ supportStrip: false })}
-              >
-                Kapalı
-              </button>
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="field__label" htmlFor="support-url">
-              Bağış bağlantısı
-            </label>
-            <input
-              id="support-url"
-              className="input"
-              placeholder="https://…"
-              value={settings.supportUrl}
-              onChange={(event) => void saveSettings({ supportUrl: event.target.value.trim() })}
-            />
-            <span className="field__hint">
-              Boş bırakılırsa bağış butonu hiç görünmez. Yalnızca <code>https</code> adresleri kabul edilir.
-            </span>
-          </div>
-
-          {settings.supportUrl !== '' && !isUsableSupportUrl(settings.supportUrl) && (
-            <p className="faint" style={{ color: 'var(--danger)' }}>
-              Bu adres kullanılamıyor; buton görünmeyecek. <code>https://</code> ile başlayan tam bir adres girin.
-            </p>
-          )}
-
-          <p className="faint" style={{ lineHeight: 1.5 }}>
-            Mojang'ın kullanım koşulları bağış toplamaya izin verirken bağış yapana yalnızca ona özel bir şey
-            verilmesini yasaklar. Bu yüzden launcher'da destekçiye özel sürüm, rozet veya kilitli özellik
-            yoktur — ve olmamalıdır. Aynı koşullar Minecraft ile ilgisi olmayan markaların tanıtımına da izin
-            vermiyor, dolayısıyla burası bir reklam alanı değil. {DISCLAIMER}
-          </p>
-        </section>
-      </div>
+     </div>
     </div>
   )
 }

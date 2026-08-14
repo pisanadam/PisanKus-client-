@@ -109,9 +109,18 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                 <div className="profile-card__body">
                   <div className="profile-card__name">{profile.name}</div>
                   <div className="profile-card__meta">
-                    <span>{profile.gameVersion}</span>
-                    <span>·</span>
-                    <span>{loaderLabel(profile.loader)}</span>
+                    {profile.preparing ? (
+                      <>
+                        <div className="spinner" style={{ width: 12, height: 12 }} />
+                        <span>Hazırlanıyor…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{profile.gameVersion}</span>
+                        <span>·</span>
+                        <span>{loaderLabel(profile.loader)}</span>
+                      </>
+                    )}
                     {profile.content.length > 0 && (
                       <>
                         <span>·</span>
@@ -136,7 +145,10 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                     <button
                       className="btn btn--primary btn--sm"
                       onClick={() => void launch(profile)}
-                      disabled={busyId === profile.id}
+                      // Half a pack on disk cannot be launched, and the version
+                      // is not even known until the pack declares it.
+                      disabled={busyId === profile.id || profile.preparing}
+                      title={profile.preparing ? 'Paket hâlâ indiriliyor' : undefined}
                     >
                       <Icon name="play" size={15} />
                       Oyna

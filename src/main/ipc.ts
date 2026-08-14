@@ -90,6 +90,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   }
 
   const onProgress = (task: TaskProgress): void => send('task:progress', task)
+  /** Tells the renderer to re-read the profile list, without it having to poll. */
+  const profilesChanged = (): void => send('profiles:changed', null)
   const onLog = (line: GameLogLine): void => send('game:log', line)
   const onState = (state: GameState): void => send('game:state', state)
 
@@ -512,6 +514,14 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
    * placeholder and `applyMrPack` corrects it while unpacking. If anything
    * fails, the half-made profile is removed rather than left in the library.
    */
+  /**
+   * Creates the profile straight away and downloads into it in the background.
+   *
+   * A big pack takes minutes. Waiting for it with the dialog open told the
+   * player nothing and made the launcher look stuck, so the profile now appears
+   * immediately — carrying the pack's name and marked as preparing — and the
+   * download reports itself through the task tray.
+   */
   handle('content:installModpackAsProfile', async (request: {
     projectId: string
     versionId?: string
@@ -524,18 +534,35 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       loader: 'vanilla',
       icon: '📦'
     })
+    store.updateProfile(profile.id, { preparing: true })
+    profilesChanged()
 
-    try {
-      await install.installContent(
-        { profileId: profile.id, projectId: request.projectId, versionId: request.versionId,
-          kind: 'modpack', name: request.name, iconUrl: request.iconUrl, anyVersion: true },
-        onProgress
-      )
-    } catch (error) {
-      store.removeProfile(profile.id)
-      await fsp.rm(profile.directory, { recursive: true, force: true })
-      throw error
-    }
+    // Deliberately not awaited: the handler answers as soon as the profile
+    // exists. Everything after this point reports through onProgress, and a
+    // failure removes the profile again rather than leaving an empty one.
+    void (async () => {
+      try {
+        await install.installContent(
+          { profileId: profile.id, projectId: request.projectId, versionId: request.versionId,
+            kind: 'modpack', name: request.name, iconUrl: request.iconUrl, anyVersion: true },
+          onProgress
+        )
+        store.updateProfile(profile.id, { preparing: false })
+      } catch (error) {
+        store.removeProfile(profile.id)
+        await fsp.rm(profile.directory, { recursive: true, force: true }).catch(() => undefined)
+        onProgress({
+          id: `install-${request.projectId}`,
+          label: `${request.name} kurulamadı`,
+          progress: 0,
+          state: 'error',
+          error: error instanceof Error ? error.message : String(error)
+        })
+      } finally {
+        profilesChanged()
+      }
+    })()
+
     return store.profile(profile.id)!
   })
 

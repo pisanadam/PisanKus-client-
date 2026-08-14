@@ -108,6 +108,10 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       }
     })
 
+    // A pack installing in the background changes the list without the renderer
+    // having asked for anything.
+    const offProfiles = api.profiles.onChanged(() => void refreshProfiles())
+
     const offState = api.game.onState((state) => {
       setGameStates((current) => ({ ...current, [state.profileId]: state.status }))
       if (state.status === 'exited' || state.status === 'crashed') {
@@ -135,6 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
 
     return () => {
       offProgress()
+      offProfiles()
       offState()
       offLog()
       clearInterval(flush)

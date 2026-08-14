@@ -70,6 +70,11 @@ export function ProfileDetail({
         <div>
           <h1 className="page__title">
             <ProfileIcon profile={profile} size={30} />{' '}
+            {profile.preparing && (
+              <span className="badge badge--accent" style={{ marginRight: 8 }}>
+                Hazırlanıyor
+              </span>
+            )}
             {profile.name}
           </h1>
           <p className="page__subtitle">

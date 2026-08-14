@@ -78,6 +78,14 @@ export interface Profile {
   jvmArgs?: string
   resolution?: { width: number; height: number }
   content: InstalledContent[]
+  /**
+   * Set while a pack is still downloading into this profile.
+   *
+   * The profile row appears the moment the install starts rather than when it
+   * finishes, so the player can see what is happening — but it cannot be
+   * launched yet, and this is what says so.
+   */
+  preparing?: boolean
   createdAt: number
   lastPlayed?: number
   totalPlaytimeMs: number
@@ -109,13 +117,6 @@ export interface Settings {
   minecraftOptions: string
   /** Cleared only on a fresh install, so the welcome screen shows exactly once. */
   welcomeSeen: boolean
-  /**
-   * Where "Bağış yap" points. Empty hides the button entirely — the launcher
-   * ships without a donation address so nobody inherits somebody else's.
-   */
-  supportUrl: string
-  /** Whether the support strip is shown in the sidebar at all. */
-  supportStrip: boolean
 }
 
 /** A skin the player keeps in the launcher for quick switching. */

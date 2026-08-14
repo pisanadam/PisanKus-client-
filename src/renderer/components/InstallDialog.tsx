@@ -145,6 +145,8 @@ export function InstallDialog({
     setError(null)
     try {
       if (asNewProfile) {
+        // Returns once the profile exists; the download continues in the
+        // background and reports itself through the task tray.
         await api.content.installModpackAsProfile({
           projectId: result.projectId,
           versionId: version?.id,

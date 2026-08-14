@@ -4,6 +4,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { CONTENT_DIRS, type ContentKind, type InstalledContent, type LoaderId, type Profile, type ProjectVersion, type TaskProgress } from '../../shared/types'
 import { downloadAll, downloadFile, fileSha1 } from '../minecraft/downloader'
+import { defaultOptionsText } from '../../shared/options'
+import { fillMissingOptions } from '../minecraft/options'
 import { store } from '../store'
 import * as modrinth from './modrinth'
 
@@ -272,6 +274,13 @@ async function applyMrPack(
       await fsp.cp(source, profile.directory, { recursive: true, force: true })
     }
   }
+
+  // The pack's own options.txt has just replaced the one the profile was seeded
+  // with. Whatever it sets stays — it was tuned for this pack — but the keys it
+  // never mentions come back from the launcher's template, so the player keeps
+  // their key bindings instead of inheriting the handful the pack happened to
+  // ship.
+  await fillMissingOptions(profile.directory, store.settings.minecraftOptions || defaultOptionsText())
 
   const installed: InstalledContent = {
     id: `modrinth:${request.projectId}`,

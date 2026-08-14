@@ -33,9 +33,7 @@ function defaultSettings(): Settings {
     accentColor: '#5b8cff',
     soundEffects: true,
     minecraftOptions: '',
-    welcomeSeen: false,
-    supportUrl: '',
-    supportStrip: true
+    welcomeSeen: false
   }
 }
 

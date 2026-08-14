@@ -134,7 +134,9 @@ const api = {
       ipcRenderer.invoke('profiles:writeOptions', id, text),
     remove: (id: string, deleteFiles: boolean): Promise<Profile[]> =>
       ipcRenderer.invoke('profiles:delete', id, deleteFiles),
-    openFolder: (id: string): Promise<void> => ipcRenderer.invoke('profiles:openFolder', id)
+    openFolder: (id: string): Promise<void> => ipcRenderer.invoke('profiles:openFolder', id),
+    /** Fires whenever the main process changes the profile list on its own. */
+    onChanged: (listener: () => void): Unsubscribe => subscribe('profiles:changed', listener)
   },
 
   versions: {
