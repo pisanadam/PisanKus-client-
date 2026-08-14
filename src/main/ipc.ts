@@ -13,6 +13,8 @@ import type {
   Settings,
   TaskProgress
 } from '../shared/types'
+import { reauthError } from '../shared/authErrors'
+import { defaultOptionsText } from '../shared/options'
 import * as auth from './auth/microsoft'
 import * as install from './content/install'
 import * as modrinth from './content/modrinth'
@@ -68,7 +70,11 @@ async function createProfile(input: {
   })
 
   // Only for brand new profiles — the directory is fresh, nothing to overwrite.
-  await writeProfileOptions(profile.directory, store.settings.minecraftOptions)
+  // A profile that has never been launched still gets a complete options.txt:
+  // the configured template when there is one, Minecraft's own defaults
+  // otherwise. Waiting for the game to write it left new folders empty and the
+  // key bindings editor with nothing to show.
+  await writeProfileOptions(profile.directory, store.settings.minecraftOptions || defaultOptionsText())
   return profile
 }
 
@@ -132,7 +138,12 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       try {
         return await handler(...(args as T))
       } catch (error) {
-        throw new Error(error instanceof Error ? error.message : String(error))
+        const message = error instanceof Error ? error.message : String(error)
+        // Only the message survives the trip to the renderer, so an error that
+        // a fresh sign-in would fix has to say so inside its own text.
+        throw new Error(
+          error instanceof auth.AuthError && error.needsSignIn ? reauthError(message) : message
+        )
       }
     })
   }

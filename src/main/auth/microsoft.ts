@@ -68,8 +68,16 @@ interface McProfileResponse {
 
 /** Errors surfaced to the UI verbatim, so they must stay human-readable. */
 export class AuthError extends Error {
-  constructor(message: string, readonly code: string) {
+  /**
+   * Set when the session itself is the problem and signing in again is the
+   * fix — the UI turns it into a button rather than leaving the player to
+   * work out where to go.
+   */
+  readonly needsSignIn: boolean
+
+  constructor(message: string, readonly code: string, needsSignIn = false) {
     super(message)
+    this.needsSignIn = needsSignIn
   }
 }
 
@@ -301,10 +309,7 @@ export async function refresh(account: Account, clientId: string): Promise<Accou
   const endpoints = ENDPOINTS[mode]
 
   if (!account.refreshToken) {
-    throw new AuthError(
-      'Bu hesabın oturumu okunamadı. Hesaplar bölümünden çıkış yapıp yeniden oturum açın.',
-      'no_refresh_token'
-    )
+    throw new AuthError('Bu hesabın kayıtlı oturumu okunamadı.', 'no_refresh_token', true)
   }
 
   // `scope` is required on both platforms. Its absence is only reachable once
@@ -320,16 +325,17 @@ export async function refresh(account: Account, clientId: string): Promise<Accou
   }
 
   const msToken = await postForm<MsToken>(endpoints.token, body).catch((error: unknown) => {
-    // A rejected refresh token cannot be recovered from in the background, and
-    // Microsoft's own wording ("input parameter 'refresh_token' or 'assertion'")
-    // tells the player nothing about what to do.
-    if (error instanceof AuthError && error.code === 'invalid_grant') {
-      throw new AuthError(
-        'Microsoft oturumunuzun süresi doldu. Hesaplar bölümünden yeniden oturum açın.',
-        error.code
-      )
-    }
-    throw error
+    if (!(error instanceof AuthError)) throw error
+
+    // Nothing the launcher can retry in the background fixes a refusal here, so
+    // every one of them becomes the same offer: sign in again. Microsoft's own
+    // wording ("input parameter 'refresh_token' or 'assertion'") is replaced,
+    // since it tells the player nothing about what to do.
+    const message =
+      error.code === 'invalid_grant'
+        ? 'Microsoft oturumunuzun süresi doldu.'
+        : `Microsoft oturumu yenilenemedi: ${error.message}`
+    throw new AuthError(message, error.code, true)
   })
 
   const renewed = await completeMinecraftLogin(msToken, mode)

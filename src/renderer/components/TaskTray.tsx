@@ -2,7 +2,7 @@ import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
 
 export function TaskTray(): JSX.Element | null {
-  const { tasks, dismissTask } = useApp()
+  const { tasks, dismissTask, signIn, signingIn } = useApp()
   if (tasks.length === 0) return null
 
   return (
@@ -27,6 +27,21 @@ export function TaskTray(): JSX.Element | null {
             </div>
 
             {(task.detail || task.error) && <div className="task__detail">{task.error ?? task.detail}</div>}
+
+            {task.action === 'signIn' && (
+              <button
+                className="btn btn--primary btn--sm btn--block"
+                style={{ marginTop: 4 }}
+                disabled={signingIn}
+                onClick={async () => {
+                  await signIn()
+                  dismissTask(task.id)
+                }}
+              >
+                {signingIn ? <div className="spinner" /> : <Icon name="user" size={15} />}
+                Tekrar oturum aç
+              </button>
+            )}
 
             {task.state === 'running' && (
               <div className={indeterminate ? 'progress progress--indeterminate' : 'progress'}>

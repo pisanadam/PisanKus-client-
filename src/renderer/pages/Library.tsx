@@ -3,7 +3,7 @@ import type { LoaderId, Profile, VersionSummary } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { Modal } from '../components/Modal'
 import { api } from '../lib/api'
-import { errorMessage, formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
+import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
 const LOADERS: LoaderId[] = ['vanilla', 'fabric', 'quilt', 'neoforge', 'forge']
@@ -31,7 +31,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
     try {
       await api.game.launch(profile.id)
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setBusyId(null)
     }
@@ -195,7 +195,7 @@ function CreateProfileModal({
         setVersions(list)
         setGameVersion(list.find((version) => version.type === 'release')?.id ?? list[0]?.id ?? '')
       } catch (error) {
-        notify(errorMessage(error), 'error')
+        notify(error, 'error')
       }
     })()
   }, [notify])
@@ -241,7 +241,7 @@ function CreateProfileModal({
       })
       await onCreated(profile)
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setSaving(false)
     }

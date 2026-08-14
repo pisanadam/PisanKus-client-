@@ -6,7 +6,6 @@ import { OptionsEditor } from '../components/OptionsEditor'
 import { parseOptions } from '../../shared/options'
 import { DISCLAIMER, isUsableSupportUrl } from '../../shared/support'
 import { api } from '../lib/api'
-import { errorMessage } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
 const ACCENTS = ['#5b8cff', '#7c5cff', '#e0567a', '#f0873c', '#3fb98a', '#2fb6c8', '#d9b23c']
@@ -43,7 +42,7 @@ export function Settings(): JSX.Element {
     try {
       setJavaRuntimes(await api.versions.java())
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setScanningJava(false)
     }
@@ -201,7 +200,7 @@ export function Settings(): JSX.Element {
                     else if (result.state === 'error') notify(result.message, 'error')
                     else if (result.state === 'idle') notify('En güncel sürümü kullanıyorsunuz.')
                   } catch (error) {
-                    notify(errorMessage(error), 'error')
+                    notify(error, 'error')
                   } finally {
                     setCheckingUpdate(false)
                   }
@@ -298,7 +297,7 @@ export function Settings(): JSX.Element {
                     const count = await api.options.applyToProfiles(profiles.map((p) => p.id))
                     notify(`${count} profile uygulandı.`)
                   } catch (error) {
-                    notify(errorMessage(error), 'error')
+                    notify(error, 'error')
                   } finally {
                     setApplying(false)
                   }

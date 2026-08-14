@@ -1,3 +1,5 @@
+import { cleanMessage, needsSignIn } from '../../shared/authErrors'
+
 const compact = new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 })
 const relative = new Intl.RelativeTimeFormat('tr', { numeric: 'auto' })
 
@@ -60,7 +62,13 @@ export function loaderLabel(loader: string): string {
 export function errorMessage(error: unknown): string {
   if (error instanceof Error) {
     // Electron prefixes IPC errors with the invoke frame; strip it for readability.
-    return error.message.replace(/^Error invoking remote method '[^']+':\s*(Error:\s*)?/, '')
+    // The re-auth marker is internal too and never belongs on screen.
+    return cleanMessage(error.message.replace(/^Error invoking remote method '[^']+':\s*(Error:\s*)?/, ''))
   }
-  return String(error)
+  return cleanMessage(String(error))
+}
+
+/** Whether this failure is one the player can clear by signing in again. */
+export function isSignInError(error: unknown): boolean {
+  return needsSignIn(error instanceof Error ? error.message : String(error))
 }

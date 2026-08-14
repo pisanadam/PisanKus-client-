@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon'
 import { Confirm } from '../components/Modal'
 import { SkinHead } from '../components/SkinViewer'
 import { api } from '../lib/api'
-import { errorMessage, formatRelative } from '../lib/format'
+import { formatRelative } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
 export function Accounts(): JSX.Element {
@@ -75,7 +75,7 @@ export function Accounts(): JSX.Element {
                     await refreshAccounts()
                     notify('Oturum yenilendi.')
                   } catch (error) {
-                    notify(errorMessage(error), 'error')
+                    notify(error, 'error')
                   } finally {
                     setBusyId(null)
                   }

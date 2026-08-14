@@ -109,7 +109,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       setSelected(null)
       notify(`${result.title} · ${profile.name} profiline kuruldu.`)
     } catch (caught) {
-      notify(errorMessage(caught), 'error')
+      notify(caught, 'error')
     }
   }
 
@@ -495,7 +495,7 @@ function ProjectModal({
         )
         if (!cancelled) setVersions(list)
       } catch (error) {
-        if (!cancelled) notify(errorMessage(error), 'error')
+        if (!cancelled) notify(error, 'error')
       } finally {
         if (!cancelled) setLoading(false)
       }

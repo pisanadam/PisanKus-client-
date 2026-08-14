@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import type { Texture } from '../../preload'
 import type { SavedSkin } from '../../shared/types'
 import { api } from '../lib/api'
-import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
 
 /**
@@ -22,7 +21,7 @@ export function SkinLibrary({
   currentVariant: 'classic' | 'slim'
   busy: boolean
   onApply: (id: string) => void
-  notify: (message: string, kind?: 'info' | 'error') => void
+  notify: (message: unknown, kind?: 'info' | 'error') => void
 }): JSX.Element {
   const [skins, setSkins] = useState<SavedSkin[]>([])
   const [saving, setSaving] = useState(false)
@@ -37,7 +36,7 @@ export function SkinLibrary({
     try {
       setSkins(await action())
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setSaving(false)
     }

@@ -12,7 +12,6 @@ import {
 } from '../../shared/options'
 import { KEY_BIND_DEFAULTS, UNBOUND, keyFromCode, keyFromMouseButton, keyLabel } from '../../shared/keys'
 import { api } from '../lib/api'
-import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
 
@@ -32,7 +31,7 @@ export function OptionsEditor({
   value: string
   onSave: (text: string) => Promise<void>
   onClose: () => void
-  notify: (message: string, kind?: 'info' | 'error') => void
+  notify: (message: unknown, kind?: 'info' | 'error') => void
 }): JSX.Element {
   const [text, setText] = useState(() => value.trim() || defaultOptionsText())
   const [raw, setRaw] = useState(false)
@@ -87,7 +86,7 @@ export function OptionsEditor({
                   notify('options.txt içe aktarıldı.')
                 }
               } catch (error) {
-                notify(errorMessage(error), 'error')
+                notify(error, 'error')
               }
             }}
           >

@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon'
 import { Confirm } from '../components/Modal'
 import type { WorldSummary } from '../../preload'
 import { api } from '../lib/api'
-import { errorMessage, formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
+import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
 type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'logs' | 'settings'
@@ -89,7 +89,7 @@ export function ProfileDetail({
               try {
                 await api.game.launch(profile.id)
               } catch (error) {
-                notify(errorMessage(error), 'error')
+                notify(error, 'error')
               }
             }}
           >
@@ -181,7 +181,7 @@ function ContentTab({
       await action()
       await onChanged()
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setBusyId(null)
     }
@@ -211,7 +211,7 @@ function ContentTab({
               await api.content.checkUpdates(profileId)
               await onChanged()
             } catch (error) {
-              notify(errorMessage(error), 'error')
+              notify(error, 'error')
             } finally {
               setChecking(false)
             }
@@ -318,7 +318,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
     try {
       setWorlds(await api.worlds.list(profileId))
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setLoading(false)
     }
@@ -339,7 +339,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
               const imported = await api.content.importLocal(profileId, 'world')
               if (imported.length > 0) await reload()
             } catch (error) {
-              notify(errorMessage(error), 'error')
+              notify(error, 'error')
             }
           }}
         >
@@ -501,7 +501,7 @@ function ProfileSettingsTab({
       })
       await refreshProfiles()
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setSaving(false)
     }
@@ -586,7 +586,7 @@ function ProfileSettingsTab({
               try {
                 await api.game.prepare(profileId)
               } catch (error) {
-                notify(errorMessage(error), 'error')
+                notify(error, 'error')
               }
             }}
           >

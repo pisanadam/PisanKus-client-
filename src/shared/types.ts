@@ -136,6 +136,8 @@ export interface TaskProgress {
   detail?: string
   state: 'running' | 'done' | 'error'
   error?: string
+  /** Offers a way out of the failure instead of only naming it. */
+  action?: 'signIn'
 }
 
 export interface GameLogLine {

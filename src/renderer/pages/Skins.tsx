@@ -4,7 +4,6 @@ import { Icon } from '../components/Icon'
 import { SkinLibrary } from '../components/SkinLibrary'
 import { SkinViewer } from '../components/SkinViewer'
 import { api } from '../lib/api'
-import { errorMessage } from '../lib/format'
 import { useTexture } from '../lib/useTexture'
 import { useApp } from '../state/AppContext'
 
@@ -30,7 +29,7 @@ export function Skins(): JSX.Element {
       setInfo(loaded)
       setVariant(loaded.variant)
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setLoading(false)
     }
@@ -53,7 +52,7 @@ export function Skins(): JSX.Element {
         notify('Skin güncellendi.')
       }
     } catch (error) {
-      notify(errorMessage(error), 'error')
+      notify(error, 'error')
     } finally {
       setBusy(false)
     }
@@ -160,7 +159,7 @@ export function Skins(): JSX.Element {
                   const picked = await api.skins.pickFile()
                   if (picked) setPending({ kind: 'file', file: picked })
                 } catch (error) {
-                  notify(errorMessage(error), 'error')
+                  notify(error, 'error')
                 }
               }}
             >

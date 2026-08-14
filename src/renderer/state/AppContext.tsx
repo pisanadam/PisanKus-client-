@@ -10,7 +10,7 @@ import {
 } from 'react'
 import type { GameLogLine, GameState, Profile, Settings, TaskProgress } from '../../shared/types'
 import { api } from '../lib/api'
-import { errorMessage } from '../lib/format'
+import { errorMessage, isSignInError } from '../lib/format'
 import type { PublicAccount } from '../../preload'
 
 interface AppValue {
@@ -30,7 +30,8 @@ interface AppValue {
 
   tasks: TaskProgress[]
   dismissTask: (id: string) => void
-  notify: (message: string, kind?: 'info' | 'error') => void
+  /** Takes a caught error as readily as a sentence — it formats either one. */
+  notify: (message: unknown, kind?: 'info' | 'error') => void
 
   /** Live process state, keyed by profile id. */
   gameStates: Record<string, GameState['status']>
@@ -144,18 +145,29 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     setSettings(await api.settings.update(patch))
   }, [])
 
-  const notify = useCallback((message: string, kind: 'info' | 'error' = 'info') => {
+  const notify = useCallback((message: unknown, kind: 'info' | 'error' = 'info') => {
     const id = `notice-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const text = errorMessage(message)
+    // A dead session is the one failure the player can act on from the notice
+    // itself, so it gets a button instead of an instruction to go and find one.
+    const action = isSignInError(message) ? 'signIn' : undefined
+
     setTasks((current) => [
       ...current,
       {
         id,
-        label: message,
+        // The heading already carries the message; repeating it as the detail
+        // printed every error twice in the same box.
+        label: text,
         progress: 1,
         state: kind === 'error' ? 'error' : 'done',
-        error: kind === 'error' ? message : undefined
+        action
       }
     ])
+
+    // Anything offering a button stays until it is used or dismissed; a notice
+    // that vanishes mid-click is worse than no button at all.
+    if (action) return
     setTimeout(() => setTasks((current) => current.filter((task) => task.id !== id)), kind === 'error' ? 8000 : 3500)
   }, [])
 
@@ -167,10 +179,14 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       await refreshAccounts()
     } catch (error) {
       setAuthError(errorMessage(error))
+      // The gate shows `authError` inline, but a sign-in started from a notice
+      // has nowhere to put it — without this the window would just close and
+      // nothing would happen.
+      if (accounts.length > 0) notify(error, 'error')
     } finally {
       setSigningIn(false)
     }
-  }, [refreshAccounts])
+  }, [accounts.length, notify, refreshAccounts])
 
   const dismissTask = useCallback((id: string) => {
     setTasks((current) => current.filter((task) => task.id !== id))
