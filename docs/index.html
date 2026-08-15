@@ -906,10 +906,9 @@
       const RELEASES_URL = `https://github.com/${REPO}/releases`
 
       // The Android build is a different program — a PojavLauncher-lineage
-      // runtime rather than the Electron desktop app — so it lives in its own
-      // repository and versions on its own schedule. Only this page joins them
-      // back together, which is the whole point: one download address.
-      const ANDROID_REPO = 'pisanadam/PisanKus-android'
+      // runtime rather than the Electron desktop app — but it lives in the same
+      // repository, under android/, and rides the same release. One address,
+      // one version, nothing to keep in sync by hand.
 
       document.addEventListener('scroll', () => {
         document.getElementById('site-header').classList.toggle('scrolled', window.scrollY > 8)
@@ -974,7 +973,6 @@
           name: 'Android',
           icon: '🤖',
           note: 'Android 8 ve üzeri · 64-bit (arm64)',
-          repo: ANDROID_REPO,
           assets: [{ label: 'Kurulum (.apk)', file: 'PisanKusClient-android-arm64.apk' }],
           // Shown until that repository publishes its first release. "Derleniyor"
           // would be a lie for a build that has not been started yet.
@@ -1086,7 +1084,7 @@
           year: 'numeric'
         })} tarihinde güncellendi`
         document.getElementById('release-notes-link').href = release.html_url
-        note.textContent = `${release.tag_name} · Windows, macOS ve Linux · Android ayrı sürümlenir · ücretsiz ve açık kaynak`
+        note.textContent = `${release.tag_name} · Windows, macOS, Linux ve Android · ücretsiz ve açık kaynak`
       }
 
       /**
@@ -1120,8 +1118,6 @@
         const results = await Promise.all(repos.map(readRelease))
         const sources = new Map(repos.map((repo, index) => [repo, results[index]]))
 
-        // The version chip describes the desktop release: it is what this page
-        // is primarily about, and Android versions on its own schedule.
         renderReleaseMeta(sources.get(REPO)?.release ?? null)
         render(sources)
       }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">PisanKus Client</string>
+  <string name="tagline">Minecraft: Java Edition · Android</string>
+  <string name="status_title">Kurulum aşamasında</string>
+  <string name="status_body">Oyun çalışma zamanı henüz bağlanmadı. Bu yapı yalnızca oturum açma çekirdeğini ve derleme hattını içeriyor.</string>
+  <string name="microsoft_only">Yalnızca Microsoft hesabıyla giriş desteklenir. Korsan giriş yoktur.</string>
+</resources>
