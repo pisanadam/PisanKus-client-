@@ -1,6 +1,6 @@
-appId: com.opbay.client
-productName: Opbay Client
-copyright: Copyright © 2026 Opbay
+appId: com.pisankus.client
+productName: PisanKus Client
+copyright: Copyright © 2026 PisanKus
 
 directories:
   output: release
@@ -11,7 +11,7 @@ files:
   - out/**/*
   - package.json
 
-# The "OP" badge from the download page, rendered from resources/icon.svg.
+# The "PK" badge from the download page, rendered from resources/icon.svg.
 # electron-builder derives the .ico and .icns from it; the copy below is what the
 # running app hands to BrowserWindow on Linux.
 icon: resources/icon.png
@@ -41,8 +41,8 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: Opbay Client
-  artifactName: OpbayClient-win-x64.${ext}
+  shortcutName: PisanKus Client
+  artifactName: PisanKusClient-win-x64.${ext}
 
 mac:
   category: public.app-category.games
@@ -50,7 +50,7 @@ mac:
     - target: dmg
       arch: [x64, arm64]
   # Two architectures, so this one keeps the placeholder.
-  artifactName: OpbayClient-mac-${arch}.${ext}
+  artifactName: PisanKusClient-mac-${arch}.${ext}
 
 linux:
   category: Game
@@ -63,13 +63,13 @@ linux:
     - target: deb
       arch: [x64]
   # Debian packages require a maintainer; without one the build fails outright.
-  maintainer: Opbay <opbay@users.noreply.github.com>
+  maintainer: PisanKus <pisanadam@users.noreply.github.com>
 
 appImage:
-  artifactName: OpbayClient-linux-x64.AppImage
+  artifactName: PisanKusClient-linux-x64.AppImage
 
 deb:
-  artifactName: OpbayClient-linux-x64.deb
+  artifactName: PisanKusClient-linux-x64.deb
 
 publish:
   provider: github

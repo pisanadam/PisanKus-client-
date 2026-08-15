@@ -7,7 +7,7 @@ import { defaultOptionsText, parseOptions } from '../../shared/options'
 import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
-const ACCENTS = ['#5b8cff', '#7c5cff', '#e0567a', '#f0873c', '#3fb98a', '#2fb6c8', '#d9b23c']
+const ACCENTS = ['#14b8b8', '#2fb6c8', '#3fb98a', '#d9b23c', '#5b8cff', '#7c5cff', '#e0567a']
 
 /** Minecraft's own launcher client id, paired with the legacy sign-in flow. */
 const DEFAULT_CLIENT_ID = '00000000402b5328'

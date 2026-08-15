@@ -14,7 +14,7 @@ interface TransactionManifest {
 const activeProfiles = new Set<string>()
 
 function transactionsRoot(): string {
-  return path.join(store.settings.dataDir, '.opbay-transactions')
+  return path.join(store.settings.dataDir, '.pisankus-transactions')
 }
 
 async function exists(file: string): Promise<boolean> {

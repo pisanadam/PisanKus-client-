@@ -153,9 +153,9 @@ const api = {
     remove: (id: string, deleteFiles: boolean): Promise<Profile[]> =>
       ipcRenderer.invoke('profiles:delete', id, deleteFiles),
     openFolder: (id: string): Promise<void> => ipcRenderer.invoke('profiles:openFolder', id),
-    /** Saves the complete profile as a portable, compressed Opbay backup. */
+    /** Saves the complete profile as a portable, compressed PisanKus backup. */
     exportBackup: (id: string): Promise<string | null> => ipcRenderer.invoke('profiles:export', id),
-    /** Opens a portable Opbay profile backup and creates a new isolated profile. */
+    /** Opens a portable PisanKus profile backup and creates a new isolated profile. */
     importBackup: (): Promise<Profile | null> => ipcRenderer.invoke('profiles:import'),
     /** Fires whenever the main process changes the profile list on its own. */
     onChanged: (listener: () => void): Unsubscribe => subscribe('profiles:changed', listener)
@@ -333,6 +333,6 @@ const api = {
   }
 }
 
-export type OpbayApi = typeof api
+export type PisanKusApi = typeof api
 
-contextBridge.exposeInMainWorld('opbay', api)
+contextBridge.exposeInMainWorld('pisankus', api)

@@ -435,7 +435,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
           }}
         >
           <Icon name="download" size={16} />
-          Opbay yedeğini içe aktar
+          PisanKus yedeğini içe aktar
         </button>
         <button className="btn" onClick={() => void reload()}>
           <Icon name="refresh" size={16} />

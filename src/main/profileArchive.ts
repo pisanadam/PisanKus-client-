@@ -28,16 +28,29 @@ interface PortableProfile {
   totalPlaytimeMs: number
 }
 
+/**
+ * Manifest kinds, new name first.
+ *
+ * `opbay-*` is what this launcher wrote before it was renamed. Backups the
+ * player already has on disk are still valid backups, so import keeps accepting
+ * them; only newly written manifests carry the current name.
+ */
+const PROFILE_KINDS = ['pisankus-profile', 'opbay-profile'] as const
+const WORLD_KINDS = ['pisankus-world', 'opbay-world'] as const
+
+type ProfileKind = (typeof PROFILE_KINDS)[number]
+type WorldKind = (typeof WORLD_KINDS)[number]
+
 interface ProfileManifest {
   schemaVersion: 1
-  kind: 'opbay-profile'
+  kind: ProfileKind
   exportedAt: number
   profile: PortableProfile
 }
 
 interface WorldManifest {
   schemaVersion: 1
-  kind: 'opbay-world'
+  kind: WorldKind
   exportedAt: number
   folderName: string
   displayName: string
@@ -51,7 +64,7 @@ interface TarEntryLike {
 }
 
 function safeFileStem(value: string): string {
-  return value.replace(/[^\p{L}\p{N}\-_ ]/gu, '').trim().replace(/\s+/g, '-') || 'opbay-yedek'
+  return value.replace(/[^\p{L}\p{N}\-_ ]/gu, '').trim().replace(/\s+/g, '-') || 'pisankus-yedek'
 }
 
 async function exists(file: string): Promise<boolean> {
@@ -89,7 +102,7 @@ async function createArchive(staging: string, destination: string, entries: stri
 }
 
 async function validateArchive(file: string, expectedRoot: 'profile' | 'world'): Promise<void> {
-  const validationRoot = path.join(app.getPath('temp'), 'opbay-archive-validation')
+  const validationRoot = path.join(app.getPath('temp'), 'pisankus-archive-validation')
   let expanded = 0
   let entries = 0
   let invalid: Error | null = null
@@ -131,12 +144,12 @@ async function validateArchive(file: string, expectedRoot: 'profile' | 'world'):
   })
 
   if (invalid) throw invalid
-  if (!hasManifest || !hasPayload) throw new Error('Bu dosya geçerli bir Opbay yedeği değil.')
+  if (!hasManifest || !hasPayload) throw new Error('Bu dosya geçerli bir PisanKus yedeği değil.')
 }
 
 async function extractArchive(file: string, expectedRoot: 'profile' | 'world'): Promise<string> {
   await validateArchive(file, expectedRoot)
-  const staging = await temporaryDirectory('opbay-import-')
+  const staging = await temporaryDirectory('pisankus-import-')
   try {
     await tar.x({ file, cwd: staging, strict: true, preservePaths: false })
     return staging
@@ -204,8 +217,8 @@ function parseContent(value: unknown): InstalledContent[] {
 function parseProfileManifest(value: unknown): PortableProfile {
   if (!value || typeof value !== 'object') throw new Error('Profil yedeğinin manifest dosyası geçersiz.')
   const manifest = value as Partial<ProfileManifest>
-  if (manifest.schemaVersion !== ARCHIVE_SCHEMA || manifest.kind !== 'opbay-profile') {
-    throw new Error('Bu dosya desteklenen bir Opbay profil yedeği değil.')
+  if (manifest.schemaVersion !== ARCHIVE_SCHEMA || !PROFILE_KINDS.includes(manifest.kind as ProfileKind)) {
+    throw new Error('Bu dosya desteklenen bir PisanKus profil yedeği değil.')
   }
   const input = manifest.profile as Partial<PortableProfile> | undefined
   if (!input || typeof input.name !== 'string' || typeof input.gameVersion !== 'string' || !input.loader || !LOADERS.has(input.loader)) {
@@ -239,17 +252,17 @@ function parseProfileManifest(value: unknown): PortableProfile {
 export async function exportProfile(window: BrowserWindow, profile: Profile): Promise<string | null> {
   const result = await dialog.showSaveDialog(window, {
     title: 'Profil yedeğini dışa aktar',
-    defaultPath: `${safeFileStem(profile.name)}.opbay-profile.tgz`,
-    filters: [{ name: 'Opbay profil yedeği', extensions: ['tgz'] }]
+    defaultPath: `${safeFileStem(profile.name)}.pisankus-profile.tgz`,
+    filters: [{ name: 'PisanKus profil yedeği', extensions: ['tgz'] }]
   })
   if (result.canceled || !result.filePath) return null
 
-  const staging = await temporaryDirectory('opbay-profile-export-')
+  const staging = await temporaryDirectory('pisankus-profile-export-')
   try {
     await fsp.cp(profile.directory, path.join(staging, 'profile'), { recursive: true, preserveTimestamps: true })
     const manifest: ProfileManifest = {
       schemaVersion: ARCHIVE_SCHEMA,
-      kind: 'opbay-profile',
+      kind: 'pisankus-profile',
       exportedAt: Date.now(),
       profile: portableProfile(profile)
     }
@@ -265,7 +278,7 @@ export async function importProfile(window: BrowserWindow): Promise<Profile | nu
   const result = await dialog.showOpenDialog(window, {
     title: 'Profil yedeğini içe aktar',
     properties: ['openFile'],
-    filters: [{ name: 'Opbay profil yedeği', extensions: ['tgz'] }]
+    filters: [{ name: 'PisanKus profil yedeği', extensions: ['tgz'] }]
   })
   if (result.canceled || !result.filePaths[0]) return null
 
@@ -321,17 +334,17 @@ export async function exportWorld(
 
   const result = await dialog.showSaveDialog(window, {
     title: 'Dünya yedeğini dışa aktar',
-    defaultPath: `${safeFileStem(displayName)}.opbay-world.tgz`,
-    filters: [{ name: 'Opbay dünya yedeği', extensions: ['tgz'] }]
+    defaultPath: `${safeFileStem(displayName)}.pisankus-world.tgz`,
+    filters: [{ name: 'PisanKus dünya yedeği', extensions: ['tgz'] }]
   })
   if (result.canceled || !result.filePath) return null
 
-  const staging = await temporaryDirectory('opbay-world-export-')
+  const staging = await temporaryDirectory('pisankus-world-export-')
   try {
     await fsp.cp(source, path.join(staging, 'world'), { recursive: true, preserveTimestamps: true })
     const manifest: WorldManifest = {
       schemaVersion: ARCHIVE_SCHEMA,
-      kind: 'opbay-world',
+      kind: 'pisankus-world',
       exportedAt: Date.now(),
       folderName: leaf,
       displayName: displayName.slice(0, 300),
@@ -349,15 +362,19 @@ export async function importWorld(window: BrowserWindow, profile: Profile): Prom
   const result = await dialog.showOpenDialog(window, {
     title: 'Dünya yedeğini içe aktar',
     properties: ['openFile'],
-    filters: [{ name: 'Opbay dünya yedeği', extensions: ['tgz'] }]
+    filters: [{ name: 'PisanKus dünya yedeği', extensions: ['tgz'] }]
   })
   if (result.canceled || !result.filePaths[0]) return null
 
   const staging = await extractArchive(result.filePaths[0], 'world')
   try {
     const value = JSON.parse(await fsp.readFile(path.join(staging, 'manifest.json'), 'utf8')) as Partial<WorldManifest>
-    if (value.schemaVersion !== ARCHIVE_SCHEMA || value.kind !== 'opbay-world' || typeof value.folderName !== 'string') {
-      throw new Error('Bu dosya desteklenen bir Opbay dünya yedeği değil.')
+    if (
+      value.schemaVersion !== ARCHIVE_SCHEMA ||
+      !WORLD_KINDS.includes(value.kind as WorldKind) ||
+      typeof value.folderName !== 'string'
+    ) {
+      throw new Error('Bu dosya desteklenen bir PisanKus dünya yedeği değil.')
     }
     const saves = path.join(profile.directory, 'saves')
     await fsp.mkdir(saves, { recursive: true })

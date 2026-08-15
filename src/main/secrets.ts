@@ -6,7 +6,7 @@ import { safeStorage } from 'electron'
  * Electron's `safeStorage` hands the work to the operating system's own
  * credential store — DPAPI on Windows, Keychain on macOS, libsecret or
  * kwallet on Linux. The key is tied to the logged-in user account, so a copied
- * `opbay-client.json` is useless on another machine or under another user.
+ * `pisankus-client.json` is useless on another machine or under another user.
  *
  * This is deliberately not what the official Minecraft launcher does: it keeps
  * its access and refresh tokens in plain JSON, which is exactly the thing worth

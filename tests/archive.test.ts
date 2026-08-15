@@ -16,7 +16,7 @@ async function withArchive(
   encoded: string,
   run: (archive: string, destination: string, root: string) => Promise<void>
 ): Promise<void> {
-  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-archive-test-'))
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-archive-test-'))
   try {
     const archive = path.join(root, 'fixture.zip')
     const destination = path.join(root, 'out')

@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Opbay Client — Modern Minecraft Launcher</title>
+    <title>PisanKus Client — Modern Minecraft Launcher</title>
     <meta
       name="description"
-      content="Opbay Client, Modrinth entegrasyonu, skin değiştirici ve Microsoft oturumu ile gelen modern bir Minecraft launcher'ıdır."
+      content="PisanKus Client, Modrinth entegrasyonu, skin değiştirici ve Microsoft oturumu ile gelen modern bir Minecraft launcher'ıdır."
     />
-    <meta property="og:title" content="Opbay Client — Modern Minecraft Launcher" />
+    <meta property="og:title" content="PisanKus Client — Modern Minecraft Launcher" />
     <meta
       property="og:description"
       content="Mod, doku paketi, shader ve dünyaları tek tıkla profillerine kur. Modrinth entegrasyonu, skin değiştirici, Microsoft oturumu."
@@ -16,20 +16,21 @@
     <meta property="og:type" content="website" />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235b8cff'/%3E%3Cstop offset='1' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ctext x='16' y='17' font-family='sans-serif' font-size='13' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'%3EOP%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2314b8b8'/%3E%3Cstop offset='1' stop-color='%23ffe17a'/%3E%3C/linearGradient%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ctext x='16' y='17' font-family='sans-serif' font-size='13' font-weight='bold' fill='%2308302f' text-anchor='middle' dominant-baseline='central'%3EPK%3C/text%3E%3C/svg%3E"
     />
 
     <style>
       :root {
-        --accent: #5b8cff;
-        --accent-2: #a855f7;
-        --bg: #080b12;
-        --surface: #11151f;
-        --surface-2: #171d2a;
-        --border: #232a3a;
-        --text: #e8ecf5;
-        --muted: #9aa4bd;
-        --faint: #6b7590;
+        --accent: #14b8b8;
+        --accent-2: #ffe17a;
+        --on-accent: #04302f;
+        --bg: #071312;
+        --surface: #0f2221;
+        --surface-2: #16302e;
+        --border: #1c3b39;
+        --text: #e9f4f2;
+        --muted: #98b3af;
+        --faint: #6d8a86;
         --radius: 14px;
         color-scheme: dark;
       }
@@ -66,7 +67,7 @@
         top: 0;
         z-index: 20;
         border-bottom: 1px solid transparent;
-        background: rgb(8 11 18 / 72%);
+        background: rgb(7 19 18 / 72%);
         backdrop-filter: blur(14px);
         transition: border-color 0.2s;
       }
@@ -97,9 +98,10 @@
         height: 34px;
         border-radius: 10px;
         background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: var(--on-accent);
         font-size: 14px;
         font-weight: 800;
-        box-shadow: 0 4px 18px rgb(91 140 255 / 40%);
+        box-shadow: 0 4px 18px rgb(20 184 184 / 40%);
       }
 
       nav {
@@ -136,8 +138,8 @@
         position: absolute;
         inset: -40% 0 auto;
         height: 720px;
-        background: radial-gradient(600px 340px at 50% 40%, rgb(91 140 255 / 26%), transparent 70%),
-          radial-gradient(500px 300px at 78% 30%, rgb(168 85 247 / 18%), transparent 70%);
+        background: radial-gradient(600px 340px at 50% 40%, rgb(20 184 184 / 26%), transparent 70%),
+          radial-gradient(500px 300px at 78% 30%, rgb(255 225 122 / 18%), transparent 70%);
         pointer-events: none;
       }
 
@@ -209,18 +211,18 @@
       .btn:hover {
         transform: translateY(-2px);
         background: var(--surface-2);
-        border-color: #33405c;
+        border-color: #2f5e5a;
       }
 
       .btn--primary {
         border-color: transparent;
-        background: linear-gradient(120deg, var(--accent), #6f7dff);
-        color: #fff;
-        box-shadow: 0 10px 30px rgb(91 140 255 / 34%);
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        color: var(--on-accent);
+        box-shadow: 0 10px 30px rgb(20 184 184 / 34%);
       }
 
       .btn--primary:hover {
-        background: linear-gradient(120deg, #6d99ff, #8189ff);
+        background: linear-gradient(120deg, #2fd3d0, #ffeaa0);
       }
 
       .cta-note {
@@ -247,14 +249,14 @@
         gap: 7px;
         padding: 11px 15px;
         border-bottom: 1px solid var(--border);
-        background: #0d111a;
+        background: #0a1817;
       }
 
       .dot {
         width: 11px;
         height: 11px;
         border-radius: 99px;
-        background: #333c52;
+        background: #2a5350;
       }
 
       .mockup__body {
@@ -266,7 +268,7 @@
       .mockup__side {
         padding: 16px 12px;
         border-right: 1px solid var(--border);
-        background: #0e121b;
+        background: #0b1a19;
       }
 
       .m-nav {
@@ -281,7 +283,7 @@
       }
 
       .m-nav.active {
-        background: rgb(91 140 255 / 16%);
+        background: rgb(20 184 184 / 16%);
         color: var(--accent);
       }
 
@@ -321,7 +323,7 @@
         place-items: center;
         aspect-ratio: 16 / 10;
         font-size: 30px;
-        background: linear-gradient(135deg, rgb(91 140 255 / 22%), transparent);
+        background: linear-gradient(135deg, rgb(20 184 184 / 22%), transparent);
       }
 
       .m-card__meta {
@@ -331,13 +333,13 @@
       .m-line {
         height: 8px;
         border-radius: 99px;
-        background: #2a3245;
+        background: #234643;
       }
 
       .m-line + .m-line {
         width: 60%;
         margin-top: 7px;
-        background: #212939;
+        background: #1c3b39;
       }
 
       /* ----------------------------------------------------------- sections */
@@ -381,13 +383,13 @@
         padding: 24px;
         border-radius: var(--radius);
         border: 1px solid var(--border);
-        background: linear-gradient(180deg, var(--surface), #0d111a);
+        background: linear-gradient(180deg, var(--surface), #0a1817);
         transition: transform 0.16s, border-color 0.16s;
       }
 
       .feature:hover {
         transform: translateY(-3px);
-        border-color: #34405a;
+        border-color: #2f5e5a;
       }
 
       .feature__icon {
@@ -397,7 +399,7 @@
         height: 42px;
         margin-bottom: 15px;
         border-radius: 11px;
-        background: rgb(91 140 255 / 14%);
+        background: rgb(20 184 184 / 14%);
         font-size: 20px;
       }
 
@@ -416,7 +418,7 @@
 
       #indir {
         border-top: 1px solid var(--border);
-        background: linear-gradient(180deg, #0a0e16, var(--bg));
+        background: linear-gradient(180deg, #08100f, var(--bg));
       }
 
       .downloads {
@@ -438,7 +440,7 @@
 
       .dl.recommended {
         border-color: var(--accent);
-        box-shadow: 0 0 0 1px rgb(91 140 255 / 30%), 0 16px 44px rgb(91 140 255 / 14%);
+        box-shadow: 0 0 0 1px rgb(20 184 184 / 30%), 0 16px 44px rgb(20 184 184 / 14%);
       }
 
       .dl:hover {
@@ -457,7 +459,7 @@
         margin-left: auto;
         padding: 2px 9px;
         border-radius: 99px;
-        background: rgb(91 140 255 / 16%);
+        background: rgb(20 184 184 / 16%);
         color: var(--accent);
         font-size: 11px;
         font-weight: 700;
@@ -490,18 +492,20 @@
       }
 
       .dl__link:hover {
-        background: #202839;
-        border-color: #38445f;
+        background: #1b3936;
+        border-color: #356764;
       }
 
       .dl.recommended .dl__link:first-child {
         border-color: transparent;
         background: var(--accent);
-        color: #fff;
+        /* Turquoise is a light accent — white lettering on it fails contrast,
+           so anything filled with it carries the dark on-accent ink instead. */
+        color: var(--on-accent);
       }
 
       .dl.recommended .dl__link:first-child:hover {
-        background: #6d99ff;
+        background: #2fd3d0;
       }
 
       .release-info {
@@ -542,7 +546,7 @@
       }
 
       details[open] {
-        border-color: #34405a;
+        border-color: #2f5e5a;
       }
 
       summary {
@@ -623,8 +627,8 @@
     <header id="site-header">
       <div class="wrap header-inner">
         <a class="logo" href="#">
-          <span class="logo__mark">OP</span>
-          Opbay Client
+          <span class="logo__mark">PK</span>
+          PisanKus Client
         </a>
         <nav>
           <a href="#ozellikler">Özellikler</a>
@@ -791,7 +795,7 @@
         <div class="wrap">
           <div class="section-head">
             <div class="eyebrow">İndir</div>
-            <h2>Opbay Client'ı kur</h2>
+            <h2>PisanKus Client'ı kur</h2>
             <p>Windows, macOS ve Linux için hazır paketler. Kurulum sonrası Microsoft hesabınla giriş yap, hazırsın.</p>
           </div>
 
@@ -823,7 +827,7 @@
             <details open>
               <summary>Minecraft hesabım olmadan kullanabilir miyim?</summary>
               <p>
-                Hayır. Opbay Client yalnızca resmî Microsoft oturum akışını destekler ve oyunu başlatmadan önce
+                Hayır. PisanKus Client yalnızca resmî Microsoft oturum akışını destekler ve oyunu başlatmadan önce
                 hesabın Minecraft: Java Edition lisansını doğrular. Korsan ("cracked") giriş desteklenmez.
               </p>
             </details>
@@ -844,7 +848,7 @@
             <details>
               <summary>Verilerim nerede saklanıyor?</summary>
               <p>
-                Tüm profiller, oturum bilgileri ve indirilen dosyalar yalnızca kendi bilgisayarında tutulur. Opbay
+                Tüm profiller, oturum bilgileri ve indirilen dosyalar yalnızca kendi bilgisayarında tutulur. PisanKus
                 Client'ın herhangi bir sunucusu ya da telemetrisi yoktur.
               </p>
             </details>
@@ -860,7 +864,7 @@
               <p>
                 Paketler Apple tarafından noter onayından (notarization) geçirilmediği için Gatekeeper engeller.
                 Uygulamayı Programlar klasörüne taşıdıktan sonra Terminal'de
-                <code>xattr -dr com.apple.quarantine "/Applications/Opbay Client.app"</code> komutunu çalıştır ya da
+                <code>xattr -dr com.apple.quarantine "/Applications/PisanKus Client.app"</code> komutunu çalıştır ya da
                 uygulamaya sağ tıklayıp "Aç" seçeneğini kullan.
               </p>
             </details>
@@ -880,8 +884,8 @@
       <div class="wrap">
         <div class="footer-inner">
           <span class="logo">
-            <span class="logo__mark" style="width: 28px; height: 28px; font-size: 12px">OP</span>
-            Opbay Client
+            <span class="logo__mark" style="width: 28px; height: 28px; font-size: 12px">PK</span>
+            PisanKus Client
           </span>
           <div class="footer-links">
             <a href="https://github.com/pisanadam/Opbay-client-">GitHub</a>
@@ -890,7 +894,7 @@
           </div>
         </div>
         <p class="disclaimer">
-          Opbay Client bağımsız bir projedir; Mojang Studios veya Microsoft ile bir bağlantısı yoktur ve bu şirketler
+          PisanKus Client bağımsız bir projedir; Mojang Studios veya Microsoft ile bir bağlantısı yoktur ve bu şirketler
           tarafından onaylanmamıştır. Minecraft, Mojang Studios'un ticari markasıdır. Oyunu oynamak için geçerli bir
           Minecraft: Java Edition lisansı gereklidir.
         </p>
@@ -936,7 +940,7 @@
           name: 'Windows',
           icon: '🪟',
           note: 'Windows 10 ve üzeri · 64-bit',
-          assets: [{ label: 'Kurulum (.exe)', file: 'OpbayClient-win-x64.exe' }]
+          assets: [{ label: 'Kurulum (.exe)', file: 'PisanKusClient-win-x64.exe' }]
         },
         {
           id: 'mac',
@@ -944,8 +948,8 @@
           icon: '🍎',
           note: 'macOS 11 ve üzeri',
           assets: [
-            { label: 'Apple Silicon (.dmg)', file: 'OpbayClient-mac-arm64.dmg' },
-            { label: 'Intel (.dmg)', file: 'OpbayClient-mac-x64.dmg' }
+            { label: 'Apple Silicon (.dmg)', file: 'PisanKusClient-mac-arm64.dmg' },
+            { label: 'Intel (.dmg)', file: 'PisanKusClient-mac-x64.dmg' }
           ]
         },
         {
@@ -954,8 +958,8 @@
           icon: '🐧',
           note: 'AppImage veya Debian paketi',
           assets: [
-            { label: 'AppImage', file: 'OpbayClient-linux-x64.AppImage' },
-            { label: 'Debian (.deb)', file: 'OpbayClient-linux-x64.deb' }
+            { label: 'AppImage', file: 'PisanKusClient-linux-x64.AppImage' },
+            { label: 'Debian (.deb)', file: 'PisanKusClient-linux-x64.deb' }
           ]
         }
       ]

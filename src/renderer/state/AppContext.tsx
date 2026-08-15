@@ -13,6 +13,31 @@ import { api } from '../lib/api'
 import { errorMessage, isSignInError } from '../lib/format'
 import type { PublicAccount } from '../../preload'
 
+/**
+ * Lettering that stays readable on top of the chosen accent.
+ *
+ * The accent is a player setting and the palette runs from pale turquoise to
+ * deep violet, so no single fixed colour works on all of it — white vanishes on
+ * the light half, black on the dark half. Light accents get very dark lettering
+ * tinted with the accent itself (which is what keeps the brand mark looking
+ * deliberate rather than stamped with plain black); dark accents keep white.
+ */
+function onAccent(accent: string): string {
+  const hex = accent.trim().replace('#', '')
+  const full = hex.length === 3 ? [...hex].map((c) => c + c).join('') : hex
+  const channels = [0, 2, 4].map((index) => Number.parseInt(full.slice(index, index + 2), 16))
+  if (full.length !== 6 || channels.some((value) => Number.isNaN(value))) return '#04302f'
+
+  // WCAG relative luminance, which is what decides readability here.
+  const linear = channels.map((value) => {
+    const srgb = value / 255
+    return srgb <= 0.03928 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4
+  })
+  const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+  if (luminance < 0.3) return '#ffffff'
+  return `#${channels.map((value) => Math.round(value * 0.18).toString(16).padStart(2, '0')).join('')}`
+}
+
 interface AppValue {
   ready: boolean
   startupError: string | null
@@ -95,6 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     if (!settings) return
     const root = document.documentElement
     root.style.setProperty('--accent', settings.accentColor)
+    root.style.setProperty('--on-accent', onAccent(settings.accentColor))
     const theme =
       settings.theme === 'system'
         ? window.matchMedia('(prefers-color-scheme: light)').matches

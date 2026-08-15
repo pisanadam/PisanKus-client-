@@ -123,7 +123,7 @@ async function authorized<T>(account: Account, url: string, init: RequestInit = 
     ...init,
     headers: {
       Authorization: `Bearer ${account.accessToken}`,
-      'User-Agent': 'OpbayClient/1.0.0',
+      'User-Agent': 'PisanKusClient/1.0.0',
       ...(init.headers ?? {})
     }
   })

@@ -11,7 +11,7 @@ import { installLoader } from './loaders'
 import { clientDataVersion, seedProfileOptions } from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 
-const LAUNCHER_NAME = 'OpbayClient'
+const LAUNCHER_NAME = 'PisanKusClient'
 const LAUNCHER_VERSION = '1.0.0'
 
 type ArgumentEntry = string | { rules: Rule[]; value: string | string[] }

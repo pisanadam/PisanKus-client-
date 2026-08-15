@@ -1,21 +1,27 @@
-/* Opbay Client — design system */
+/* PisanKus Client — design system */
 
 :root {
-  --accent: #5b8cff;
+  --accent: #14b8b8;
+  /* The second half of the brand gradient. Named separately so the logo, the
+     buttons and the page glow all bend when the accent is changed. */
+  --accent-2: #ffe17a;
   --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
   --accent-hover: color-mix(in srgb, var(--accent) 82%, white);
+  /* Light yellow is too pale to carry white text, so anything filled with the
+     gradient gets dark lettering instead. */
+  --on-accent: #04302f;
 
-  --bg: #0b0e14;
-  --bg-elevated: #11151f;
-  --surface: #151a26;
-  --surface-hover: #1b2130;
-  --surface-active: #212938;
-  --border: #232a3a;
-  --border-strong: #2f3850;
+  --bg: #071312;
+  --bg-elevated: #0c1b1a;
+  --surface: #0f2221;
+  --surface-hover: #16302e;
+  --surface-active: #1d3c39;
+  --border: #1c3b39;
+  --border-strong: #2a5350;
 
-  --text: #e8ecf5;
-  --text-muted: #9aa4bd;
-  --text-faint: #6b7590;
+  --text: #e9f4f2;
+  --text-muted: #98b3af;
+  --text-faint: #6d8a86;
 
   --success: #46c68a;
   --warning: #e8b84b;
@@ -35,17 +41,17 @@
 }
 
 :root[data-theme='light'] {
-  --bg: #f4f6fb;
+  --bg: #f2faf8;
   --bg-elevated: #ffffff;
   --surface: #ffffff;
-  --surface-hover: #eef1f8;
-  --surface-active: #e4e9f4;
-  --border: #dde3ee;
-  --border-strong: #c6cede;
+  --surface-hover: #e8f5f2;
+  --surface-active: #dbeeea;
+  --border: #d3e8e3;
+  --border-strong: #b6d5cf;
 
-  --text: #131722;
-  --text-muted: #58607a;
-  --text-faint: #868ea6;
+  --text: #0a2220;
+  --text-muted: #4a6663;
+  --text-faint: #7c9995;
 
   --shadow: 0 6px 24px rgb(19 23 34 / 8%);
   --shadow-lg: 0 20px 48px rgb(19 23 34 / 14%);
@@ -334,7 +340,7 @@ a {
   place-items: center;
   border-radius: 9px;
   background: color-mix(in srgb, var(--accent) 72%, transparent);
-  color: #fff;
+  color: var(--on-accent);
   opacity: 0;
   transition: opacity 0.14s;
 }
@@ -503,7 +509,7 @@ a {
   height: 20px;
   border-radius: 99px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* ------------------------------------------------------- update banner */
@@ -593,8 +599,8 @@ button.update--ready:hover {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #a855f7));
-  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--on-accent);
   font-weight: 800;
   font-size: 15px;
   letter-spacing: -0.5px;
@@ -757,7 +763,7 @@ button.update--ready:hover {
 .btn--primary {
   background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
@@ -1424,8 +1430,8 @@ button.update--ready:hover {
   width: 62px;
   height: 62px;
   border-radius: 18px;
-  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #a855f7));
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--on-accent);
   font-size: 24px;
   font-weight: 800;
   box-shadow: 0 8px 28px color-mix(in srgb, var(--accent) 42%, transparent);
@@ -1503,8 +1509,8 @@ button.update--ready:hover {
   width: 78px;
   height: 78px;
   border-radius: 22px;
-  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #a855f7));
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--on-accent);
   font-size: 30px;
   font-weight: 800;
   letter-spacing: -1px;
@@ -1906,7 +1912,7 @@ button.update--ready:hover {
   height: 52px;
   border-radius: 14px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 800;
   font-size: 19px;
   letter-spacing: 0.02em;

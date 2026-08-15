@@ -48,7 +48,7 @@ export function App(): JSX.Element {
     return (
       <div className="gate">
         <div className="gate__panel">
-          <div className="gate__mark">OP</div>
+          <div className="gate__mark">PK</div>
           <div>
             <h1 className="gate__title">Başlatma tamamlanamadı</h1>
             <p className="gate__text">
@@ -85,9 +85,9 @@ export function App(): JSX.Element {
         <UpdateBanner />
 
         <div className="brand">
-          <div className="brand__mark">OP</div>
+          <div className="brand__mark">PK</div>
           <div>
-            <div className="brand__name">Opbay Client</div>
+            <div className="brand__name">PisanKus Client</div>
             <div className="brand__tag">Minecraft Launcher</div>
           </div>
         </div>

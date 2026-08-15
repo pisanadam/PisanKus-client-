@@ -10,10 +10,10 @@ export function LoginGate(): JSX.Element {
   return (
     <div className="gate">
       <div className="gate__panel">
-        <div className="gate__mark">OP</div>
+        <div className="gate__mark">PK</div>
 
         <div>
-          <h1 className="gate__title">Opbay Client</h1>
+          <h1 className="gate__title">PisanKus Client</h1>
           <p className="gate__text">
             Devam etmek için Minecraft: Java Edition sahibi olduğunuz Microsoft hesabıyla oturum açın.
           </p>
@@ -41,7 +41,7 @@ export function LoginGate(): JSX.Element {
         </button>
 
         <p className="faint">
-          Oturum bilgileriniz yalnızca cihazınızda saklanır. Opbay Client hiçbir veriyi kendi sunucularına
+          Oturum bilgileriniz yalnızca cihazınızda saklanır. PisanKus Client hiçbir veriyi kendi sunucularına
           göndermez.
         </p>
       </div>

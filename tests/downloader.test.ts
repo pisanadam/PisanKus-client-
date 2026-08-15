@@ -6,7 +6,7 @@ import test from 'node:test'
 import { assertLocalFiles } from '../src/main/minecraft/downloader.ts'
 
 test('offline readiness accepts complete local files without fetching', async () => {
-  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-offline-test-'))
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-offline-test-'))
   try {
     const file = path.join(root, 'client.jar')
     await fsp.writeFile(file, 'ready')
@@ -19,7 +19,7 @@ test('offline readiness accepts complete local files without fetching', async ()
 })
 
 test('offline readiness reports missing and truncated files', async () => {
-  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-offline-test-'))
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-offline-test-'))
   try {
     const truncated = path.join(root, 'library.jar')
     await fsp.writeFile(truncated, 'x')

@@ -184,7 +184,7 @@ async function installModpack(
   onProgress: ProgressReporter
 ): Promise<InstalledContent[]> {
   const taskId = `install-${request.projectId}`
-  const workDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-pack-'))
+  const workDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-pack-'))
   const archive = path.join(workDir, version.fileName)
 
   try {
@@ -533,7 +533,7 @@ export async function inferKind(filePath: string): Promise<ContentKind> {
   if (/\.jar$/i.test(filePath)) return 'mod'
   if (!/\.zip$/i.test(filePath)) return 'mod'
 
-  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-sniff-'))
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-sniff-'))
   try {
     await extractZip(filePath, { dir: staging })
 
@@ -570,7 +570,7 @@ async function hashOf(filePath: string): Promise<string> {
  * folder, so the level.dat location decides where the world root actually is.
  */
 async function importWorld(zipPath: string, savesDir: string): Promise<string> {
-  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-world-'))
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-world-'))
   try {
     await extractZip(zipPath, { dir: staging })
 

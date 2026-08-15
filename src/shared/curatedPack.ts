@@ -55,10 +55,10 @@ export interface CuratedPack {
 }
 
 const MODERN: CuratedPack = {
-  id: 'oppie-optimized',
-  name: 'Oppie Optimized',
+  id: 'pisan-optimized',
+  name: 'Pisan Optimized',
   summary:
-    'Opbay ekibinin derlediği Fabric paketi: performans modları ve günlük oyunu rahatlatan eklentiler. ' +
+    'PisanKus ekibinin derlediği Fabric paketi: performans modları ve günlük oyunu rahatlatan eklentiler. ' +
     'Tek seferde kurulur, oyun ayarlarınıza dokunmaz.',
   icon: '🚀',
   loader: 'fabric',

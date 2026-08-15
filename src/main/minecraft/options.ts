@@ -46,7 +46,7 @@ export async function writeProfileOptions(
  * there rather than guessed.
  */
 export async function clientDataVersion(clientJar: string): Promise<number | undefined> {
-  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-ver-'))
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-ver-'))
   try {
     await extractZip(clientJar, { dir: staging, filter: (name) => name === 'version.json' })
     const raw = await fsp.readFile(path.join(staging, 'version.json'), 'utf8')

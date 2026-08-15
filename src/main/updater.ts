@@ -48,7 +48,7 @@ function announce(version: string): void {
 
   try {
     const notification = new Notification({
-      title: 'Opbay Client güncellemesi',
+      title: 'PisanKus Client güncellemesi',
       body: `Sürüm ${version} yayınlandı. Kurmak için launcher'ı açın.`,
       silent: false
     })
@@ -150,7 +150,7 @@ async function checkViaChannelFile(): Promise<UpdateStatus> {
 export async function checkForUpdates(manual = false): Promise<UpdateStatus> {
   // An unpackaged build has no app-update.yml, and asking anyway only produces
   // an error toast on every `npm run dev`.
-  if (!manual && !app.isPackaged && !process.env.OPBAY_FORCE_UPDATE_CHECK) return status
+  if (!manual && !app.isPackaged && !process.env.PISANKUS_FORCE_UPDATE_CHECK) return status
   if (status.state === 'downloading' || status.state === 'ready') return status
 
   // A check the player pressed themselves needs no notification — they are

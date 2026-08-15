@@ -169,7 +169,7 @@ export async function serverStatus(address: string): Promise<ServerStatus> {
   try {
     const response = await fetch(
       `https://api.mcstatus.io/v2/status/java/${encodeURIComponent(host)}`,
-      { headers: { 'User-Agent': 'OpbayClient/1.0' }, signal: AbortSignal.timeout(8000) }
+      { headers: { 'User-Agent': 'PisanKusClient/1.0' }, signal: AbortSignal.timeout(8000) }
     )
     if (!response.ok) return { online: false, error: `Durum servisi ${response.status} döndü.` }
 

@@ -50,9 +50,9 @@ export function Welcome({
       <div className="welcome__glow" aria-hidden="true" />
 
       <div className="welcome__panel">
-        <div className="welcome__mark">OP</div>
+        <div className="welcome__mark">PK</div>
 
-        <h1 className="welcome__title">Opbay Client&apos;e hoş geldiniz</h1>
+        <h1 className="welcome__title">PisanKus Client&apos;e hoş geldiniz</h1>
         <p className="welcome__text">
           Modern, hızlı ve sade bir Minecraft launcher&apos;ı. Başlamadan önce kısa bir tanıtım:
         </p>

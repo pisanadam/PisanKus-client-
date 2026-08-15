@@ -1,4 +1,4 @@
-# Opbay Client
+# PisanKus Client
 
 Modern arayüzlü, açık kaynak bir Minecraft: Java Edition launcher'ı. Modrinth içeriklerini doğrudan
 profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu tutar.
@@ -26,7 +26,7 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 - **Yükleyiciler** — Vanilla, Fabric, Quilt, NeoForge, Forge.
 - **Sağlam indirme** — Paralel indirme havuzu, SHA-1 doğrulaması, yeniden deneme, yarım kalan dosyaların
   atlanması.
-- **Taşınabilir yedekler** — Profil ve dünyaları `.tgz` Opbay yedeği olarak dışa/içe aktarır. İçerik
+- **Taşınabilir yedekler** — Profil ve dünyaları `.tgz` PisanKus yedeği olarak dışa/içe aktarır. İçerik
   kurulumu hata verirse profil otomatik olarak işlem öncesi hâline döner; yarıda kesilen işlemler sonraki
   açılışta kurtarılır.
 - **Crash analizi** — Oyun çıktısı launcher içinde akar, diske kaydedilir ve bilinen bellek, Java, mod
@@ -93,7 +93,7 @@ Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulama
 3. **Redirect URI** (Mobile and desktop applications):
    `https://login.microsoftonline.com/common/oauth2/nativeclient`
 4. **Authentication** → *Allow public client flows* → **Yes**
-5. İstemci kimliğini **Ayarlar → Hesap** bölümüne gir (ya da `OPBAY_MS_CLIENT_ID` ortam değişkenini kullan).
+5. İstemci kimliğini **Ayarlar → Hesap** bölümüne gir (ya da `PISANKUS_MS_CLIENT_ID` ortam değişkenini kullan).
 
 ## Yayınlama
 
@@ -105,11 +105,11 @@ Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
   sabittir:
 
   ```
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-win-x64.exe
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-mac-arm64.dmg
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-mac-x64.dmg
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-linux-x64.AppImage
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/OpbayClient-linux-x64.deb
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-win-x64.exe
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-mac-arm64.dmg
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-mac-x64.dmg
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-linux-x64.AppImage
+  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-linux-x64.deb
   ```
 
   İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.
@@ -124,7 +124,7 @@ Paketler kod imzalama sertifikasıyla imzalanmaz; Windows'ta SmartScreen, macOS'
 
 ## Yasal
 
-Opbay Client bağımsız bir projedir; Mojang Studios veya Microsoft ile bağlantılı değildir ve bu şirketler
+PisanKus Client bağımsız bir projedir; Mojang Studios veya Microsoft ile bağlantılı değildir ve bu şirketler
 tarafından onaylanmamıştır. Minecraft, Mojang Studios'un ticari markasıdır. Oyunu oynamak için geçerli bir
 Minecraft: Java Edition lisansı gereklidir — launcher lisanssız ("cracked") girişi desteklemez.
 

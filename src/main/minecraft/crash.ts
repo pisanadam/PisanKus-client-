@@ -176,7 +176,7 @@ export class GameDiagnostics {
     this.profile = profile
     const logDir = path.join(profile.directory, 'logs')
     fs.mkdirSync(logDir, { recursive: true })
-    this.latestLog = path.join(logDir, 'opbay-latest.log')
+    this.latestLog = path.join(logDir, 'pisankus-latest.log')
     this.stream = fs.createWriteStream(this.latestLog, { flags: 'w', mode: 0o600 })
     // A full disk should not crash the launcher while it is trying to report a
     // different failure. The in-memory report can still be shown for the run.
@@ -202,7 +202,7 @@ export class GameDiagnostics {
 
     const createdAt = Date.now()
     const crashDir = path.join(this.profile.directory, 'crash-reports')
-    const stem = `opbay-${createdAt}`
+    const stem = `pisankus-${createdAt}`
     const logFile = path.join(crashDir, `${stem}.log`)
     const reportFile = path.join(crashDir, `${stem}.json`)
     const analysis = analyzeCrash(this.lines.join('\n'))
@@ -231,7 +231,9 @@ export async function listCrashReports(profile: Profile): Promise<CrashReport[]>
   const files = await fsp.readdir(crashDir).catch(() => [])
   const reports = await Promise.all(
     files
-      .filter((file) => /^opbay-\d+\.json$/.test(file))
+      // `opbay-` is the old brand's prefix. Reports written before the rename
+      // are still perfectly good crash reports, so they stay listed.
+      .filter((file) => /^(?:pisankus|opbay)-\d+\.json$/.test(file))
       .map(async (file): Promise<CrashReport | null> => {
         try {
           const reportFile = path.join(crashDir, file)

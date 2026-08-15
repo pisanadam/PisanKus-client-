@@ -1,29 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <!--
-    Opbay Client logo. The single source of truth for the badge: the installer
-    icon, the window icon and both favicons are rendered from this file, so the
-    downloaded app carries the same mark as the download page.
+    PisanKus Client logo. The single source of truth for the badge: the
+    installer icon, the window icon and both favicons are rendered from this
+    file, so the downloaded app carries the same mark as the download page.
 
     Geometry mirrors the site's `.logo__mark` rule at 34px, scaled up:
     radius 10/34 and font-size 14/34 of the tile. The tile is inset by 64px so
     the rounded corners survive the mask macOS and Windows apply to app icons.
+
+    The lettering is dark rather than white: light yellow carries too little
+    contrast behind white text, and the mark has to stay readable at 16px.
   -->
   <defs>
-    <linearGradient id="opbay" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5b8cff" />
-      <stop offset="1" stop-color="#a855f7" />
+    <linearGradient id="pisankus" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14b8b8" />
+      <stop offset="1" stop-color="#ffe17a" />
     </linearGradient>
   </defs>
-  <rect x="64" y="64" width="896" height="896" rx="264" fill="url(#opbay)" />
+  <rect x="64" y="64" width="896" height="896" rx="264" fill="url(#pisankus)" />
   <text
     x="512"
     y="512"
     text-anchor="middle"
     dominant-baseline="central"
-    fill="#ffffff"
+    fill="#08302f"
     font-family="Inter, 'Segoe UI', 'Liberation Sans', Arial, Helvetica, sans-serif"
     font-size="369"
     font-weight="800"
     letter-spacing="-11"
-  >OP</text>
+  >PK</text>
 </svg>

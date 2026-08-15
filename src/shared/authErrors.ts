@@ -7,7 +7,7 @@
  * text is shown.
  */
 
-const MARKER = 'OPBAY_REAUTH::'
+const MARKER = 'PISANKUS_REAUTH::'
 
 /** Wraps a message so the renderer knows to offer "Tekrar oturum aç". */
 export function reauthError(message: string): string {

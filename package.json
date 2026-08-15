@@ -1,9 +1,9 @@
 {
-  "name": "opbay-client",
+  "name": "pisankus-client",
   "version": "1.0.1",
-  "description": "Opbay Client — modern Minecraft launcher with Modrinth content, skin editor and Microsoft authentication.",
+  "description": "PisanKus Client — modern Minecraft launcher with Modrinth content, skin editor and Microsoft authentication.",
   "main": "./out/main/index.js",
-  "author": "Opbay",
+  "author": "PisanKus",
   "license": "GPL-3.0",
   "private": true,
   "scripts": {
