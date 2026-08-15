@@ -150,6 +150,37 @@ jobs:
           prerelease: false
           make_latest: true
 
+      # The rolling release is never recreated, only added to, so an artifact
+      # that changes name leaves its predecessor sitting there for good. That is
+      # exactly what the Opbay → PisanKus rename did: both sets of installers
+      # ended up side by side, with the retired brand still on the page.
+      #
+      # Only files whose name no longer matches the build are removed, so a
+      # platform that failed this run keeps the copy it published last time —
+      # which is the whole point of publishing partial builds.
+      - name: Retire renamed assets
+        if: startsWith(github.ref, 'refs/tags/') == false
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prefix=$(ls artifacts | grep -m1 -E '\.(exe|dmg|AppImage|deb)$' | sed 's/-.*//')
+          if [ -z "$prefix" ]; then
+            echo "::warning::Kurulum dosyası bulunamadı; temizlik atlanıyor."
+            exit 0
+          fi
+          echo "Geçerli önek: $prefix"
+
+          gh release view latest --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq '.assets[].name' > existing.txt
+
+          while read -r name; do
+            case "$name" in
+              ''|latest*.yml|"$prefix"-*) continue ;;
+            esac
+            echo "Eski markaya ait dosya siliniyor: $name"
+            gh release delete-asset latest "$name" --repo "$GITHUB_REPOSITORY" --yes
+          done < existing.txt
+
       - name: Publish tagged release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
