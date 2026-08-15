@@ -79,7 +79,10 @@ async function createArchive(staging: string, destination: string, entries: stri
       portable: true,
       // Never let a user-created link pull files from outside the profile into
       // an export. Links are also rejected on import.
-      filter: (_entryPath: string, stat: { isSymbolicLink: () => boolean }) => !stat.isSymbolicLink()
+      filter: (_entryPath, entry) =>
+        'isSymbolicLink' in entry
+          ? !entry.isSymbolicLink()
+          : entry.type !== 'SymbolicLink' && entry.type !== 'Link'
     },
     entries
   )
