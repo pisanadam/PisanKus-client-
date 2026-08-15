@@ -1,7 +1,7 @@
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { CONTENT_DIRS, type ContentKind, type InstalledContent, type LoaderId, type Profile, type ProjectVersion, type TaskProgress } from '../../shared/types'
+import { CONTENT_DIRS, loaderApplies, type ContentKind, type InstalledContent, type LoaderId, type Profile, type ProjectVersion, type TaskProgress } from '../../shared/types'
 import { downloadAll, downloadFile, fileSha1 } from '../minecraft/downloader'
 import { defaultOptionsText } from '../../shared/options'
 import { fillMissingOptions } from '../minecraft/options'
@@ -73,7 +73,7 @@ export async function installContent(
       request.projectId,
       request.versionId,
       request.anyVersion ? undefined : profile.gameVersion,
-      request.anyVersion ? undefined : profile.loader
+      request.anyVersion || !loaderApplies(request.kind) ? undefined : profile.loader
     )
 
     if (request.kind === 'modpack') {
@@ -355,7 +355,11 @@ export async function checkForUpdates(profileId: string): Promise<InstalledConte
     profile.content.map(async (entry) => {
       if (entry.source === 'local' || !entry.projectId) return
       try {
-        const latest = await modrinth.bestVersion(entry.projectId, profile.gameVersion, profile.loader)
+        const latest = await modrinth.bestVersion(
+          entry.projectId,
+          profile.gameVersion,
+          loaderApplies(entry.kind) ? profile.loader : undefined
+        )
         entry.updateAvailable = latest && latest.id !== entry.versionId ? latest.id : undefined
       } catch {
         // Network hiccups should not clear a previously found update.

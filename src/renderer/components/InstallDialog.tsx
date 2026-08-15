@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { ProjectDetail } from '../../preload'
-import type { ContentKind, Profile, ProjectVersion, SearchResult } from '../../shared/types'
+import { loaderApplies, type ContentKind, type Profile, type ProjectVersion, type SearchResult } from '../../shared/types'
 import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
-
-/**
- * Content kinds that the game loads itself. A resource pack works the same on
- * vanilla as on Fabric, so only its game version matters; a mod needs the
- * loader to match as well.
- */
-const LOADER_BOUND: ContentKind[] = ['mod', 'modpack']
 
 export interface Compatibility {
   ok: boolean
@@ -38,7 +31,7 @@ export function checkCompatibility(
     issues.push(`Minecraft ${profile.gameVersion} desteklenmiyor`)
   }
 
-  if (LOADER_BOUND.includes(kind) && supports.loaders.length > 0) {
+  if (loaderApplies(kind) && supports.loaders.length > 0) {
     // Quilt runs Fabric mods, so a Fabric-only mod is fine on a Quilt profile.
     const accepted =
       profile.loader === 'quilt' ? ['quilt', 'fabric'] : [profile.loader]

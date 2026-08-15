@@ -10,6 +10,20 @@ export type ContentKind = 'mod' | 'resourcepack' | 'shader' | 'datapack' | 'worl
  */
 export type AuthMode = 'legacy' | 'azure'
 
+/**
+ * Whether a profile's mod loader is a meaningful filter for this kind.
+ *
+ * Only mods and modpacks are published against Fabric, Forge and friends. A
+ * resource pack lists `minecraft` as its loader, a shader lists `iris` or
+ * `canvas`, and a data pack lists `datapack` — so narrowing their versions by
+ * the profile's loader matches nothing at all, and a perfectly good pack looks
+ * unavailable. That is exactly what happened: a resource pack shown as
+ * compatible still failed with "no compatible version found".
+ */
+export function loaderApplies(kind: ContentKind): boolean {
+  return kind === 'mod' || kind === 'modpack'
+}
+
 /** Where each kind of content is installed, relative to a profile directory. */
 export const CONTENT_DIRS: Record<ContentKind, string> = {
   mod: 'mods',

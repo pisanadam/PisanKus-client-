@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ContentKind, ProjectVersion, SearchQuery, SearchResult } from '../../shared/types'
+import { loaderApplies, type ContentKind, type ProjectVersion, type SearchQuery, type SearchResult } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { InstallDialog, checkCompatibility } from '../components/InstallDialog'
 import { Modal } from '../components/Modal'
@@ -129,7 +129,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           offset: nextOffset,
           limit: pageSize,
           gameVersion: filterByProfile ? profile?.gameVersion : undefined,
-          loader: filterByProfile ? profile?.loader : undefined
+          loader: filterByProfile && loaderApplies(kind) ? profile?.loader : undefined
         })
         setResults((current) => (append ? [...current, ...page.hits] : page.hits))
         setTotal(page.total)
@@ -533,7 +533,9 @@ function ProjectModal({
         const list = await api.content.versions(
           result.projectId,
           onlyCompatible ? profile?.gameVersion : undefined,
-          onlyCompatible ? profile?.loader : undefined
+          // A resource pack or shader is never published against the profile's
+          // mod loader, so narrowing by it would empty the list.
+          onlyCompatible && loaderApplies(result.kind) ? profile?.loader : undefined
         )
         if (!cancelled) setVersions(list)
       } catch (error) {
