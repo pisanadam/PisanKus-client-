@@ -1,0 +1,234 @@
+import { useCallback, useEffect, useState } from 'react'
+import type { ServerEntry, ServerStatus } from '../../preload'
+import type { Profile } from '../../shared/types'
+import { api } from '../lib/api'
+import { useApp } from '../state/AppContext'
+import { Icon } from './Icon'
+
+/**
+ * The profile's multiplayer list, read from and written back to its own
+ * `servers.dat`. Whatever is here is what the game shows under "Multiplayer".
+ *
+ * Live status comes from a public service and is fetched only when this tab is
+ * opened or the player presses refresh — there is no polling, and the launcher
+ * makes no contact with it while the tab is closed.
+ */
+export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
+  const { notify } = useApp()
+  const [servers, setServers] = useState<ServerEntry[] | null>(null)
+  const [status, setStatus] = useState<Record<string, ServerStatus>>({})
+  const [checking, setChecking] = useState(false)
+  const [editing, setEditing] = useState<{ index: number | null; name: string; address: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const refreshStatus = useCallback(async (list: ServerEntry[]) => {
+    setChecking(true)
+    try {
+      // Sequential rather than parallel: a courteous pace towards a free
+      // service, and a dozen servers still resolve in a couple of seconds.
+      for (const server of list) {
+        const result = await api.servers.status(server.address)
+        setStatus((current) => ({ ...current, [server.address]: result }))
+      }
+    } finally {
+      setChecking(false)
+    }
+  }, [])
+
+  const load = useCallback(async () => {
+    try {
+      const list = await api.servers.list(profile.id)
+      setServers(list)
+      void refreshStatus(list)
+    } catch (error) {
+      setServers([])
+      notify(error, 'error')
+    }
+  }, [profile.id, notify, refreshStatus])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const run = async (action: () => Promise<ServerEntry[]>): Promise<void> => {
+    setBusy(true)
+    try {
+      const list = await action()
+      setServers(list)
+      setEditing(null)
+      void refreshStatus(list)
+    } catch (error) {
+      notify(error, 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (servers === null) {
+    return (
+      <div className="row" style={{ justifyContent: 'center', padding: 30 }}>
+        <div className="spinner" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="stack-lg">
+      <div className="row" style={{ flexWrap: 'wrap' }}>
+        <button
+          className="btn btn--primary"
+          onClick={() => setEditing({ index: null, name: '', address: '' })}
+        >
+          <Icon name="plus" size={16} />
+          Sunucu ekle
+        </button>
+        <button className="btn" disabled={checking || servers.length === 0} onClick={() => void refreshStatus(servers)}>
+          {checking ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
+          Durumları yenile
+        </button>
+        <div className="topbar__spacer" />
+        <span className="faint">Bu liste oyunda “Çok Oyunculu” ekranında görünür</span>
+      </div>
+
+      {editing && (
+        <div className="settings-group">
+          <div className="section-title">{editing.index === null ? 'Yeni sunucu' : 'Sunucuyu düzenle'}</div>
+          <div className="field">
+            <label className="field__label" htmlFor="server-name">
+              Ad
+            </label>
+            <input
+              id="server-name"
+              className="input"
+              value={editing.name}
+              placeholder="Sunucunun listede görünecek adı"
+              onChange={(event) => setEditing({ ...editing, name: event.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label className="field__label" htmlFor="server-address">
+              Adres
+            </label>
+            <input
+              id="server-address"
+              className="input"
+              value={editing.address}
+              placeholder="ornek.sunucu.net"
+              onChange={(event) => setEditing({ ...editing, address: event.target.value })}
+            />
+          </div>
+          <div className="row" style={{ justifyContent: 'flex-end' }}>
+            <button className="btn" onClick={() => setEditing(null)} disabled={busy}>
+              Vazgeç
+            </button>
+            <button
+              className="btn btn--primary"
+              disabled={busy || !editing.address.trim()}
+              onClick={() =>
+                void run(() => {
+                  const input = {
+                    name: editing.name.trim() || editing.address.trim(),
+                    address: editing.address.trim()
+                  }
+                  return editing.index === null
+                    ? api.servers.add(profile.id, input)
+                    : api.servers.update(profile.id, editing.index, input)
+                })
+              }
+            >
+              Kaydet
+            </button>
+          </div>
+        </div>
+      )}
+
+      {servers.length === 0 ? (
+        <div className="empty">
+          <div className="empty__icon">🛰️</div>
+          <div className="empty__title">Bu profilde kayıtlı sunucu yok</div>
+          <p>Eklediğiniz sunucular oyunu açtığınızda listede hazır olur.</p>
+        </div>
+      ) : (
+        <div className="list">
+          {servers.map((server) => {
+            const state = status[server.address]
+            // Minecraft caches an icon after the first connection; before that
+            // the status service is the only place one comes from.
+            const icon = server.icon ?? state?.icon
+
+            return (
+              <div key={`${server.index}-${server.address}`} className="list__row">
+                {icon ? (
+                  <img
+                    className="list__icon"
+                    src={icon.startsWith('data:') ? icon : `data:image/png;base64,${icon}`}
+                    alt=""
+                  />
+                ) : (
+                  <div className="list__icon" />
+                )}
+
+                <div className="list__main">
+                  <div className="list__title">
+                    {server.name}
+                    {state && (
+                      <span
+                        className={state.online ? 'badge badge--success' : 'badge'}
+                        style={{ marginLeft: 8 }}
+                      >
+                        {state.online
+                          ? `${state.players?.online ?? 0}/${state.players?.max ?? 0} oyuncu`
+                          : (state.error ?? 'çevrimdışı')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="list__sub">
+                    {server.address}
+                    {state?.version && ` · ${state.version}`}
+                    {state?.motd && ` · ${state.motd}`}
+                  </div>
+                </div>
+
+                <button
+                  className="btn btn--ghost btn--icon"
+                  aria-label="Yukarı taşı"
+                  disabled={busy || server.index === 0}
+                  onClick={() => void run(() => api.servers.move(profile.id, server.index, server.index - 1))}
+                >
+                  <Icon name="download" size={16} style={{ transform: 'rotate(180deg)' }} />
+                </button>
+                <button
+                  className="btn btn--ghost btn--icon"
+                  aria-label="Aşağı taşı"
+                  disabled={busy || server.index === servers.length - 1}
+                  onClick={() => void run(() => api.servers.move(profile.id, server.index, server.index + 1))}
+                >
+                  <Icon name="download" size={16} />
+                </button>
+                <button
+                  className="btn btn--sm"
+                  disabled={busy}
+                  onClick={() => setEditing({ index: server.index, name: server.name, address: server.address })}
+                >
+                  Düzenle
+                </button>
+                <button
+                  className="btn btn--ghost btn--icon"
+                  aria-label="Kaldır"
+                  disabled={busy}
+                  onClick={() => void run(() => api.servers.remove(profile.id, server.index))}
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      <p className="faint">
+        Durum bilgisi mcstatus.io üzerinden, yalnızca bu sekme açıkken ve yenilediğinizde sorgulanır.
+      </p>
+    </div>
+  )
+}

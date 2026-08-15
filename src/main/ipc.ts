@@ -23,6 +23,7 @@ import * as modrinth from './content/modrinth'
 import { discoverJava } from './minecraft/java'
 import { launch, prepareOnly, type GameSession } from './minecraft/launcher'
 import { listLoaderVersions } from './minecraft/loaders'
+import * as servers from './minecraft/servers'
 import { listVersions as listGameVersions } from './minecraft/versions'
 import * as skins from './skins'
 import { store } from './store'
@@ -620,6 +621,30 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       throw error
     }
   })
+
+  // ------------------------------------------------------------------ servers
+
+  /** Every server call works on one profile's own `servers.dat`. */
+  const serverDir = (profileId: string): string => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return profile.directory
+  }
+
+  handle('servers:list', (profileId: string) => servers.listServers(serverDir(profileId)))
+  handle('servers:add', (profileId: string, input: { name: string; address: string }) =>
+    servers.addServer(serverDir(profileId), input)
+  )
+  handle('servers:update', (profileId: string, index: number, input: { name: string; address: string }) =>
+    servers.updateServer(serverDir(profileId), index, input)
+  )
+  handle('servers:remove', (profileId: string, index: number) =>
+    servers.removeServer(serverDir(profileId), index)
+  )
+  handle('servers:move', (profileId: string, from: number, to: number) =>
+    servers.moveServer(serverDir(profileId), from, to)
+  )
+  handle('servers:status', (address: string) => servers.serverStatus(address))
 
   handle('skins:texture', (url: string) => skins.textureDataUrl(url))
 

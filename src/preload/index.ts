@@ -83,6 +83,23 @@ export interface PackInstallResult {
   }
 }
 
+export interface ServerEntry {
+  index: number
+  name: string
+  address: string
+  /** Base64 png Minecraft cached the last time it connected. */
+  icon?: string
+}
+
+export interface ServerStatus {
+  online: boolean
+  players?: { online: number; max: number }
+  motd?: string
+  version?: string
+  icon?: string
+  error?: string
+}
+
 export interface WorldSummary {
   folderName: string
   displayName: string
@@ -209,6 +226,23 @@ const api = {
       name: string
       iconUrl?: string
     }): Promise<Profile> => ipcRenderer.invoke('content:installModpackAsProfile', request)
+  },
+
+  servers: {
+    list: (profileId: string): Promise<ServerEntry[]> => ipcRenderer.invoke('servers:list', profileId),
+    add: (profileId: string, input: { name: string; address: string }): Promise<ServerEntry[]> =>
+      ipcRenderer.invoke('servers:add', profileId, input),
+    update: (
+      profileId: string,
+      index: number,
+      input: { name: string; address: string }
+    ): Promise<ServerEntry[]> => ipcRenderer.invoke('servers:update', profileId, index, input),
+    remove: (profileId: string, index: number): Promise<ServerEntry[]> =>
+      ipcRenderer.invoke('servers:remove', profileId, index),
+    move: (profileId: string, from: number, to: number): Promise<ServerEntry[]> =>
+      ipcRenderer.invoke('servers:move', profileId, from, to),
+    /** Asked only when the player is looking; nothing polls in the background. */
+    status: (address: string): Promise<ServerStatus> => ipcRenderer.invoke('servers:status', address)
   },
 
   worlds: {

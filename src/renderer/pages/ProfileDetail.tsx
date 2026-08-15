@@ -3,6 +3,7 @@ import type { ContentKind, InstalledContent, LoaderId } from '../../shared/types
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
+import { ServersTab } from '../components/ServersTab'
 import { parseOptions } from '../../shared/options'
 import { Confirm } from '../components/Modal'
 import type { WorldSummary } from '../../preload'
@@ -10,13 +11,14 @@ import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
-type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'logs' | 'settings'
+type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'servers' | 'logs' | 'settings'
 
 const TABS: { id: Tab; label: string; kind?: ContentKind }[] = [
   { id: 'mods', label: 'Modlar', kind: 'mod' },
   { id: 'resourcepacks', label: 'Doku paketleri', kind: 'resourcepack' },
   { id: 'shaders', label: 'Shaderlar', kind: 'shader' },
   { id: 'worlds', label: 'Dünyalar', kind: 'world' },
+  { id: 'servers', label: 'Sunucular' },
   { id: 'logs', label: 'Günlük' },
   { id: 'settings', label: 'Ayarlar' }
 ]
@@ -60,6 +62,8 @@ export function ProfileDetail({
 
   const state = gameStates[profile.id]
   const running = state === 'running' || state === 'preparing'
+
+  const contentKind = TABS.find((entry) => entry.id === tab)?.kind
 
   return (
     <div className="page">
@@ -133,17 +137,21 @@ export function ProfileDetail({
         ))}
       </nav>
 
-      {tab !== 'logs' && tab !== 'settings' && tab !== 'worlds' && (
+      {/* Content tabs are the ones that name a kind. Listing the exceptions by
+          hand meant every new tab had to remember to opt out — and "Sunucular"
+          did not, so it rendered the mods view instead of itself. */}
+      {contentKind && contentKind !== 'world' && (
         <ContentTab
           profileId={profile.id}
-          kind={TABS.find((entry) => entry.id === tab)!.kind!}
-          items={profile.content.filter((item) => item.kind === TABS.find((entry) => entry.id === tab)!.kind)}
+          kind={contentKind}
+          items={profile.content.filter((item) => item.kind === contentKind)}
           onChanged={refreshProfiles}
           onBrowse={() => onBrowse(profile.id)}
         />
       )}
 
       {tab === 'worlds' && <WorldsTab profileId={profile.id} />}
+      {tab === 'servers' && <ServersTab profile={profile} />}
       {tab === 'logs' && <LogsTab profileId={profile.id} />}
       {tab === 'settings' && (
         <ProfileSettingsTab profileId={profile.id} onDeleteRequested={() => setConfirmDelete(true)} />
