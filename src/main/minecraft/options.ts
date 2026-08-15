@@ -1,6 +1,8 @@
 import fsp from 'node:fs/promises'
 import path from 'node:path'
+import os from 'node:os'
 import { parseOptions, serialiseOptions, writeOption } from '../../shared/options'
+import { extractZip } from '../archive'
 
 /**
  * Writes the configured options.txt into a profile directory.
@@ -32,6 +34,55 @@ export async function writeProfileOptions(
 }
 
 /**
+ * The data version Minecraft stamps into options.txt, read from the client jar.
+ *
+ * This one line decides whether the file is used at all: "If this field is
+ * missing, the file is discarded and replaced with the defaults." A seeded
+ * options.txt without it therefore does nothing — the game throws it away on
+ * first launch and the player sees stock settings, which is exactly what was
+ * being reported.
+ *
+ * The jar carries the number in its own `version.json`, so it is read from
+ * there rather than guessed.
+ */
+export async function clientDataVersion(clientJar: string): Promise<number | undefined> {
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'opbay-ver-'))
+  try {
+    await extractZip(clientJar, { dir: staging, filter: (name) => name === 'version.json' })
+    const raw = await fsp.readFile(path.join(staging, 'version.json'), 'utf8')
+    const parsed = JSON.parse(raw) as { world_version?: number }
+    return typeof parsed.world_version === 'number' ? parsed.world_version : undefined
+  } catch {
+    return undefined
+  } finally {
+    await fsp.rm(staging, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Writes the launcher's template into a profile that has no options.txt yet,
+ * stamped with the version the game expects.
+ *
+ * Only ever creates. A file that already exists belongs to the player and the
+ * game, and is left exactly as it is.
+ */
+export async function seedProfileOptions(
+  directory: string,
+  template: string,
+  dataVersion: number | undefined
+): Promise<boolean> {
+  if (!template.trim() || dataVersion === undefined) return false
+
+  const file = path.join(directory, 'options.txt')
+  if (await fsp.readFile(file, 'utf8').then(() => true).catch(() => false)) return false
+
+  const lines = writeOption(parseOptions(template), 'version', String(dataVersion))
+  await fsp.mkdir(directory, { recursive: true })
+  await fsp.writeFile(file, serialiseOptions(lines), 'utf8')
+  return true
+}
+
+/**
  * Adds the keys a file does not mention, leaving everything it does say alone.
  *
  * This is what a modpack needs. Packs ship their own options.txt in `overrides`
@@ -46,7 +97,10 @@ export async function fillMissingOptions(directory: string, template: string): P
 
   const file = path.join(directory, 'options.txt')
   const existing = await fsp.readFile(file, 'utf8').catch(() => null)
-  if (existing === null) return writeProfileOptions(directory, template)
+  // Nothing to fill in yet, and creating one here would produce a file with no
+  // `version` line — which Minecraft discards on sight. First launch seeds it
+  // properly instead.
+  if (existing === null) return false
 
   const lines = parseOptions(existing)
   const present = new Set(lines.flatMap((line) => ('raw' in line ? [] : [line.key])))

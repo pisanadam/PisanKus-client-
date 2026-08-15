@@ -32,6 +32,10 @@ win:
       arch: [x64]
 
 nsis:
+  # An update runs the uninstaller before installing the new build. Saying this
+  # out loud keeps a future edit from quietly wiping every profile, setting and
+  # signed-in account on upgrade.
+  deleteAppDataOnUninstall: false
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true

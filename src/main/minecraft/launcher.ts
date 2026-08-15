@@ -8,6 +8,7 @@ import { downloadAll, type DownloadItem } from './downloader'
 import { ensureJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
+import { clientDataVersion, seedProfileOptions } from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 
 const LAUNCHER_NAME = 'OpbayClient'
@@ -153,10 +154,15 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
 
     await fsp.mkdir(profile.directory, { recursive: true })
 
-    // Deliberately does not write options.txt. The template is seeded once, when
-    // the profile is created; from then on the file belongs to the player and
-    // the game, and the launcher only touches it when asked to from the
-    // profile's own settings.
+    // Seeds the configured template the first time a profile is launched, and
+    // never again. It cannot be done when the profile is created because the
+    // file is worthless without the game's data version, and that number only
+    // exists inside the client jar — which is on disk by now.
+    await seedProfileOptions(
+      profile.directory,
+      settings.minecraftOptions,
+      await clientDataVersion(clientJar)
+    )
 
     const classpath = [...libraries.classpath, clientJar]
     const values: Record<string, string> = {

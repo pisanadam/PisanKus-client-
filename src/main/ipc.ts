@@ -72,12 +72,10 @@ async function createProfile(input: {
     memoryMb: store.settings.defaultMemoryMb
   })
 
-  // Only for brand new profiles — the directory is fresh, nothing to overwrite.
-  // A profile that has never been launched still gets a complete options.txt:
-  // the configured template when there is one, Minecraft's own defaults
-  // otherwise. Waiting for the game to write it left new folders empty and the
-  // key bindings editor with nothing to show.
-  await writeProfileOptions(profile.directory, store.settings.minecraftOptions || defaultOptionsText())
+  // options.txt is deliberately not written here. Minecraft discards any
+  // options file with no `version` line, and that number lives inside the
+  // client jar, which has not been downloaded yet. The template is seeded on
+  // the profile's first launch instead, where the version is known.
   return profile
 }
 

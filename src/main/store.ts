@@ -43,13 +43,28 @@ function defaultSettings(): Settings {
  */
 class Store {
   private file = ''
+
+  /** Last known-good copy, kept beside the live file. */
+  private get backup(): string {
+    return `${this.file}.bak`
+  }
+
   private data: Database = { settings: defaultSettings(), profiles: [], accounts: [], savedSkins: [] }
 
   init(): void {
     this.file = path.join(app.getPath('userData'), 'opbay-client.json')
-    if (fs.existsSync(this.file)) {
+    // Reading the backup when the live file is unreadable is the whole point of
+    // keeping one: an update, a full disk or a power cut must not be able to
+    // turn "your profiles and settings" into "a fresh install".
+    const source = fs.existsSync(this.file)
+      ? this.file
+      : fs.existsSync(this.backup)
+        ? this.backup
+        : null
+
+    if (source) {
       try {
-        const parsed = JSON.parse(fs.readFileSync(this.file, 'utf8')) as Partial<Database>
+        const parsed = JSON.parse(fs.readFileSync(source, 'utf8')) as Partial<Database>
         this.data = {
           settings: { ...defaultSettings(), ...(parsed.settings ?? {}) },
           profiles: parsed.profiles ?? [],
@@ -65,8 +80,18 @@ class Store {
           savedSkins: parsed.savedSkins ?? []
         }
       } catch {
-        // Corrupt database: keep a copy for support, then start clean.
-        fs.renameSync(this.file, `${this.file}.corrupt-${Date.now()}`)
+        // Unreadable. Keep it for support, then try yesterday's copy before
+        // giving up and starting empty.
+        fs.renameSync(source, `${this.file}.corrupt-${Date.now()}`)
+        if (source !== this.backup && fs.existsSync(this.backup)) {
+          try {
+            fs.copyFileSync(this.backup, this.file)
+            this.init()
+            return
+          } catch {
+            // The backup is no better; start clean below.
+          }
+        }
       }
     }
     fs.mkdirSync(this.data.settings.dataDir, { recursive: true })
@@ -94,6 +119,13 @@ class Store {
 
     const tmp = `${this.file}.tmp`
     fs.writeFileSync(tmp, JSON.stringify(onDisk, null, 2))
+    // Roll the file that is about to be replaced into the backup slot first, so
+    // there is always one complete generation behind the live file.
+    try {
+      if (fs.existsSync(this.file)) fs.copyFileSync(this.file, this.backup)
+    } catch {
+      // A missing backup must never stop the launcher from saving.
+    }
     fs.renameSync(tmp, this.file)
   }
 
