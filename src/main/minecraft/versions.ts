@@ -79,12 +79,23 @@ export async function latestRelease(): Promise<string> {
 }
 
 /** Reads a version json from disk, downloading it from Mojang on first use. */
-export async function loadVersionJson(dataDir: string, versionId: string): Promise<VersionJson> {
+export async function loadVersionJson(
+  dataDir: string,
+  versionId: string,
+  offline = false
+): Promise<VersionJson> {
   const file = path.join(dataDir, 'versions', versionId, `${versionId}.json`)
   try {
     return JSON.parse(await fsp.readFile(file, 'utf8')) as VersionJson
   } catch {
     // Not cached yet — fall through to the manifest lookup below.
+  }
+
+  if (offline) {
+    throw new Error(
+      `Minecraft ${versionId} sürüm bilgisi bu bilgisayarda hazır değil. ` +
+        'İnternete bağlanıp “Dosyaları önceden indir” işlemini çalıştırın.'
+    )
   }
 
   const manifest = await getManifest()
@@ -101,14 +112,18 @@ export async function loadVersionJson(dataDir: string, versionId: string): Promi
  * Flattens a version and every parent it inherits from (mod loaders publish
  * partial version files that build on the vanilla one).
  */
-export async function resolveVersion(dataDir: string, versionId: string): Promise<VersionJson> {
+export async function resolveVersion(
+  dataDir: string,
+  versionId: string,
+  offline = false
+): Promise<VersionJson> {
   const chain: VersionJson[] = []
   const seen = new Set<string>()
   let current: string | undefined = versionId
 
   while (current && !seen.has(current)) {
     seen.add(current)
-    const json: VersionJson = await loadVersionJson(dataDir, current)
+    const json: VersionJson = await loadVersionJson(dataDir, current, offline)
     chain.push(json)
     current = json.inheritsFrom
   }

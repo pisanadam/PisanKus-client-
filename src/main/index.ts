@@ -3,6 +3,7 @@ import path from 'node:path'
 import { registerIpc } from './ipc'
 import { store } from './store'
 import { checkForUpdates } from './updater'
+import { recoverInterruptedTransactions } from './profileTransaction'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -78,11 +79,12 @@ if (!app.requestSingleInstanceLock()) {
     }
   })
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     // Windows files toast notifications under this id and drops them silently
     // when it is missing, which is why the update notice needs it set here.
     app.setAppUserModelId('com.opbay.client')
     store.init()
+    await recoverInterruptedTransactions()
     registerIpc(() => mainWindow)
     createWindow()
 

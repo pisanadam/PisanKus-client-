@@ -19,7 +19,11 @@ export interface ResolvedAssets {
   index: AssetIndex
 }
 
-export async function resolveAssets(version: VersionJson, dataDir: string): Promise<ResolvedAssets> {
+export async function resolveAssets(
+  version: VersionJson,
+  dataDir: string,
+  offline = false
+): Promise<ResolvedAssets> {
   const assetsDir = path.join(dataDir, 'assets')
   const indexId = version.assetIndex?.id ?? version.assets ?? 'legacy'
   const downloads: DownloadItem[] = []
@@ -33,6 +37,12 @@ export async function resolveAssets(version: VersionJson, dataDir: string): Prom
   try {
     index = JSON.parse(await fsp.readFile(indexFile, 'utf8')) as AssetIndex
   } catch {
+    if (offline) {
+      throw new Error(
+        `Varlık listesi ${indexId} bu bilgisayarda hazır değil. ` +
+          'İnternete bağlanıp “Dosyaları önceden indir” işlemini çalıştırın.'
+      )
+    }
     index = await fetchJson<AssetIndex>(version.assetIndex.url)
     await fsp.mkdir(path.dirname(indexFile), { recursive: true })
     await fsp.writeFile(indexFile, JSON.stringify(index))

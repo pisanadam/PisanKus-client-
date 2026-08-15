@@ -27,10 +27,10 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
     return [...matching].sort((a, b) => (b.lastPlayed ?? b.createdAt) - (a.lastPlayed ?? a.createdAt))
   }, [profiles, query])
 
-  const launch = async (profile: Profile): Promise<void> => {
+  const launch = async (profile: Profile, offline = false): Promise<void> => {
     setBusyId(profile.id)
     try {
-      await api.game.launch(profile.id)
+      await api.game.launch(profile.id, { offline })
     } catch (error) {
       notify(error, 'error')
     } finally {
@@ -63,6 +63,23 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
+        <button
+          className="btn"
+          onClick={async () => {
+            try {
+              const imported = await api.profiles.importBackup()
+              if (!imported) return
+              await refreshProfiles()
+              notify(`${imported.name} yedeği içe aktarıldı.`)
+              onOpenProfile(imported.id)
+            } catch (error) {
+              notify(error, 'error')
+            }
+          }}
+        >
+          <Icon name="download" size={17} />
+          Yedek içe aktar
+        </button>
         <button className="btn btn--primary" onClick={() => setCreating(true)}>
           <Icon name="plus" size={17} />
           Yeni profil
@@ -142,17 +159,27 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                       Durdur
                     </button>
                   ) : (
-                    <button
-                      className="btn btn--primary btn--sm"
-                      onClick={() => void launch(profile)}
-                      // Half a pack on disk cannot be launched, and the version
-                      // is not even known until the pack declares it.
-                      disabled={busyId === profile.id || profile.preparing}
-                      title={profile.preparing ? 'Paket hâlâ indiriliyor' : undefined}
-                    >
-                      <Icon name="play" size={15} />
-                      Oyna
-                    </button>
+                    <>
+                      <button
+                        className="btn btn--primary btn--sm"
+                        onClick={() => void launch(profile)}
+                        // Half a pack on disk cannot be launched, and the version
+                        // is not even known until the pack declares it.
+                        disabled={busyId === profile.id || profile.preparing}
+                        title={profile.preparing ? 'Paket hâlâ indiriliyor' : undefined}
+                      >
+                        <Icon name="play" size={15} />
+                        Oyna
+                      </button>
+                      <button
+                        className="btn btn--sm"
+                        onClick={() => void launch(profile, true)}
+                        disabled={busyId === profile.id || profile.preparing}
+                        title="Yalnızca önceden indirilmiş dosyalarla başlat"
+                      >
+                        Çevrimdışı
+                      </button>
+                    </>
                   )}
                   <button className="btn btn--sm" onClick={() => onOpenProfile(profile.id)}>
                     Yönet

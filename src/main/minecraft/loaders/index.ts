@@ -2,7 +2,7 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type { LoaderId } from '../../../shared/types'
 import { downloadFile, fetchJson } from '../downloader'
-import type { VersionJson } from '../versions'
+import { compareVersions, type VersionJson } from '../versions'
 import { extractZip } from '../../archive'
 
 /** Meta endpoints for the loaders sharing Fabric's API shape. */
@@ -30,13 +30,19 @@ async function neoForgeVersions(gameVersion: string): Promise<LoaderVersion[]> {
   const meta = await fetchJson<{ versions: string[] }>(
     'https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge'
   )
-  // NeoForge versions are `<minor>.<patch>.<build>` derived from `1.<minor>.<patch>`.
-  const [, minor, patch = '0'] = gameVersion.split('.')
-  const prefix = `${minor}.${patch === '0' ? '0' : patch}.`
+  const prefix = neoForgeGamePrefix(gameVersion)
   return meta.versions
     .filter((version) => version.startsWith(prefix))
     .reverse()
     .map((version) => ({ version, stable: !version.includes('beta') }))
+}
+
+/** NeoForge dropped Minecraft's leading `1.` but keeps calendar versions intact. */
+function neoForgeGamePrefix(gameVersion: string): string {
+  const parts = gameVersion.split('.')
+  return parts[0] === '1'
+    ? `${parts[1] ?? '0'}.${parts[2] ?? '0'}.`
+    : `${parts[0] ?? '0'}.${parts[1] ?? '0'}.`
 }
 
 async function forgeVersions(gameVersion: string): Promise<LoaderVersion[]> {
@@ -79,6 +85,38 @@ export function loaderVersionId(loader: LoaderId, gameVersion: string, loaderVer
   }
 }
 
+async function installedLoaderVersionId(
+  dataDir: string,
+  loader: LoaderId,
+  gameVersion: string,
+  loaderVersion?: string
+): Promise<string | undefined> {
+  if (loaderVersion) {
+    const exact = loaderVersionId(loader, gameVersion, loaderVersion)
+    const file = path.join(dataDir, 'versions', exact, `${exact}.json`)
+    return fsp.access(file).then(() => exact, () => undefined)
+  }
+
+  const entries = await fsp.readdir(path.join(dataDir, 'versions'), { withFileTypes: true }).catch(() => [])
+  const candidates = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((id) => {
+      if (loader === 'fabric') return id.startsWith('fabric-loader-') && id.endsWith(`-${gameVersion}`)
+      if (loader === 'quilt') return id.startsWith('quilt-loader-') && id.endsWith(`-${gameVersion}`)
+      if (loader === 'forge') return id.startsWith(`${gameVersion}-`) && id.endsWith('-forge')
+      if (loader === 'neoforge') return id.startsWith(`neoforge-${neoForgeGamePrefix(gameVersion)}`)
+      return id === gameVersion
+    })
+    .sort(compareVersions)
+
+  for (const id of candidates) {
+    const file = path.join(dataDir, 'versions', id, `${id}.json`)
+    if (await fsp.access(file).then(() => true, () => false)) return id
+  }
+  return undefined
+}
+
 /**
  * Writes the loader's version json into `versions/`, so the normal resolve →
  * download → launch path can treat it like any other version.
@@ -90,9 +128,19 @@ export async function installLoader(
   loader: LoaderId,
   gameVersion: string,
   loaderVersion: string | undefined,
-  onProgress?: (detail: string) => void
+  onProgress?: (detail: string) => void,
+  offline = false
 ): Promise<string> {
   if (loader === 'vanilla') return gameVersion
+
+  if (offline) {
+    const installed = await installedLoaderVersionId(dataDir, loader, gameVersion, loaderVersion)
+    if (installed) return installed
+    throw new Error(
+      `${loader} yükleyicisi bu profil için bilgisayarda hazır değil. ` +
+        'İnternete bağlanıp “Dosyaları önceden indir” işlemini çalıştırın.'
+    )
+  }
 
   let resolved = loaderVersion
   if (!resolved) {

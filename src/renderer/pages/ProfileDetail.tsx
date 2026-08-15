@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ContentKind, InstalledContent, LoaderId } from '../../shared/types'
+import type { ContentKind, CrashReport, InstalledContent, LoaderId } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { ServersTab } from '../components/ServersTab'
 import { parseOptions } from '../../shared/options'
 import { Confirm } from '../components/Modal'
-import type { WorldSummary } from '../../preload'
+import type { JavaInfo, WorldSummary } from '../../preload'
 import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
@@ -103,19 +103,34 @@ export function ProfileDetail({
             Durdur
           </button>
         ) : (
-          <button
-            className="btn btn--primary"
-            onClick={async () => {
-              try {
-                await api.game.launch(profile.id)
-              } catch (error) {
-                notify(error, 'error')
-              }
-            }}
-          >
-            <Icon name="play" size={16} />
-            Oyna
-          </button>
+          <>
+            <button
+              className="btn"
+              title="Ağa bağlanmadan yalnızca önceden hazırlanmış dosyaları kullanır"
+              onClick={async () => {
+                try {
+                  await api.game.launch(profile.id, { offline: true })
+                } catch (error) {
+                  notify(error, 'error')
+                }
+              }}
+            >
+              Çevrimdışı
+            </button>
+            <button
+              className="btn btn--primary"
+              onClick={async () => {
+                try {
+                  await api.game.launch(profile.id)
+                } catch (error) {
+                  notify(error, 'error')
+                }
+              }}
+            >
+              <Icon name="play" size={16} />
+              Oyna
+            </button>
+          </>
         )}
       </header>
 
@@ -371,6 +386,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
   const [worlds, setWorlds] = useState<WorldSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [pendingDelete, setPendingDelete] = useState<WorldSummary | null>(null)
+  const [exporting, setExporting] = useState<string | null>(null)
 
   const reload = async (): Promise<void> => {
     setLoading(true)
@@ -405,6 +421,22 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
           <Icon name="download" size={16} />
           Dünya içe aktar (.zip)
         </button>
+        <button
+          className="btn"
+          onClick={async () => {
+            try {
+              const folder = await api.worlds.importBackup(profileId)
+              if (!folder) return
+              await reload()
+              notify('Dünya yedeği içe aktarıldı.')
+            } catch (error) {
+              notify(error, 'error')
+            }
+          }}
+        >
+          <Icon name="download" size={16} />
+          Opbay yedeğini içe aktar
+        </button>
         <button className="btn" onClick={() => void reload()}>
           <Icon name="refresh" size={16} />
           Yenile
@@ -434,6 +466,28 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
                   {world.sizeMb} MB · son değişiklik {formatRelative(world.lastPlayed)}
                 </div>
               </div>
+              <button
+                className="btn btn--sm"
+                disabled={exporting === world.folderName}
+                onClick={async () => {
+                  setExporting(world.folderName)
+                  try {
+                    const saved = await api.worlds.exportBackup(
+                      profileId,
+                      world.folderName,
+                      world.displayName
+                    )
+                    if (saved) notify('Dünya yedeği dışa aktarıldı.')
+                  } catch (error) {
+                    notify(error, 'error')
+                  } finally {
+                    setExporting(null)
+                  }
+                }}
+              >
+                <Icon name="download" size={14} />
+                Yedekle
+              </button>
               <button
                 className="btn btn--ghost btn--icon"
                 aria-label="Dünyayı sil"
@@ -468,10 +522,31 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
 }
 
 function LogsTab({ profileId }: { profileId: string }): JSX.Element {
-  const { logs, clearLogs } = useApp()
+  const { logs, clearLogs, notify } = useApp()
   const lines = logs[profileId] ?? []
   const consoleRef = useRef<HTMLDivElement>(null)
   const [follow, setFollow] = useState(true)
+  const [reports, setReports] = useState<CrashReport[]>([])
+
+  useEffect(() => {
+    let active = true
+    void api.crashes
+      .list(profileId)
+      .then((items) => {
+        if (active) setReports(items)
+      })
+      .catch(() => {
+        if (active) setReports([])
+      })
+    const unsubscribe = api.crashes.onCreated((report) => {
+      if (report.profileId !== profileId) return
+      setReports((current) => [report, ...current.filter((item) => item.id !== report.id)])
+    })
+    return () => {
+      active = false
+      unsubscribe()
+    }
+  }, [profileId])
 
   useEffect(() => {
     if (follow && consoleRef.current) {
@@ -479,8 +554,53 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
     }
   }, [lines, follow])
 
+  const latest = reports[0]
+
   return (
     <div className="stack-lg">
+      {latest && (
+        <div className="card crash-analysis">
+          <div className="row" style={{ flexWrap: 'wrap' }}>
+            <div>
+              <div className="section-title">Crash analizi</div>
+              <div className="list__title">{latest.title}</div>
+            </div>
+            <span className="badge badge--danger">{latest.category}</span>
+            <div className="topbar__spacer" />
+            <span className="faint">{new Date(latest.createdAt).toLocaleString('tr-TR')}</span>
+          </div>
+          <p className="muted">{latest.summary}</p>
+          <ul className="crash-analysis__steps">
+            {latest.suggestions.map((suggestion) => (
+              <li key={suggestion}>{suggestion}</li>
+            ))}
+          </ul>
+          {latest.evidence.length > 0 && (
+            <details>
+              <summary>Hata kanıtı ({latest.evidence.length} satır)</summary>
+              <pre className="crash-analysis__evidence">{latest.evidence.join('\n')}</pre>
+            </details>
+          )}
+          <div className="row" style={{ flexWrap: 'wrap' }}>
+            <button
+              className="btn btn--sm"
+              onClick={() => void api.crashes.openFolder(profileId).catch((error) => notify(error, 'error'))}
+            >
+              <Icon name="folder" size={14} />
+              Rapor klasörü
+            </button>
+            <button
+              className="btn btn--sm"
+              onClick={() => void navigator.clipboard.writeText(JSON.stringify(latest, null, 2))}
+            >
+              <Icon name="copy" size={14} />
+              Analizi kopyala
+            </button>
+            {reports.length > 1 && <span className="faint">Toplam {reports.length} crash raporu</span>}
+          </div>
+        </div>
+      )}
+
       <div className="row">
         <button className="chip" aria-pressed={follow} onClick={() => setFollow((value) => !value)}>
           Otomatik kaydır
@@ -522,7 +642,7 @@ function ProfileSettingsTab({
   profileId: string
   onDeleteRequested: () => void
 }): JSX.Element {
-  const { profiles, refreshProfiles, notify } = useApp()
+  const { profiles, refreshProfiles, notify, settings } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)!
 
   const [name, setName] = useState(profile.name)
@@ -530,7 +650,13 @@ function ProfileSettingsTab({
   const [jvmArgs, setJvmArgs] = useState(profile.jvmArgs ?? '')
   const [loaderVersions, setLoaderVersions] = useState<{ version: string; stable: boolean }[]>([])
   const [loaderVersion, setLoaderVersion] = useState(profile.loaderVersion ?? '')
+  const [javaPath, setJavaPath] = useState(profile.javaPath ?? '')
+  const [javaOptions, setJavaOptions] = useState<JavaInfo[]>([])
+  const [customResolution, setCustomResolution] = useState(profile.resolution != null)
+  const [resolutionWidth, setResolutionWidth] = useState(String(profile.resolution?.width ?? 1280))
+  const [resolutionHeight, setResolutionHeight] = useState(String(profile.resolution?.height ?? 720))
   const [saving, setSaving] = useState(false)
+  const [exportingProfile, setExportingProfile] = useState(false)
   const [options, setOptions] = useState<{ text: string; onDisk: boolean } | null>(null)
   const [editingOptions, setEditingOptions] = useState(false)
 
@@ -555,11 +681,27 @@ function ProfileSettingsTab({
     })()
   }, [profile.loader, profile.gameVersion])
 
+  useEffect(() => {
+    void api.versions.java().then(setJavaOptions).catch(() => setJavaOptions([]))
+  }, [profileId])
+
+  const width = Number(resolutionWidth)
+  const height = Number(resolutionHeight)
+  const resolutionValid =
+    !customResolution ||
+    (Number.isFinite(width) && width >= 320 && width <= 16_384 &&
+      Number.isFinite(height) && height >= 240 && height <= 8_640)
+  const resolutionDirty = customResolution
+    ? profile.resolution?.width !== Math.round(width) || profile.resolution?.height !== Math.round(height)
+    : profile.resolution !== undefined
+
   const dirty =
     name !== profile.name ||
     memory !== profile.memoryMb ||
     jvmArgs !== (profile.jvmArgs ?? '') ||
-    loaderVersion !== (profile.loaderVersion ?? '')
+    loaderVersion !== (profile.loaderVersion ?? '') ||
+    javaPath !== (profile.javaPath ?? '') ||
+    resolutionDirty
 
   const save = async (): Promise<void> => {
     setSaving(true)
@@ -568,7 +710,11 @@ function ProfileSettingsTab({
         name: name.trim() || profile.name,
         memoryMb: memory,
         jvmArgs: jvmArgs.trim() || undefined,
-        loaderVersion: loaderVersion || undefined
+        loaderVersion: loaderVersion || undefined,
+        javaPath: javaPath.trim() || undefined,
+        resolution: customResolution
+          ? { width: Math.round(width), height: Math.round(height) }
+          : undefined
       })
       await refreshProfiles()
     } catch (error) {
@@ -698,6 +844,70 @@ function ProfileSettingsTab({
         )}
 
         <div className="field">
+          <label className="field__label" htmlFor="profile-java-path">
+            Bu profilin Java'sı
+          </label>
+          <input
+            id="profile-java-path"
+            className="input"
+            list="profile-java-options"
+            value={javaPath}
+            placeholder={settings?.javaPath ? `Genel: ${settings.javaPath}` : 'Boş bırakılırsa uygun Java otomatik seçilir'}
+            onChange={(event) => setJavaPath(event.target.value)}
+          />
+          <datalist id="profile-java-options">
+            {javaOptions.map((java) => (
+              <option key={`${java.majorVersion}:${java.path}`} value={java.path}>
+                Java {java.majorVersion} · {java.vendor}
+              </option>
+            ))}
+          </datalist>
+          <div className="field__hint">
+            {javaPath ? 'Bu yol yalnızca bu profil için kullanılır.' : 'Genel Java ayarı veya launcher tarafından yönetilen Java kullanılır.'}
+          </div>
+        </div>
+
+        <div className="settings-row">
+          <div>
+            <div className="settings-row__label">Özel çözünürlük</div>
+            <div className="faint">Kapalıysa Minecraft kendi pencere boyutunu kullanır</div>
+          </div>
+          <div className="row profile-resolution">
+            {customResolution && (
+              <>
+                <input
+                  className="input"
+                  type="number"
+                  min={320}
+                  max={16_384}
+                  aria-label="Çözünürlük genişliği"
+                  value={resolutionWidth}
+                  onChange={(event) => setResolutionWidth(event.target.value)}
+                />
+                <span className="muted">×</span>
+                <input
+                  className="input"
+                  type="number"
+                  min={240}
+                  max={8_640}
+                  aria-label="Çözünürlük yüksekliği"
+                  value={resolutionHeight}
+                  onChange={(event) => setResolutionHeight(event.target.value)}
+                />
+              </>
+            )}
+            <button
+              className="switch"
+              role="switch"
+              aria-checked={customResolution}
+              aria-label="Özel çözünürlüğü aç veya kapat"
+              onClick={() => setCustomResolution((enabled) => !enabled)}
+            />
+          </div>
+        </div>
+        {!resolutionValid && <div className="field__hint field__hint--danger">Geçerli bir genişlik ve yükseklik girin.</div>}
+
+        <div className="field">
           <label className="field__label" htmlFor="jvm-args">
             JVM argümanları
           </label>
@@ -711,7 +921,7 @@ function ProfileSettingsTab({
         </div>
 
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          <button className="btn btn--primary" onClick={() => void save()} disabled={!dirty || saving}>
+          <button className="btn btn--primary" onClick={() => void save()} disabled={!dirty || saving || !resolutionValid}>
             {saving ? 'Kaydediliyor…' : 'Kaydet'}
           </button>
         </div>
@@ -742,6 +952,24 @@ function ProfileSettingsTab({
           >
             <Icon name="copy" size={16} />
             Profili kopyala
+          </button>
+          <button
+            className="btn"
+            disabled={exportingProfile}
+            onClick={async () => {
+              setExportingProfile(true)
+              try {
+                const saved = await api.profiles.exportBackup(profileId)
+                if (saved) notify('Profil yedeği dışa aktarıldı.')
+              } catch (error) {
+                notify(error, 'error')
+              } finally {
+                setExportingProfile(false)
+              }
+            }}
+          >
+            <Icon name="download" size={16} />
+            Profil yedeği
           </button>
           <div className="topbar__spacer" />
           <button className="btn btn--danger" onClick={onDeleteRequested}>

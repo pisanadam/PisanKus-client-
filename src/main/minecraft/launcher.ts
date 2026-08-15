@@ -4,8 +4,8 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type { Account, GameLogLine, GameState, Profile, Settings, TaskProgress } from '../../shared/types'
 import { assetsRoot, materialiseVirtualAssets, resolveAssets } from './assets'
-import { downloadAll, type DownloadItem } from './downloader'
-import { ensureJava } from './java'
+import { assertLocalFiles, downloadAll, type DownloadItem } from './downloader'
+import { ensureJava, requireInstalledJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
 import { clientDataVersion, seedProfileOptions } from './options'
@@ -46,6 +46,8 @@ export interface LaunchContext {
   onProgress: (task: TaskProgress) => void
   onLog: (line: GameLogLine) => void
   onState: (state: GameState) => void
+  /** Never refreshes auth or downloads; suitable for cached single-player use. */
+  offline?: boolean
   signal?: AbortSignal
 }
 
@@ -76,7 +78,7 @@ export class GameSession extends EventEmitter {
  * natives, Java) and then starts the game.
  */
 export async function launch(context: LaunchContext): Promise<GameSession> {
-  const { profile, account, settings, onProgress, onLog, onState, signal } = context
+  const { profile, account, settings, onProgress, onLog, onState, offline = false, signal } = context
   const dataDir = settings.dataDir
   const taskId = `launch-${profile.id}`
 
@@ -95,12 +97,14 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       profile.loader,
       profile.gameVersion,
       profile.loaderVersion,
-      (detail) => report('Yükleyici hazırlanıyor', -1, detail)
+      (detail) => report('Yükleyici hazırlanıyor', -1, detail),
+      offline
     )
     log(`Sürüm: ${versionId}`)
+    if (offline) log('Çevrimdışı mod: ağ indirmeleri ve oturum yenileme kapalı.')
 
     report('Sürüm bilgisi çözümleniyor', -1)
-    const version = await resolveVersion(dataDir, versionId)
+    const version = await resolveVersion(dataDir, versionId, offline)
 
     const clientJar = path.join(dataDir, 'versions', profile.gameVersion, `${profile.gameVersion}.jar`)
     const downloads: DownloadItem[] = []
@@ -118,7 +122,7 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     downloads.push(...libraries.downloads)
 
     report('Varlık listesi alınıyor', -1)
-    const assets = await resolveAssets(version, dataDir)
+    const assets = await resolveAssets(version, dataDir, offline)
     downloads.push(...assets.downloads)
 
     if (version.logging?.client) {
@@ -130,13 +134,20 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       })
     }
 
-    report('Dosyalar indiriliyor', 0, `${downloads.length} dosya`)
-    await downloadAll(downloads, {
-      concurrency: settings.concurrentDownloads,
-      signal,
-      onProgress: (completed, total, current) =>
-        report('Dosyalar indiriliyor', completed / total, `${completed}/${total} · ${current}`)
-    })
+    if (offline) {
+      report('Yerel dosyalar denetleniyor', 0, `${downloads.length} dosya`)
+      await assertLocalFiles(downloads, (completed, total, current) =>
+        report('Yerel dosyalar denetleniyor', total === 0 ? 1 : completed / total, `${completed}/${total} · ${current}`)
+      )
+    } else {
+      report('Dosyalar indiriliyor', 0, `${downloads.length} dosya`)
+      await downloadAll(downloads, {
+        concurrency: settings.concurrentDownloads,
+        signal,
+        onProgress: (completed, total, current) =>
+          report('Dosyalar indiriliyor', completed / total, `${completed}/${total} · ${current}`)
+      })
+    }
 
     report('Yerel kütüphaneler açılıyor', -1)
     const nativesDir = path.join(dataDir, 'versions', versionId, 'natives')
@@ -147,9 +158,11 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     const javaPath =
       profile.javaPath ??
       settings.javaPath ??
-      (await ensureJava(dataDir, version.javaVersion?.majorVersion ?? 21, (detail) =>
-        report('Java hazırlanıyor', -1, detail)
-      ))
+      (offline
+        ? await requireInstalledJava(dataDir, version.javaVersion?.majorVersion ?? 21)
+        : await ensureJava(dataDir, version.javaVersion?.majorVersion ?? 21, (detail) =>
+            report('Java hazırlanıyor', -1, detail)
+          ))
     log(`Java: ${javaPath}`)
 
     await fsp.mkdir(profile.directory, { recursive: true })
@@ -168,9 +181,9 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     const values: Record<string, string> = {
       auth_player_name: account.name,
       auth_uuid: account.id,
-      auth_access_token: account.accessToken,
+      auth_access_token: offline ? '0' : account.accessToken,
       auth_xuid: account.id,
-      auth_session: `token:${account.accessToken}:${account.id}`,
+      auth_session: `token:${offline ? '0' : account.accessToken}:${account.id}`,
       user_type: 'msa',
       user_properties: '{}',
       clientid: settings.msClientId,
@@ -277,6 +290,7 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     return new GameSession(profile.id, child)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    log(`Başlatma başarısız: ${message}`)
     onProgress({ id: taskId, label: 'Başlatma başarısız', progress: 0, state: 'error', error: message })
     onState({ profileId: profile.id, status: 'crashed' })
     throw error
@@ -305,6 +319,14 @@ export async function prepareOnly(
       size: version.downloads.client.size
     })
   }
+  if (version.logging?.client) {
+    downloads.push({
+      url: version.logging.client.file.url,
+      destination: path.join(settings.dataDir, 'assets', 'log_configs', version.logging.client.file.id),
+      sha1: version.logging.client.file.sha1,
+      size: version.logging.client.file.size
+    })
+  }
 
   await downloadAll(downloads, {
     concurrency: settings.concurrentDownloads,
@@ -318,6 +340,35 @@ export async function prepareOnly(
         state: 'running'
       })
   })
+
+  const nativesDir = path.join(settings.dataDir, 'versions', versionId, 'natives')
+  await extractNatives(libraries.natives, nativesDir)
+  await materialiseVirtualAssets(assets, settings.dataDir, profile.directory)
+
+  if (!profile.javaPath && !settings.javaPath) {
+    await ensureJava(settings.dataDir, version.javaVersion?.majorVersion ?? 21, (detail) =>
+      onProgress({
+        id: taskId,
+        label: `${profile.name} hazırlanıyor`,
+        progress: -1,
+        detail,
+        state: 'running'
+      })
+    )
+  }
+
+  const clientJar = path.join(
+    settings.dataDir,
+    'versions',
+    profile.gameVersion,
+    `${profile.gameVersion}.jar`
+  )
+  await fsp.mkdir(profile.directory, { recursive: true })
+  await seedProfileOptions(
+    profile.directory,
+    settings.minecraftOptions,
+    await clientDataVersion(clientJar)
+  )
 
   onProgress({ id: taskId, label: `${profile.name} hazır`, progress: 1, state: 'done' })
   return version

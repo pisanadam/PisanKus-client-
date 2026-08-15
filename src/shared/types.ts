@@ -178,6 +178,34 @@ export interface GameState {
   exitCode?: number
 }
 
+export type CrashCategory =
+  | 'memory'
+  | 'java'
+  | 'dependency'
+  | 'mixin'
+  | 'graphics'
+  | 'authentication'
+  | 'native'
+  | 'network'
+  | 'unknown'
+
+/** A persisted, token-redacted explanation of a failed launch or game crash. */
+export interface CrashReport {
+  id: string
+  profileId: string
+  profileName: string
+  createdAt: number
+  exitCode?: number
+  category: CrashCategory
+  title: string
+  summary: string
+  suggestions: string[]
+  /** Short relevant excerpts only; the full sanitized output stays in logFile. */
+  evidence: string[]
+  logFile: string
+  reportFile: string
+}
+
 export interface SearchResult {
   source: 'modrinth'
   projectId: string
