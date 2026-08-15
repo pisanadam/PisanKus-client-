@@ -170,6 +170,16 @@ class Store {
     return profile
   }
 
+  /** Replaces the complete record when a failed disk transaction is restored. */
+  restoreProfile(snapshot: Profile): Profile {
+    const restored = structuredClone(snapshot)
+    const index = this.data.profiles.findIndex((profile) => profile.id === restored.id)
+    if (index >= 0) this.data.profiles[index] = restored
+    else this.data.profiles.push(restored)
+    this.save()
+    return restored
+  }
+
   removeProfile(id: string): void {
     this.data.profiles = this.data.profiles.filter((p) => p.id !== id)
     this.save()

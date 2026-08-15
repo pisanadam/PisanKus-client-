@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type {
   Account,
+  CrashReport,
   ContentKind,
   GameLogLine,
   GameState,
@@ -22,6 +23,7 @@ import * as install from './content/install'
 import * as modrinth from './content/modrinth'
 import { discoverJava } from './minecraft/java'
 import { launch, prepareOnly, type GameSession } from './minecraft/launcher'
+import { GameDiagnostics, listCrashReports } from './minecraft/crash'
 import { listLoaderVersions } from './minecraft/loaders'
 import * as servers from './minecraft/servers'
 import { listVersions as listGameVersions } from './minecraft/versions'
@@ -30,6 +32,8 @@ import { store } from './store'
 import * as updater from './updater'
 import { writeProfileOptions } from './minecraft/options'
 import { requireLeafName, requireProfileDirectory, resolveInside } from './pathSafety'
+import * as profileArchive from './profileArchive'
+import { withProfileRollback } from './profileTransaction'
 
 /** Account shape safe to hand to the renderer — tokens stay in the main process. */
 export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { expired: boolean }
@@ -269,13 +273,33 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('profiles:update', (id: string, patch: Partial<Profile>) => {
     const allowed: Partial<Profile> = {}
+    const owns = (key: keyof Profile): boolean => Object.prototype.hasOwnProperty.call(patch, key)
     if (typeof patch.name === 'string') allowed.name = patch.name.slice(0, 120)
     if (typeof patch.memoryMb === 'number' && Number.isFinite(patch.memoryMb)) {
       allowed.memoryMb = Math.max(512, Math.min(65_536, Math.round(patch.memoryMb)))
     }
-    if (patch.jvmArgs === undefined || typeof patch.jvmArgs === 'string') allowed.jvmArgs = patch.jvmArgs
-    if (patch.loaderVersion === undefined || typeof patch.loaderVersion === 'string') {
-      allowed.loaderVersion = patch.loaderVersion
+    if (owns('jvmArgs') && (patch.jvmArgs === undefined || typeof patch.jvmArgs === 'string')) {
+      allowed.jvmArgs = patch.jvmArgs?.slice(0, 16_384)
+    }
+    if (owns('loaderVersion') && (patch.loaderVersion === undefined || typeof patch.loaderVersion === 'string')) {
+      allowed.loaderVersion = patch.loaderVersion?.slice(0, 120)
+    }
+    if (owns('javaPath') && (patch.javaPath === undefined || typeof patch.javaPath === 'string')) {
+      allowed.javaPath = patch.javaPath?.trim().slice(0, 4_096) || undefined
+    }
+    if (owns('resolution')) {
+      if (patch.resolution === undefined) {
+        allowed.resolution = undefined
+      } else if (
+        typeof patch.resolution === 'object' &&
+        Number.isFinite(patch.resolution.width) &&
+        Number.isFinite(patch.resolution.height)
+      ) {
+        allowed.resolution = {
+          width: Math.max(320, Math.min(16_384, Math.round(patch.resolution.width))),
+          height: Math.max(240, Math.min(8_640, Math.round(patch.resolution.height)))
+        }
+      }
     }
     return store.updateProfile(id, allowed)
   })
@@ -309,6 +333,22 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     await shell.openPath(profile.directory)
   })
 
+  handle('profiles:export', async (id: string) => {
+    const window = getWindow()
+    const profile = store.profile(id)
+    if (!window) throw new Error('Pencere bulunamadı.')
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return profileArchive.exportProfile(window, profile)
+  })
+
+  handle('profiles:import', async () => {
+    const window = getWindow()
+    if (!window) throw new Error('Pencere bulunamadı.')
+    const profile = await profileArchive.importProfile(window)
+    if (profile) profilesChanged()
+    return profile
+  })
+
   // ------------------------------------------------------------------ versions
 
   handle('versions:list', () => listGameVersions())
@@ -317,7 +357,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   // ---------------------------------------------------------------------- game
 
-  handle('game:launch', async (profileId: string) => {
+  handle('game:launch', async (profileId: string, options?: { offline?: boolean }) => {
     if (sessions.has(profileId)) throw new Error('Bu profil zaten çalışıyor.')
 
     const profile = store.profile(profileId)
@@ -325,15 +365,52 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
     const account = store.activeAccount
     if (!account) {
-      throw new Error('Oyunu başlatmak için Microsoft hesabınızla oturum açmanız gerekiyor.')
+      throw new Error(
+        options?.offline
+          ? 'Çevrimdışı başlatma için bu bilgisayarda daha önce giriş yapılmış bir hesap gerekiyor.'
+          : 'Oyunu başlatmak için Microsoft hesabınızla oturum açmanız gerekiyor.'
+      )
     }
 
-    const valid = await auth.ensureValid(account, store.settings.msClientId)
-    if (valid !== account) store.upsertAccount(valid)
+    const offline = options?.offline === true
+    const diagnostics = new GameDiagnostics(structuredClone(profile))
+    const recordedLog = (line: GameLogLine): void => {
+      diagnostics.record(line)
+      onLog(line)
+    }
+    const recordLauncherError = (error: unknown): void => {
+      recordedLog({
+        profileId,
+        stream: 'launcher',
+        line: `Başlatma başarısız: ${error instanceof Error ? error.message : String(error)}`,
+        at: Date.now()
+      })
+    }
+    const publishCrash = (report: CrashReport | null): void => {
+      if (report) send('crash:created', report)
+    }
+    const finishDiagnostics = (state: GameState): void => {
+      void diagnostics.finish(state).then(publishCrash).catch(() => undefined)
+    }
+
+    let valid = account
+    if (!offline) {
+      try {
+        valid = await auth.ensureValid(account, store.settings.msClientId)
+        if (valid !== account) store.upsertAccount(valid)
+      } catch (error) {
+        recordLauncherError(error)
+        const state: GameState = { profileId, status: 'crashed' }
+        onState(state)
+        finishDiagnostics(state)
+        throw error
+      }
+    }
 
     const controller = new AbortController()
     launchAborts.set(profileId, controller)
     const startedAt = Date.now()
+    let terminal = false
 
     try {
       const session = await launch({
@@ -341,9 +418,10 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         account: valid,
         settings: store.settings,
         onProgress,
-        onLog,
+        onLog: recordedLog,
         onState: (state) => {
-          if (state.status === 'exited' || state.status === 'crashed') {
+          if ((state.status === 'exited' || state.status === 'crashed') && !terminal) {
+            terminal = true
             sessions.delete(profileId)
             launchAborts.delete(profileId)
             const current = store.profile(profileId)
@@ -352,9 +430,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
                 totalPlaytimeMs: current.totalPlaytimeMs + (Date.now() - startedAt)
               })
             }
+            finishDiagnostics(state)
           }
           onState(state)
         },
+        offline,
         signal: controller.signal
       })
 
@@ -363,6 +443,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       return { pid: session.pid }
     } catch (error) {
       launchAborts.delete(profileId)
+      if (!terminal) {
+        terminal = true
+        recordLauncherError(error)
+        const state: GameState = { profileId, status: 'crashed' }
+        onState(state)
+        finishDiagnostics(state)
+      }
       throw error
     }
   })
@@ -388,6 +475,20 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     }
   })
 
+  handle('crashes:list', (profileId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return listCrashReports(profile)
+  })
+
+  handle('crashes:openFolder', async (profileId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    const directory = path.join(profile.directory, 'crash-reports')
+    await fsp.mkdir(directory, { recursive: true })
+    await shell.openPath(directory)
+  })
+
   // ------------------------------------------------------------------- content
 
   handle('content:search', (query: SearchQuery) => modrinth.search(query))
@@ -401,13 +502,25 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('content:project', (projectId: string) => modrinth.getProject(projectId))
 
-  handle('content:install', (request: install.InstallRequest) => install.installContent(request, onProgress))
+  handle('content:install', (request: install.InstallRequest) =>
+    withProfileRollback(
+      request.profileId,
+      request.name,
+      () => install.installContent(request, onProgress),
+      onProgress
+    )
+  )
   handle('content:remove', (profileId: string, contentId: string) => install.removeContent(profileId, contentId))
   handle('content:toggle', (profileId: string, contentId: string, enabled: boolean) =>
     install.setContentEnabled(profileId, contentId, enabled)
   )
   handle('content:update', (profileId: string, contentId: string) =>
-    install.updateContent(profileId, contentId, onProgress)
+    withProfileRollback(
+      profileId,
+      'İçerik güncellemesi',
+      () => install.updateContent(profileId, contentId, onProgress),
+      onProgress
+    )
   )
   handle('content:checkUpdates', (profileId: string) => install.checkForUpdates(profileId))
 
@@ -420,11 +533,18 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
    * dropped together and each still lands in the right folder.
    */
   handle('content:importPaths', async (profileId: string, filePaths: string[]) => {
-    for (const filePath of filePaths) {
-      const kind = await install.inferKind(filePath)
-      await install.importLocalFile(profileId, filePath, kind)
-    }
-    return store.profile(profileId)?.content ?? []
+    return withProfileRollback(
+      profileId,
+      `${filePaths.length} yerel dosya`,
+      async () => {
+        for (const filePath of filePaths) {
+          const kind = await install.inferKind(filePath)
+          await install.importLocalFile(profileId, filePath, kind)
+        }
+        return store.profile(profileId)?.content ?? []
+      },
+      onProgress
+    )
   })
 
   handle('content:import', async (profileId: string, kind: ContentKind) => {
@@ -441,11 +561,18 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     const result = await dialog.showOpenDialog(window, { properties: ['openFile', 'multiSelections'], filters })
     if (result.canceled) return []
 
-    const imported = []
-    for (const filePath of result.filePaths) {
-      imported.push(await install.importLocalFile(profileId, filePath, kind))
-    }
-    return imported
+    return withProfileRollback(
+      profileId,
+      `${result.filePaths.length} yerel dosya`,
+      async () => {
+        const imported = []
+        for (const filePath of result.filePaths) {
+          imported.push(await install.importLocalFile(profileId, filePath, kind))
+        }
+        return imported
+      },
+      onProgress
+    )
   })
 
   handle('worlds:list', (profileId: string) => install.listWorlds(profileId))
@@ -459,6 +586,27 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       force: true
     })
     return install.listWorlds(profileId)
+  })
+
+  handle('worlds:export', async (profileId: string, folderName: string, displayName: string) => {
+    const window = getWindow()
+    const profile = store.profile(profileId)
+    if (!window) throw new Error('Pencere bulunamadı.')
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return profileArchive.exportWorld(window, profile, folderName, displayName)
+  })
+
+  handle('worlds:importBackup', async (profileId: string) => {
+    const window = getWindow()
+    const profile = store.profile(profileId)
+    if (!window) throw new Error('Pencere bulunamadı.')
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return withProfileRollback(
+      profileId,
+      'Dünya yedeği',
+      () => profileArchive.importWorld(window, profile),
+      onProgress
+    )
   })
 
   // --------------------------------------------------------------------- skins

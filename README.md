@@ -9,8 +9,9 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 
 ## Özellikler
 
-- **Microsoft oturumu (zorunlu)** — Resmî MSA → Xbox Live → XSTS → Minecraft servisleri zinciri, PKCE ile
-  korunan yetkilendirme akışı. Oyun başlatılmadan önce Java Edition lisansı doğrulanır.
+- **Microsoft oturumu** — Resmî MSA → Xbox Live → XSTS → Minecraft servisleri zinciri. İlk çevrimiçi
+  başlatmada Java Edition lisansı doğrulanır; daha önce hazırlanmış profiller önbellekteki hesapla
+  çevrimdışı ve yalnızca tek oyunculu kullanım için başlatılabilir.
 - **İzole profiller** — Her profilin kendi `mods`, `resourcepacks`, `shaderpacks`, `saves`, `datapacks`
   klasörü, kendi bellek ve JVM ayarları vardır.
 - **Modrinth** — Mod, mod paketi, doku paketi, shader ve veri paketi arama; profil sürümüne/yükleyicisine göre
@@ -21,11 +22,15 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 - **3B skin değiştirici** — Skin yükle, bağlantıdan uygula, klasik/ince model seç, pelerin değiştir. Model saf
   CSS 3D ile çizilir, sürüklenerek döndürülebilir.
 - **Otomatik Java** — Sistemdeki JVM'leri tarar; sürümün gerektirdiği Java yoksa Eclipse Temurin runtime'ını
-  indirir.
+  indirir. İstenirse her profile ayrı Java ve pencere çözünürlüğü atanabilir.
 - **Yükleyiciler** — Vanilla, Fabric, Quilt, NeoForge, Forge.
 - **Sağlam indirme** — Paralel indirme havuzu, SHA-1 doğrulaması, yeniden deneme, yarım kalan dosyaların
   atlanması.
-- **Canlı günlük** — Oyun çıktısı launcher içinde akar; kopyalanabilir.
+- **Taşınabilir yedekler** — Profil ve dünyaları `.tgz` Opbay yedeği olarak dışa/içe aktarır. İçerik
+  kurulumu hata verirse profil otomatik olarak işlem öncesi hâline döner; yarıda kesilen işlemler sonraki
+  açılışta kurtarılır.
+- **Crash analizi** — Oyun çıktısı launcher içinde akar, diske kaydedilir ve bilinen bellek, Java, mod
+  bağımlılığı, Mixin, grafik, native, oturum ve ağ hataları için çözüm önerili rapor üretir.
 
 ## Platformlar
 
@@ -47,7 +52,7 @@ npm run build      # main / preload / renderer derlemesi
 npm run dist       # Bulunduğun platform için kurulum paketi
 ```
 
-Node.js 20+ gerekir.
+Node.js 22+ gerekir.
 
 ### Mimari
 
@@ -62,8 +67,11 @@ src/
 │   │   ├── java.ts          JVM tarama ve Temurin indirme
 │   │   ├── loaders/         Fabric, Quilt, NeoForge, Forge kurulumu
 │   │   ├── downloader.ts    Paralel indirme + SHA-1 doğrulama
-│   │   └── launcher.ts      Argüman üretimi ve süreç yönetimi
+│   │   ├── crash.ts         Kalıcı günlük ve crash sınıflandırması
+│   │   └── launcher.ts      Online/offline argüman üretimi ve süreç yönetimi
 │   ├── content/             Modrinth istemcisi, kurulum/güncelleme/mod paketi mantığı
+│   ├── profileArchive.ts    Profil/dünya yedeği içe-dışa aktarma
+│   ├── profileTransaction.ts Kurulum geri alma günlüğü
 │   ├── skins.ts             Skin ve pelerin işlemleri
 │   ├── store.ts             JSON tabanlı yerel veritabanı
 │   └── ipc.ts               Renderer'a açılan tek yüzey

@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import type {
+  CrashReport,
   ContentKind,
   GameLogLine,
   GameState,
@@ -152,6 +153,10 @@ const api = {
     remove: (id: string, deleteFiles: boolean): Promise<Profile[]> =>
       ipcRenderer.invoke('profiles:delete', id, deleteFiles),
     openFolder: (id: string): Promise<void> => ipcRenderer.invoke('profiles:openFolder', id),
+    /** Saves the complete profile as a portable, compressed Opbay backup. */
+    exportBackup: (id: string): Promise<string | null> => ipcRenderer.invoke('profiles:export', id),
+    /** Opens a portable Opbay profile backup and creates a new isolated profile. */
+    importBackup: (): Promise<Profile | null> => ipcRenderer.invoke('profiles:import'),
     /** Fires whenever the main process changes the profile list on its own. */
     onChanged: (listener: () => void): Unsubscribe => subscribe('profiles:changed', listener)
   },
@@ -164,12 +169,19 @@ const api = {
   },
 
   game: {
-    launch: (profileId: string): Promise<{ pid?: number }> => ipcRenderer.invoke('game:launch', profileId),
+    launch: (profileId: string, options?: { offline?: boolean }): Promise<{ pid?: number }> =>
+      ipcRenderer.invoke('game:launch', profileId, options),
     kill: (profileId: string): Promise<boolean> => ipcRenderer.invoke('game:kill', profileId),
     prepare: (profileId: string): Promise<boolean> => ipcRenderer.invoke('game:prepare', profileId),
     running: (): Promise<string[]> => ipcRenderer.invoke('game:running'),
     onLog: (listener: (line: GameLogLine) => void): Unsubscribe => subscribe('game:log', listener),
     onState: (listener: (state: GameState) => void): Unsubscribe => subscribe('game:state', listener)
+  },
+
+  crashes: {
+    list: (profileId: string): Promise<CrashReport[]> => ipcRenderer.invoke('crashes:list', profileId),
+    openFolder: (profileId: string): Promise<void> => ipcRenderer.invoke('crashes:openFolder', profileId),
+    onCreated: (listener: (report: CrashReport) => void): Unsubscribe => subscribe('crash:created', listener)
   },
 
   content: {
@@ -248,7 +260,11 @@ const api = {
   worlds: {
     list: (profileId: string): Promise<WorldSummary[]> => ipcRenderer.invoke('worlds:list', profileId),
     remove: (profileId: string, folderName: string): Promise<WorldSummary[]> =>
-      ipcRenderer.invoke('worlds:delete', profileId, folderName)
+      ipcRenderer.invoke('worlds:delete', profileId, folderName),
+    exportBackup: (profileId: string, folderName: string, displayName: string): Promise<string | null> =>
+      ipcRenderer.invoke('worlds:export', profileId, folderName, displayName),
+    importBackup: (profileId: string): Promise<string | null> =>
+      ipcRenderer.invoke('worlds:importBackup', profileId)
   },
 
   skins: {

@@ -70,6 +70,47 @@ async function isUpToDate(item: DownloadItem): Promise<boolean> {
   }
 }
 
+/** Fast offline readiness check: downloads already verified these files when saved. */
+async function isPresent(item: DownloadItem): Promise<boolean> {
+  try {
+    const stat = await fsp.stat(item.destination)
+    if (!stat.isFile()) return false
+    if (item.size != null && stat.size !== item.size) return false
+    return stat.size > 0
+  } catch {
+    return false
+  }
+}
+
+/** Rejects an offline launch without ever attempting a network request. */
+export async function assertLocalFiles(
+  items: DownloadItem[],
+  onProgress?: (completed: number, total: number, current: string) => void
+): Promise<void> {
+  const unique = [...new Map(items.map((item) => [item.destination, item])).values()]
+  const missing: DownloadItem[] = []
+  let cursor = 0
+  let completed = 0
+
+  const worker = async (): Promise<void> => {
+    while (cursor < unique.length) {
+      const item = unique[cursor++]
+      if (!(await isPresent(item))) missing.push(item)
+      completed++
+      onProgress?.(completed, unique.length, path.basename(item.destination))
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(24, unique.length) }, worker))
+  if (missing.length === 0) return
+
+  const examples = missing.slice(0, 3).map((item) => path.basename(item.destination)).join(', ')
+  throw new Error(
+    `Çevrimdışı başlatma için ${missing.length} dosya eksik veya bozuk${examples ? ` (${examples})` : ''}. ` +
+      'İnternete bağlanıp “Dosyaları önceden indir” işlemini çalıştırın.'
+  )
+}
+
 export async function downloadFile(item: DownloadItem, signal?: AbortSignal): Promise<void> {
   if (await isUpToDate(item)) return
 

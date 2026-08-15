@@ -170,3 +170,14 @@ export async function ensureJava(
   if (!downloaded) throw new Error(`Java ${majorVersion} kuruldu fakat çalıştırılabilir bulunamadı.`)
   return downloaded.path
 }
+
+/** Finds a compatible installed JVM without consulting or downloading from the network. */
+export async function requireInstalledJava(dataDir: string, majorVersion: number): Promise<string> {
+  const installed = await discoverJava(dataDir)
+  const match = installed.find((info) => info.majorVersion === majorVersion)
+  if (match) return match.path
+  throw new Error(
+    `Çevrimdışı başlatma için Java ${majorVersion} bu bilgisayarda bulunamadı. ` +
+      'İnternete bağlanıp “Dosyaları önceden indir” işlemini çalıştırın veya profil için bir Java seçin.'
+  )
+}
