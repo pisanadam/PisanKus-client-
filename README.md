@@ -4,7 +4,7 @@ Modern arayüzlü, açık kaynak bir Minecraft: Java Edition launcher'ı. Modrin
 profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu tutar.
 
 <p align="center">
-  <a href="https://pisanadam.github.io/Opbay-client-/"><strong>İndirme sayfası →</strong></a>
+  <a href="https://pisanadam.github.io/PisanKus-client-/"><strong>İndirme sayfası →</strong></a>
 </p>
 
 ## Özellikler
@@ -38,8 +38,8 @@ Windows, macOS (Intel + Apple Silicon) ve Linux. Paketler her güncellemede otom
 
 ## Kurulum
 
-Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/Opbay-client-/) veya
-[Releases](https://github.com/pisanadam/Opbay-client-/releases) bölümünü kullanın.
+Hazır paketler için [indirme sayfasını](https://pisanadam.github.io/PisanKus-client-/) veya
+[Releases](https://github.com/pisanadam/PisanKus-client-/releases) bölümünü kullanın.
 
 ## Geliştirme
 
@@ -105,11 +105,11 @@ Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
   sabittir:
 
   ```
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-win-x64.exe
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-mac-arm64.dmg
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-mac-x64.dmg
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-linux-x64.AppImage
-  https://github.com/pisanadam/Opbay-client-/releases/latest/download/PisanKusClient-linux-x64.deb
+  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-win-x64.exe
+  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-mac-arm64.dmg
+  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-mac-x64.dmg
+  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-linux-x64.AppImage
+  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-linux-x64.deb
   ```
 
   İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.
@@ -117,7 +117,7 @@ Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
   numaralandırılmış bir Release oluşturulur.
 
 - **İndirme sayfası:** Varsayılan dala her gönderimde GitHub Pages'e dağıtılır:
-  <https://pisanadam.github.io/Opbay-client-/> — adres büyük/küçük harfe duyarlıdır.
+  <https://pisanadam.github.io/PisanKus-client-/> — adres büyük/küçük harfe duyarlıdır.
 
 Paketler kod imzalama sertifikasıyla imzalanmaz; Windows'ta SmartScreen, macOS'ta Gatekeeper uyarı gösterir
 (sayfadaki SSS bölümünde nasıl geçileceği anlatılıyor).

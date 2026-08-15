@@ -74,4 +74,4 @@ deb:
 publish:
   provider: github
   owner: pisanadam
-  repo: Opbay-client-
+  repo: PisanKus-client-

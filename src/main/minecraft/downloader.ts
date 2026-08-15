@@ -26,7 +26,7 @@ export interface DownloadOptions {
   signal?: AbortSignal
 }
 
-const USER_AGENT = 'PisanKusClient/1.0.0 (+https://github.com/pisanadam/Opbay-client-)'
+const USER_AGENT = 'PisanKusClient/1.0.0 (+https://github.com/pisanadam/PisanKus-client-)'
 
 export async function fetchJson<T>(url: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(url, {

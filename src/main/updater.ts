@@ -2,7 +2,7 @@ import { app, Notification, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { UpdateStatus } from '../shared/types'
 
-const RELEASES_PAGE = 'https://github.com/pisanadam/Opbay-client-/releases/latest'
+const RELEASES_PAGE = 'https://github.com/pisanadam/PisanKus-client-/releases/latest'
 
 /**
  * Whether the running build can replace itself in place.
@@ -130,7 +130,7 @@ export function isNewer(candidate: string, installed: string): boolean {
  * `/releases/latest/download/` is a permanent url that follows the rolling tag.
  */
 async function checkViaChannelFile(): Promise<UpdateStatus> {
-  const url = 'https://github.com/pisanadam/Opbay-client-/releases/latest/download/latest.yml'
+  const url = 'https://github.com/pisanadam/PisanKus-client-/releases/latest/download/latest.yml'
   const response = await fetch(url, { redirect: 'follow' })
   if (!response.ok) throw new Error(`ERR_UPDATER_CHANNEL_FILE_NOT_FOUND ${response.status}`)
 
