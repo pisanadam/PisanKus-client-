@@ -23,9 +23,13 @@ public class LauncherPreferenceFragment extends PreferenceFragmentCompat impleme
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        // Left transparent so the window's ambient ground shows through. A flat
-        // colour here is what hid it on every settings screen.
-        view.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        // The ambient ground, drawn here rather than left transparent.
+        //
+        // A preference list recycles its rows, and with nothing opaque behind
+        // them the previous frame is never cleared: rows smear over each other
+        // as the list scrolls. The drawable's base layer is solid, so this keeps
+        // the glow without that.
+        view.setBackgroundResource(R.drawable.pk_ambient_background);
         super.onViewCreated(view, savedInstanceState);
     }
 
