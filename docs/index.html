@@ -972,10 +972,12 @@
           id: 'android',
           name: 'Android',
           icon: '🤖',
-          note: 'Android 8 ve üzeri · 64-bit (arm64)',
-          assets: [{ label: 'Kurulum (.apk)', file: 'PisanKusClient-android-arm64.apk' }],
-          // Shown until that repository publishes its first release. "Derleniyor"
-          // would be a lie for a build that has not been started yet.
+          note: 'Android 8 ve üzeri · Play Store dışı kurulum',
+          // Marked experimental on purpose: the launcher builds and installs,
+          // but nobody has yet confirmed a Minecraft session actually starts on
+          // a real device. Saying so is better than letting a download imply it.
+          experimental: true,
+          assets: [{ label: 'Kurulum (.apk)', file: 'PisanKusClient-android.apk' }],
           soon: 'Yakında',
           soonNote: 'Android sürümü hazırlanıyor'
         }
@@ -1039,6 +1041,7 @@
               <div class="dl__os">
                 <span>${platform.icon}</span> ${platform.name}
                 ${detected === platform.id ? '<span class="dl__badge">Sisteminiz</span>' : ''}
+                ${platform.experimental ? '<span class="dl__badge" style="background:transparent;border:1px solid var(--border);color:var(--muted)">Deneysel</span>' : ''}
               </div>
               <div class="dl__meta">${platform.note}</div>
               <div class="dl__links">${links}</div>
@@ -1046,7 +1049,7 @@
         }).join('')
 
         // Point the hero button at the detected platform's primary asset.
-        const primary = PLATFORMS.find((platform) => platform.id === detected)
+        const primary = PLATFORMS.find((platform) => platform.id === detected && !platform.experimental)
         const primaryRepo = primary?.repo ?? REPO
         const primaryKnown = sources.get(primaryRepo)?.known ?? null
         const primaryAsset = primary?.assets.find(

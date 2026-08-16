@@ -85,17 +85,21 @@ android {
             keyAlias "androiddebugkey"
             keyPassword "android"
         }
+        // PisanKus release key. Every value comes from the environment so the
+        // private key never enters the repository: anyone holding it could sign
+        // a package Android would accept as a genuine PisanKus update.
+        //
+        // With no key configured the block stays empty and the release build is
+        // simply left unsigned, which keeps the build green for anyone who
+        // clones this without the secrets.
         customRelease {
-            storeFile file("aamc_upload.jks")
-            storePassword System.getenv("GPLAY_KEYSTORE_PASSWORD")
-            keyAlias "android_github_release"
-            keyPassword System.getenv("GPLAY_KEYSTORE_PASSWORD")
-        }
-        googlePlayBuild {
-            storeFile file("upload.jks")
-            storePassword System.getenv("GPLAY_KEYSTORE_PASSWORD")
-            keyAlias "upload"
-            keyPassword System.getenv("GPLAY_KEYSTORE_PASSWORD")
+            def keystore = System.getenv("PISANKUS_KEYSTORE_FILE")
+            if (keystore) {
+                storeFile file(keystore)
+                storePassword System.getenv("PISANKUS_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("PISANKUS_KEY_ALIAS")
+                keyPassword System.getenv("PISANKUS_KEY_PASSWORD")
+            }
         }
     }
 
@@ -142,7 +146,7 @@ android {
             // Don't set to true or java.awt will be a.a or something similar.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.customRelease
+            signingConfig System.getenv("PISANKUS_KEYSTORE_FILE") ? signingConfigs.customRelease : null
             // defaultConfig already set
             // multiDexEnabled = true
             // debuggable = true
@@ -150,11 +154,6 @@ android {
             resValue "string", "app_short_name", "PisanKus Client"
             resValue 'string', 'storageProviderAuthorities', 'com.pisankus.client.scoped.gamefolder'
             resValue 'string', 'application_package', 'com.pisankus.client'
-        }
-        gplay {
-            initWith release
-            signingConfig signingConfigs.googlePlayBuild
-            matchingFallbacks = [ 'release' ]
         }
     }
 

@@ -16,10 +16,9 @@ permissions:
   contents: write
 
 jobs:
-  # The Android launcher is built and tested on every push, but its package is
-  # deliberately NOT uploaded as a workflow artifact: the publish job below
-  # collects every artifact in the run, and attaching an APK would put it on the
-  # download page. It stays off the page until it can actually start the game.
+  # The Android launcher. Its package reaches the download page only when the
+  # signing secrets exist: an unsigned APK cannot be installed at all, so
+  # publishing one would just cost someone 130 MB for nothing.
   android:
     name: Android
     if: >-
@@ -53,12 +52,29 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.3.13750724" "cmake;3.22.1"
 
+      # The signing key lives only in repository secrets. Without it the release
+      # APK is still built — it just comes out unsigned and is not published,
+      # so a fork with no secrets still gets a green build.
+      - name: Restore signing key
+        id: keystore
+        if: ${{ secrets.PISANKUS_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.PISANKUS_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/pisankus.jks"
+          echo "path=$RUNNER_TEMP/pisankus.jks" >> "$GITHUB_OUTPUT"
+
       - name: Build
         working-directory: android
+        env:
+          PISANKUS_KEYSTORE_FILE: ${{ steps.keystore.outputs.path }}
+          PISANKUS_KEYSTORE_PASSWORD: ${{ secrets.PISANKUS_KEYSTORE_PASSWORD }}
+          PISANKUS_KEY_ALIAS: ${{ secrets.PISANKUS_KEY_ALIAS }}
+          PISANKUS_KEY_PASSWORD: ${{ secrets.PISANKUS_KEY_PASSWORD }}
         run: |
           ./gradlew --no-daemon \
             -Porg.gradle.java.installations.paths="${JAVA_HOME_8_X64},${JAVA_HOME_17_X64}" \
-            :app_pojavlauncher:assembleDebug
+            :app_pojavlauncher:assembleDebug :app_pojavlauncher:assembleRelease
 
       # Proves the branding actually reached the package rather than just the
       # build files: a build type's resValue can quietly override app_name.
@@ -72,6 +88,24 @@ jobs:
             || { echo "::error::Paket adı PisanKus değil"; exit 1; }
           echo "$badging" | grep -q "application-label:'PisanKus Client" \
             || { echo "::error::Uygulama etiketi PisanKus Client değil"; exit 1; }
+
+      - name: Package signed APK
+        if: ${{ secrets.PISANKUS_KEYSTORE_BASE64 != '' }}
+        working-directory: android
+        run: |
+          apk=app_pojavlauncher/build/outputs/apk/release/app_pojavlauncher-release.apk
+          [ -f "$apk" ] || { echo "::error::İmzalı APK üretilmedi."; exit 1; }
+          "$ANDROID_HOME"/build-tools/35.0.0/apksigner verify "$apk"
+          mkdir -p out && cp "$apk" out/PisanKusClient-android.apk
+
+      # Only this upload puts the APK on the download page; the publish job
+      # collects every artifact in the run.
+      - uses: actions/upload-artifact@v4
+        if: ${{ secrets.PISANKUS_KEYSTORE_BASE64 != '' }}
+        with:
+          name: android-package
+          path: android/out/PisanKusClient-android.apk
+          if-no-files-found: error
 
   package:
     name: Package ${{ matrix.os }}
@@ -169,7 +203,7 @@ jobs:
 
   publish:
     name: Publish
-    needs: package
+    needs: [package, android]
     # One platform failing should not withhold the packages that did build; the
     # download page reports any platform whose asset is missing. A matrix job's
     # result collapses to a single value, so this cannot test individual
