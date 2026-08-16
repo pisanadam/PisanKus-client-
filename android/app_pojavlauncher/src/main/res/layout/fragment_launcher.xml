@@ -134,6 +134,8 @@
 		android:layout_marginBottom="@dimen/_15sdp"
 
 		android:textAllCaps="true"
+		android:textColor="@color/pisankus_on_accent"
+		android:textStyle="bold"
 		android:text="@string/main_play"
 		app:layout_constraintBottom_toBottomOf="parent"
 		/>

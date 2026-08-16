@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pressed and disabled state: the same gradient, lightened. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/_10sdp" />
+    <gradient
+        android:startColor="@color/accent_pressed"
+        android:endColor="@color/accent_2_pressed"
+        android:angle="0" />
+</shape>

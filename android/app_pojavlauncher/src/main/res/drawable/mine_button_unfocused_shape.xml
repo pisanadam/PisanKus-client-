@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The desktop launcher's primary button: turquoise into light yellow, with
+     dark lettering. Replaces the nine-patch the fork shipped, whose colour was
+     baked into the bitmap and so ignored every palette change. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/_10sdp" />
+    <gradient
+        android:startColor="@color/accent"
+        android:endColor="@color/accent_2"
+        android:angle="0" />
+</shape>
