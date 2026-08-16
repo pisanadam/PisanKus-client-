@@ -7,7 +7,7 @@ import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
-const LOADERS: LoaderId[] = ['vanilla', 'fabric', 'quilt', 'neoforge', 'forge']
+const LOADERS: LoaderId[] = ['vanilla', 'fabric', 'quilt', 'neoforge', 'forge', 'optifine']
 const ICONS = ['🎮', '⛏️', '🌲', '🔥', '🧪', '🏰', '🚀', '🐉', '💎', '🌌', '🍄', '⚙️']
 
 export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void }): JSX.Element {

@@ -9,7 +9,7 @@ import { store } from './store'
 const ARCHIVE_SCHEMA = 1
 const MAX_ARCHIVE_BYTES = 20 * 1024 * 1024 * 1024
 const MAX_ARCHIVE_ENTRIES = 200_000
-const LOADERS = new Set<LoaderId>(['vanilla', 'fabric', 'quilt', 'forge', 'neoforge'])
+const LOADERS = new Set<LoaderId>(['vanilla', 'fabric', 'quilt', 'forge', 'neoforge', 'optifine'])
 const CONTENT_KINDS = new Set<ContentKind>(['mod', 'resourcepack', 'shader', 'datapack', 'world', 'modpack'])
 
 interface PortableProfile {

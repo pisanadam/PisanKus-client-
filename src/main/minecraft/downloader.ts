@@ -39,6 +39,15 @@ export async function fetchJson<T>(url: string, init: RequestInit = {}): Promise
   return (await response.json()) as T
 }
 
+/** Same headers as `fetchJson`, for the sources that publish HTML instead of an API. */
+export async function fetchText(url: string): Promise<string> {
+  const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } })
+  if (!response.ok) {
+    throw new Error(`İstek başarısız (${response.status} ${response.statusText}): ${url}`)
+  }
+  return await response.text()
+}
+
 export async function fileHash(file: string, algorithm: 'sha1' | 'sha256'): Promise<string> {
   const hash = createHash(algorithm)
   await pipeline(fs.createReadStream(file), hash)
@@ -113,6 +122,17 @@ export async function assertLocalFiles(
 
 export async function downloadFile(item: DownloadItem, signal?: AbortSignal): Promise<void> {
   if (await isUpToDate(item)) return
+
+  // An item with no address is one an installer put on disk itself — OptiFine
+  // publishes no repository, so its jars exist only where they were built. The
+  // check above is the normal path; reaching here means the file was deleted,
+  // and saying so beats asking a maven repository for something it never had.
+  if (!item.url) {
+    throw new Error(
+      `${path.basename(item.destination)} bu bilgisayarda bulunamadı ve indirilebileceği bir adres yok. ` +
+        'Profilin yükleyicisini yeniden kurun.'
+    )
+  }
 
   await fsp.mkdir(path.dirname(item.destination), { recursive: true })
   const temp = `${item.destination}.part`

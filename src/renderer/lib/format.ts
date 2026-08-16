@@ -52,7 +52,8 @@ const LOADER_LABELS: Record<string, string> = {
   fabric: 'Fabric',
   quilt: 'Quilt',
   forge: 'Forge',
-  neoforge: 'NeoForge'
+  neoforge: 'NeoForge',
+  optifine: 'OptiFine'
 }
 
 export function loaderLabel(loader: string): string {

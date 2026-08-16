@@ -23,7 +23,8 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
   CSS 3D ile çizilir, sürüklenerek döndürülebilir.
 - **Otomatik Java** — Sistemdeki JVM'leri tarar; sürümün gerektirdiği Java yoksa Eclipse Temurin runtime'ını
   indirir. İstenirse her profile ayrı Java ve pencere çözünürlüğü atanabilir.
-- **Yükleyiciler** — Vanilla, Fabric, Quilt, NeoForge, Forge.
+- **Yükleyiciler** — Vanilla, Fabric, Quilt, NeoForge, Forge, OptiFine. OptiFine'ın kendi kurucusu
+  çalıştırılmadan kurulur: yapı listesi sitesinden okunur, jar'ın taşıdığı yamacı oyunun jar'ına uygulanır.
 - **Sağlam indirme** — Paralel indirme havuzu, SHA-1 doğrulaması, yeniden deneme, yarım kalan dosyaların
   atlanması.
 - **Taşınabilir yedekler** — Profil ve dünyaları `.tgz` PisanKus yedeği olarak dışa/içe aktarır. İçerik
@@ -65,7 +66,7 @@ src/
 │   │   ├── libraries.ts     Kural değerlendirmesi, classpath, native ayıklama
 │   │   ├── assets.ts        Varlık indeksi ve sanal varlıklar
 │   │   ├── java.ts          JVM tarama ve Temurin indirme
-│   │   ├── loaders/         Fabric, Quilt, NeoForge, Forge kurulumu
+│   │   ├── loaders/         Fabric, Quilt, NeoForge, Forge, OptiFine kurulumu
 │   │   ├── downloader.ts    Paralel indirme + SHA-1 doğrulama
 │   │   ├── crash.ts         Kalıcı günlük ve crash sınıflandırması
 │   │   └── launcher.ts      Online/offline argüman üretimi ve süreç yönetimi
