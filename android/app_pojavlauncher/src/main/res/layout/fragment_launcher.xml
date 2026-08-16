@@ -71,13 +71,22 @@
 				android:text="@string/mcl_option_customcontrol"
 				app:layout_constraintTop_toBottomOf="@id/news_button" />
 
+			<!-- PisanKus: our own Modrinth catalogue, the phone's answer to Keşfet. -->
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/pisan_mods_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="match_parent"
+				android:drawableStart="@drawable/pk_ic_misc"
+				android:text="@string/pisan_mods_button"
+				app:layout_constraintTop_toBottomOf="@id/custom_control_button" />
+
 			<com.kdt.mcgui.LauncherMenuButton
 				android:id="@+id/install_jar_button"
 				style="@style/LauncherMenuButton.Universal"
 				android:layout_width="match_parent"
 				android:drawableStart="@drawable/pk_ic_jar"
 				android:text="@string/main_install_jar_file"
-				app:layout_constraintTop_toBottomOf="@id/custom_control_button" />
+				app:layout_constraintTop_toBottomOf="@id/pisan_mods_button" />
 
 			<com.kdt.mcgui.LauncherMenuButton
 				android:id="@+id/share_logs_button"

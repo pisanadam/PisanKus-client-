@@ -6,15 +6,11 @@ import androidx.annotation.Nullable;
 
 import net.kdt.pojavlaunch.modloaders.FabricVersion;
 import net.kdt.pojavlaunch.modloaders.FabriclikeUtils;
-import net.kdt.pojavlaunch.utils.DownloadUtils;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +34,7 @@ import java.util.regex.Pattern;
  */
 public class PisanPackResolver {
     private static final String TAG = "PisanPackResolver";
-    private static final String API = "https://api.modrinth.com/v2";
+    private static final String MODRINTH_PROJECTS = "https://api.modrinth.com/v2/projects?ids=";
 
     /** Minecraft release versions — snapshots and April Fools' jokes need not apply. */
     private static final Pattern RELEASE_VERSION = Pattern.compile("^\\d+\\.\\d+(\\.\\d+)?$");
@@ -129,7 +125,8 @@ public class PisanPackResolver {
             if (mod.essential) essentialSlugs.add(mod.slug);
         }
 
-        JSONArray projects = getArray(API + "/projects?ids=" + encode(jsonArray(essentialSlugs)));
+        JSONArray projects = ModrinthClient.getArray(
+                MODRINTH_PROJECTS + ModrinthClient.encode(ModrinthClient.jsonArray(essentialSlugs)));
         Set<String> shared = null;
         for (int i = 0; i < projects.length(); i++) {
             JSONObject project = projects.optJSONObject(i);
@@ -190,7 +187,7 @@ public class PisanPackResolver {
         List<String> slugs = new ArrayList<>(PisanPack.MODS.length);
         for (PisanPack.Mod mod : PisanPack.MODS) slugs.add(mod.slug);
 
-        Map<String, String> idBySlug = projectIds(slugs);
+        Map<String, String> idBySlug = ModrinthClient.projectIds(slugs);
         List<ResolvedMod> ready = new ArrayList<>();
         List<SkippedMod> skipped = new ArrayList<>();
 
@@ -226,28 +223,22 @@ public class PisanPackResolver {
                         packEntries == 0 ? 100 : packEntriesDone * 100 / packEntries);
             }
 
-            JSONObject version = bestVersion(entry.projectId, gameVersion);
+            JSONObject version = ModrinthClient.bestVersion(entry.projectId, gameVersion, PisanPack.LOADER);
             if (version == null) {
                 if (entry.essential) throw missing(entry.name, gameVersion);
                 skipped.add(new SkippedMod(describe(entry), gameVersion + " için sürümü yok"));
                 continue;
             }
 
-            JSONObject file = primaryFile(version);
+            ModrinthClient.File file = ModrinthClient.primaryFile(version);
             if (file == null) {
                 if (entry.essential) throw missing(entry.name, gameVersion);
                 skipped.add(new SkippedMod(describe(entry), "indirilebilir dosyası yok"));
                 continue;
             }
 
-            ResolvedMod resolved = new ResolvedMod(
-                    entry.projectId,
-                    entry.name,
-                    entry.role,
-                    file.optString("filename", entry.projectId + ".jar"),
-                    file.optString("url"),
-                    optSha1(file),
-                    file.optInt("size", 0));
+            ResolvedMod resolved = new ResolvedMod(entry.projectId, entry.name, entry.role,
+                    file.fileName, file.url, file.sha1, file.size);
             ready.add(resolved);
             if (entry.name == null) unnamed.add(resolved);
 
@@ -255,7 +246,7 @@ public class PisanPackResolver {
             // them already resolved. It stays on for the ones nobody anticipated —
             // a missing library is a profile that will not start, which is far
             // worse than an extra jar.
-            for (String dependency : requiredDependencies(version)) {
+            for (String dependency : ModrinthClient.requiredDependencies(version)) {
                 if (!visited.contains(dependency)) {
                     pending.add(new Pending(dependency, null, DEPENDENCY_ROLE, false));
                 }
@@ -285,26 +276,12 @@ public class PisanPackResolver {
     private static String describe(Pending entry) {
         if (entry.name != null) return entry.name;
         try {
-            String title = optString(getObject(API + "/project/" + encode(entry.projectId)), "title");
+            String title = ModrinthClient.projectTitle(entry.projectId);
             if (title != null) return title;
         } catch (IOException e) {
             Log.w(TAG, "Failed to look up the name of " + entry.projectId, e);
         }
         return entry.projectId;
-    }
-
-    /** Modrinth ids for a list of slugs. Projects that do not exist are simply absent. */
-    private static Map<String, String> projectIds(List<String> slugs) throws IOException {
-        JSONArray projects = getArray(API + "/projects?ids=" + encode(jsonArray(slugs)));
-        Map<String, String> ids = new HashMap<>();
-        for (int i = 0; i < projects.length(); i++) {
-            JSONObject project = projects.optJSONObject(i);
-            if (project == null) continue;
-            String slug = optString(project, "slug");
-            String id = optString(project, "id");
-            if (slug != null && id != null) ids.put(slug, id);
-        }
-        return ids;
     }
 
     /**
@@ -318,125 +295,18 @@ public class PisanPackResolver {
         List<String> ids = new ArrayList<>(unnamed.size());
         for (ResolvedMod mod : unnamed) ids.add(mod.projectId);
 
-        Map<String, String> titles = new HashMap<>();
+        Map<String, String> titles;
         try {
-            JSONArray projects = getArray(API + "/projects?ids=" + encode(jsonArray(ids)));
-            for (int i = 0; i < projects.length(); i++) {
-                JSONObject project = projects.optJSONObject(i);
-                if (project == null) continue;
-                String id = optString(project, "id");
-                String title = optString(project, "title");
-                if (id != null && title != null) titles.put(id, title);
-            }
+            titles = ModrinthClient.projectTitles(ids);
         } catch (IOException e) {
             Log.w(TAG, "Failed to look up dependency names", e);
+            titles = new HashMap<>();
         }
 
         for (ResolvedMod mod : unnamed) {
             String title = titles.get(mod.projectId);
             // The file is downloaded either way; a nameless one just shows its jar.
             mod.name = title != null ? title : mod.fileName;
-        }
-    }
-
-    /** The newest build of one project for this version, preferring stable releases. */
-    @Nullable
-    private static JSONObject bestVersion(String projectId, String gameVersion) throws IOException {
-        String url = API + "/project/" + encode(projectId) + "/version"
-                + "?loaders=" + encode(jsonArray(Collections.singletonList(PisanPack.LOADER)))
-                + "&game_versions=" + encode(jsonArray(Collections.singletonList(gameVersion)));
-
-        JSONArray versions = getArray(url);
-        JSONObject newest = null;
-        for (int i = 0; i < versions.length(); i++) {
-            JSONObject version = versions.optJSONObject(i);
-            if (version == null) continue;
-            if (newest == null) newest = version;
-            if ("release".equals(version.optString("version_type"))) return version;
-        }
-        return newest;
-    }
-
-    @Nullable
-    private static JSONObject primaryFile(JSONObject version) {
-        JSONArray files = version.optJSONArray("files");
-        if (files == null || files.length() == 0) return null;
-        for (int i = 0; i < files.length(); i++) {
-            JSONObject file = files.optJSONObject(i);
-            if (file != null && file.optBoolean("primary")) return file;
-        }
-        return files.optJSONObject(0);
-    }
-
-    @Nullable
-    private static String optSha1(JSONObject file) {
-        JSONObject hashes = file.optJSONObject("hashes");
-        if (hashes == null) return null;
-        return optString(hashes, "sha1");
-    }
-
-    /**
-     * A string field, or null when the field is absent or JSON null.
-     *
-     * {@link JSONObject#optString(String, String)} does not do this: a JSON null
-     * comes back as the four letters "null", which as a project id would send
-     * the resolver looking for a project by that name.
-     */
-    @Nullable
-    private static String optString(JSONObject object, String key) {
-        if (object.isNull(key)) return null;
-        return object.optString(key, null);
-    }
-
-    /**
-     * The projects this build refuses to run without.
-     *
-     * Dependencies pinned to one specific version are followed by project rather
-     * than by version id: the pinned build may well be for another Minecraft
-     * version, and the newest build for the version being installed is the one
-     * that will actually load.
-     */
-    private static List<String> requiredDependencies(JSONObject version) {
-        List<String> projects = new ArrayList<>();
-        JSONArray dependencies = version.optJSONArray("dependencies");
-        if (dependencies == null) return projects;
-        for (int i = 0; i < dependencies.length(); i++) {
-            JSONObject dependency = dependencies.optJSONObject(i);
-            if (dependency == null) continue;
-            if (!"required".equals(dependency.optString("dependency_type"))) continue;
-            String projectId = optString(dependency, "project_id");
-            if (projectId != null) projects.add(projectId);
-        }
-        return projects;
-    }
-
-    private static JSONObject getObject(String url) throws IOException {
-        String body = DownloadUtils.downloadString(url);
-        try {
-            return new JSONObject(body);
-        } catch (JSONException e) {
-            throw new IOException("Modrinth beklenmedik bir yanıt verdi", e);
-        }
-    }
-
-    private static JSONArray getArray(String url) throws IOException {
-        String body = DownloadUtils.downloadString(url);
-        try {
-            return new JSONArray(body);
-        } catch (JSONException e) {
-            throw new IOException("Modrinth beklenmedik bir yanıt verdi", e);
-        }
-    }
-
-    private static String jsonArray(List<String> values) {
-        return new JSONArray(values).toString();
-    }
-
-    private static String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("UTF-8 is required");
         }
     }
 

@@ -566,4 +566,18 @@
     <string name="skin_capes_empty">This account owns no capes.</string>
     <string name="skin_cape_applied">Wearing the %1$s cape.</string>
     <string name="skin_cape_removed">Took off the %1$s cape.</string>
+    <!-- PisanKus: mod catalogue -->
+    <string name="pisan_mods_button">PisanKus mods</string>
+    <string name="pisan_mods_title">PisanKus mods</string>
+    <string name="pisan_mods_loading">Reading the catalogue…</string>
+    <string name="pisan_mods_target">%1$d mods · they install into %2$s (Minecraft %3$s, %4$s)</string>
+    <string name="pisan_mods_vanilla_target">%1$s (Minecraft %2$s) runs no mod loader, so nothing here can be installed into it.</string>
+    <string name="pisan_mods_no_target">No profile is selected. Pick one on the main screen first.</string>
+    <string name="pisan_mods_needs_loader">This profile has no mod loader. Create a Fabric, Forge, NeoForge or Quilt profile, or install the Pisan Optimized pack.</string>
+    <string name="pisan_mods_confirm">%1$s will be installed into %2$s (Minecraft %3$s, %4$s). Anything it needs comes with it.</string>
+    <string name="pisan_mods_install">Install</string>
+    <string name="pisan_mods_progress_resolving">Looking up %s…</string>
+    <string name="pisan_mods_installed_title">Installed</string>
+    <string name="pisan_mods_installed">%1$s went in, along with everything it needs — %2$d files:</string>
+    <string name="pisan_mods_skipped">\n\nNot published for this version:</string>
 </resources>

@@ -462,4 +462,18 @@
     <string name="skin_capes_empty">Bu hesabın pelerini yok.</string>
     <string name="skin_cape_applied">%1$s pelerini takıldı.</string>
     <string name="skin_cape_removed">%1$s pelerini çıkarıldı.</string>
+    <!-- PisanKus: mod kataloğu -->
+    <string name="pisan_mods_button">PisanKus modları</string>
+    <string name="pisan_mods_title">PisanKus modları</string>
+    <string name="pisan_mods_loading">Katalog okunuyor…</string>
+    <string name="pisan_mods_target">%1$d mod · %2$s profiline kurulur (Minecraft %3$s, %4$s)</string>
+    <string name="pisan_mods_vanilla_target">%1$s (Minecraft %2$s) mod yükleyicisi olmadan çalışıyor; buradakiler bu profile kurulamaz.</string>
+    <string name="pisan_mods_no_target">Seçili profil yok. Önce ana ekrandan bir profil seçin.</string>
+    <string name="pisan_mods_needs_loader">Bu profilde mod yükleyicisi yok. Fabric, Forge, NeoForge ya da Quilt profili oluşturun; ya da Pisan Optimized paketini kurun.</string>
+    <string name="pisan_mods_confirm">%1$s, %2$s profiline kurulacak (Minecraft %3$s, %4$s). Gerektirdiği her şey birlikte gelir.</string>
+    <string name="pisan_mods_install">Kur</string>
+    <string name="pisan_mods_progress_resolving">%s aranıyor…</string>
+    <string name="pisan_mods_installed_title">Kuruldu</string>
+    <string name="pisan_mods_installed">%1$s ve gerektirdikleri kuruldu — %2$d dosya:</string>
+    <string name="pisan_mods_skipped">\n\nBu sürüm için yayınlanmamış olanlar:</string>
 </resources>

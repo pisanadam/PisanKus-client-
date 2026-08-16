@@ -55,6 +55,7 @@ public class MainMenuFragment extends Fragment {
         Button mShareLogsButton = view.findViewById(R.id.share_logs_button);
         Button mOpenDirectoryButton = view.findViewById(R.id.open_files_button);
         Button mSkinButton = view.findViewById(R.id.skin_button);
+        Button mPisanModsButton = view.findViewById(R.id.pisan_mods_button);
 
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
         Button mPlayButton = view.findViewById(R.id.play_button);
@@ -96,6 +97,13 @@ public class MainMenuFragment extends Fragment {
         mSkinButton.setOnClickListener((v) -> {
             if (!hasOnlineProfile()) hasNoOnlineProfileDialog(requireActivity());
             else Tools.swapFragment(requireActivity(), SkinFragment.class, SkinFragment.TAG, null);
+        });
+
+        // The catalogue itself needs no account, but installing into a profile
+        // does — same gate as everything else that writes to one.
+        mPisanModsButton.setOnClickListener((v) -> {
+            if (!hasOnlineProfile()) hasNoOnlineProfileDialog(requireActivity());
+            else Tools.swapFragment(requireActivity(), PisanModsFragment.class, PisanModsFragment.TAG, null);
         });
 
         mOpenDirectoryButton.setOnClickListener((v)-> {

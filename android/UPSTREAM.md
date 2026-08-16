@@ -101,6 +101,30 @@ yapılıyor. Yeni bir izin ya da yeni bir hesap akışı yok.
 (`fragments/MainMenuFragment.java`, `res/layout/fragment_launcher.xml`):
 bir düğme ve bir dinleyici.
 
+### 6. PisanKus modları ekranı
+
+Masaüstündeki Keşfet'in "PisankusGaming modları" sekmesinin Android karşılığı.
+Ana menüye bir düğme eklendi; açılan ekran yayıncının Modrinth katalogunu
+listeler ve seçileni **o an seçili profile** kurar — gerektirdiği
+bağımlılıklarla birlikte. Hangi profile kurulacağı sorulmaz, ekranın
+başındaki satırda yazar.
+
+Modrinth'in tamamını telefonda aratmak ayrı bir iş; kendi modlarımızın
+listesi kısa, sabit ve zaten oyuncunun aradığı şey.
+
+| | |
+|---|---|
+| `modloaders/pisan/ModrinthClient.java` | iki ekranın ortak Modrinth katmanı |
+| `modloaders/pisan/PisanModInstaller.java` | hedef profili çözer, modu ve bağımlılıklarını indirir |
+| `fragments/PisanModsFragment.java` | liste ekranı |
+| `res/layout/fragment_pisan_mods.xml`, `res/layout/item_pisan_mod.xml` | düzenler |
+
+`PisanPackResolver` de artık kendi HTTP/JSON yardımcılarını taşımıyor, aynı
+istemciyi kullanıyor: iki ekranın "bu yapı bu profile uyar mı" sorusuna ayrı
+cevaplar vermeye başlaması böyle önlendi.
+
+Üst kaynaktan yine yalnızca ana menü dosyası ve düzeni değişti.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.
