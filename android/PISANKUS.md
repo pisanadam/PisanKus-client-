@@ -28,10 +28,17 @@ Gradle'ın 8'i bulması için:
 
 ## İmzalama
 
-İmza anahtarı depoda **yok** ve olmamalı: anahtarı ele geçiren biri, Android'in
-gerçek güncelleme sayacağı sahte bir paket imzalayabilir.
+Kurulabilmesi için APK'nın imzalı olması şart — Android imzasız paketi
+reddeder. Release yapısı, depoda zaten duran `debug.keystore` ile imzalanır,
+yani **hiçbir gizli anahtar ayarlamaya gerek yoktur**.
 
-Dört ortam değişkeninden okunur:
+Bedeli açık olsun: o anahtar herkese açık. Yani imza, paketin gerçekten bizden
+geldiğini kanıtlamıyor; aynı anahtarla imzalanmış sahte bir "güncelleme"
+hazırlanabilir. Deneysel bir yapı için kabul edilebilir bir takas, gerçek bir
+genel sürüm için değil.
+
+Gerçek anahtara geçmek istendiğinde dört ortam değişkeni tanımlanır ve release
+yapısı kendiliğinden onu kullanır:
 
 | Değişken | |
 |---|---|
@@ -40,26 +47,14 @@ Dört ortam değişkeninden okunur:
 | `PISANKUS_KEY_ALIAS` | anahtar takma adı |
 | `PISANKUS_KEY_PASSWORD` | anahtar parolası |
 
-Hiçbiri yoksa release yapısı **imzasız** çıkar ve derleme kırılmaz — gizli
-anahtarları olmayan bir çatal da yeşil yapı alır. İmzasız APK Android'e
-kurulamaz, o yüzden yayına da konmaz.
-
-CI'da aynı değerler depo gizli anahtarlarından gelir; keystore
-`PISANKUS_KEYSTORE_BASE64` içinden base64 çözülerek geri yazılır.
-
-### Yeni anahtar üretmek
-
 ```bash
 keytool -genkeypair -v -keystore pisankus.jks -alias pisankus \
   -keyalg RSA -keysize 4096 -validity 10000 \
   -dname "CN=PisanKus Client, O=PisanKus, C=TR"
-
-base64 -w0 pisankus.jks > pisankus-base64.txt
 ```
 
-`pisankus-base64.txt` içeriği `PISANKUS_KEYSTORE_BASE64` gizli anahtarına
-gider. `.jks` dosyası yedeklenmeli: kaybedilirse aynı uygulama bir daha
-güncellenemez, kullanıcıların eskisini silip yenisini kurması gerekir.
+Anahtar dosyası depoya konmamalı ve yedeklenmeli: kaybedilirse aynı uygulama
+bir daha güncellenemez.
 
 ## Durum
 

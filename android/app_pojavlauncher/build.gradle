@@ -146,7 +146,17 @@ android {
             // Don't set to true or java.awt will be a.a or something similar.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig System.getenv("PISANKUS_KEYSTORE_FILE") ? signingConfigs.customRelease : null
+            // Signed with the project key when one is configured, and otherwise
+            // with the debug keystore that is already in this repository.
+            //
+            // Android refuses to install an unsigned APK, so the experimental
+            // download needs *a* signature. Falling back to the committed key
+            // means nobody has to manage secrets to get an installable build —
+            // at the cost that the key is public, so it cannot prove a package
+            // came from us. That is an accepted trade for an experimental build
+            // and the reason to set PISANKUS_KEYSTORE_FILE before any real
+            // public release.
+            signingConfig System.getenv("PISANKUS_KEYSTORE_FILE") ? signingConfigs.customRelease : signingConfigs.customDebug
             // defaultConfig already set
             // multiDexEnabled = true
             // debuggable = true
