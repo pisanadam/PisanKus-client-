@@ -16,6 +16,39 @@ APK indirme sayfasına **konmuyor**. Oyunu başlatamayan bir launcher'ı bitmiş
 gibi yayımlamak, "yakında" demekten daha kötü olurdu; site kartı da bu yüzden
 "Yakında" durumunda duruyor.
 
+## Amethyst derleme tarifi (doğrulandı)
+
+Aşağıdaki adımlarla Amethyst'in **143 MB'lık APK'sı bu depo ortamında üretildi**.
+Tahmin değil, çalıştırılmış tariftir.
+
+```bash
+git clone --depth 1 --branch v3_openjdk \
+  https://github.com/AngelAuraMC/Amethyst-Android.git
+cd Amethyst-Android
+
+sdkmanager "ndk;27.3.13750724" "cmake;3.22.1"
+echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+./gradlew :app_pojavlauncher:assembleDebug \
+  -Porg.gradle.java.installations.paths=/usr/lib/jvm/java-8-openjdk-amd64
+```
+
+Yol boyunca öğrenilenler:
+
+- **Java 8 zorunlu.** `MioLibPatcher` modülü `languageVersion=8` ister. Sistemde
+  yalnızca 17/21 varsa derleme yapılandırma aşamasında durur:
+  *"Cannot find a Java installation ... matching {languageVersion=8}"*. CI'ya
+  Java 8 kurulumu eklenmeli.
+- **`.gitmodules` yanıltıyor.** Dört alt modül listeler (MobileGlues, SDL,
+  sdl2-compat, MioLibPatcher) ama `v3_openjdk` ağacında yalnızca
+  **MioLibPatcher** var; diğer üç yol için git `pathspec did not match` der.
+  Eksik olmaları derlemeyi engellemiyor.
+- **NDK r27d + CMake 3.22.1** yeterli; başka yerel bağımlılık gerekmedi.
+
+Üretilen APK: 7 ABI, 201 MB yerel kütüphane, 116 MB varlık. Çalışma zamanı
+`app_pojavlauncher/src/main/assets/components/` altında (lwjgl3, caciocavallo,
+forge_installer, security …).
+
 ## Sıradaki adım: çalışma zamanı
 
 Android'de Minecraft: Java Edition çalıştırmak üç parça ister ve üçü de yerel
