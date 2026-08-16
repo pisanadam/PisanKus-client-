@@ -17,3 +17,8 @@ android/**/build/
 android/**/*.iml
 android/.cxx/
 android/**/.cxx/
+
+# Android çalışma zamanları CI sırasında indirilir, depoya girmez.
+android/app_pojavlauncher/src/main/assets/components/jre/
+android/app_pojavlauncher/src/main/assets/components/jre-new/
+android/app_pojavlauncher/src/main/assets/components/jre-21/

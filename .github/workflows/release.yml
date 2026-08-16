@@ -53,6 +53,54 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.3.13750724" "cmake;3.22.1"
 
+      # Without these the APK ships with no Java runtime at all and the game
+      # never starts: pickRuntime finds nothing and throws "Failed to autopick
+      # runtime!". The runtimes are built separately and published as workflow
+      # artifacts, which is why they are fetched rather than vendored.
+      #
+      # One per Java generation, because Minecraft needs different ones: 8 for
+      # versions up to 1.16, 17 for 1.17–1.20.4, 21 for 1.20.5 and newer.
+      - name: Get JRE 8
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: android/app_pojavlauncher/src/main/assets/components/jre
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre8
+          name: jre8-pojav
+
+      - name: Get JRE 17
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: android/app_pojavlauncher/src/main/assets/components/jre-new
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre17-21
+          name: jre17-pojav
+
+      - name: Get JRE 21
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: android/app_pojavlauncher/src/main/assets/components/jre-21
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre17-21
+          name: jre21-pojav
+
+      # A missing runtime is the one failure that only shows up on a device, so
+      # it is checked here instead.
+      - name: Verify runtimes arrived
+        run: |
+          cd android/app_pojavlauncher/src/main/assets/components
+          for dir in jre jre-new jre-21; do
+            count=$(find "$dir" -type f 2>/dev/null | wc -l)
+            echo "$dir: $count dosya"
+            [ "$count" -gt 0 ] || { echo "::error::$dir boş — çalışma zamanı inmemiş"; exit 1; }
+          done
+
       - name: Build
         working-directory: android
         run: |
