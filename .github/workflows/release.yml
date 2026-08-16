@@ -111,6 +111,10 @@ jobs:
 
       - name: Build
         working-directory: android
+        env:
+          # Monotonic, so an installed copy always sees a published build as
+          # newer. Android upgrades strictly by this number.
+          PISANKUS_BUILD: ${{ github.run_number }}
         run: |
           ./gradlew --no-daemon \
             -Porg.gradle.java.installations.paths="${JAVA_HOME_8_X64},${JAVA_HOME_17_X64}" \

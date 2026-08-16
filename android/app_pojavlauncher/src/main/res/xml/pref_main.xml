@@ -9,6 +9,15 @@
 
     <net.kdt.pojavlaunch.prefs.BackButtonPreference/>
 
+    <PreferenceCategory android:title="@string/pisankus_about_category">
+        <Preference
+            android:key="pisankus_version_info"
+            android:title="@string/pisankus_version_title"
+            android:summary="@string/pisankus_version"
+            android:icon="@drawable/pk_ic_misc"
+            android:selectable="false" />
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:title="@string/preference_category_main_categories"
         >

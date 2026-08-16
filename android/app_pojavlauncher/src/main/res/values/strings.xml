@@ -2,6 +2,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- App name part -->
     <string name="app_name" translatable="false">PisanKus Client</string>
+    <string name="pisankus_about_category">PisanKus Client</string>
+    <string name="pisankus_version_title">Yüklü sürüm</string>
 
     <!-- Action bar part -->
 
