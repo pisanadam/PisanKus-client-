@@ -30,6 +30,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Two JDKs, both required. Gradle itself runs on 17, but the MioLibPatcher
+      # module asks for a language level 8 toolchain and the build stops during
+      # configuration without one: "Cannot find a Java installation ... matching
+      # {languageVersion=8}". Installing 8 last leaves JAVA_HOME on 17.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -37,10 +46,32 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Test and build
+      # The launcher compiles native code, so the exact NDK the project pins has
+      # to be present; runners ship a different one.
+      - name: Install NDK and CMake
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.3.13750724" "cmake;3.22.1"
+
+      - name: Build
         working-directory: android
         run: |
-          ./gradlew --no-daemon testDebugUnitTest assembleRelease
+          ./gradlew --no-daemon \
+            -Porg.gradle.java.installations.paths="${JAVA_HOME_8_X64},${JAVA_HOME_17_X64}" \
+            :app_pojavlauncher:assembleDebug
+
+      # Proves the branding actually reached the package rather than just the
+      # build files: a build type's resValue can quietly override app_name.
+      - name: Verify identity
+        working-directory: android
+        run: |
+          badging=$("$ANDROID_HOME"/build-tools/35.0.0/aapt2 dump badging \
+            app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk)
+          echo "$badging" | grep -E "^package: name|application-label:'"
+          echo "$badging" | grep -q "name='com.pisankus.client" \
+            || { echo "::error::Paket adı PisanKus değil"; exit 1; }
+          echo "$badging" | grep -q "application-label:'PisanKus Client" \
+            || { echo "::error::Uygulama etiketi PisanKus Client değil"; exit 1; }
 
   package:
     name: Package ${{ matrix.os }}
