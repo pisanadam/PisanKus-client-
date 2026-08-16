@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- App name part -->
-    <string name="app_name">Amethyst</string>
+    <string name="app_name" translatable="false">PisanKus Client</string>
     <!-- Action bar part -->
     <!-- Languages list part -->
     <!-- Login strings -->
@@ -414,7 +414,7 @@
     <string name="preference_touchcontroller_vibrate_length_description">设置使用 TouchController 时的震动长度。</string>
     <string name="mg_renderer_title_multidrawCompute">使用计算多重绘制模拟</string>
     <string name="mg_renderer_summary_multidrawCompute">使用计算着色器进行多重绘制模拟</string>
-    <string name="app_short_name">Amethyst</string>
+    <string name="app_short_name" translatable="false">PisanKus Client</string>
     <string name="demo_versions_supported">试玩账户仅支持原版 1.3.1 及以上版本</string>
     <string name="demo_unsupported">不支持试玩玩家档案</string>
     <string name="change_account">请更换账户以使用此功能</string>
