@@ -476,4 +476,7 @@
     <string name="pisan_mods_installed_title">Kuruldu</string>
     <string name="pisan_mods_installed">%1$s ve gerektirdikleri kuruldu — %2$d dosya:</string>
     <string name="pisan_mods_skipped">\n\nBu sürüm için yayınlanmamış olanlar:</string>
+    <string name="pisan_pack_contents">İçindekiler</string>
+    <string name="pisan_pack_contents_note">Seçtiğiniz sürüme uymayan modlar kurulum sırasında atlanır ve sonunda size listelenir.</string>
+    <string name="pisan_pack_why">Önerilen — %1$s</string>
 </resources>

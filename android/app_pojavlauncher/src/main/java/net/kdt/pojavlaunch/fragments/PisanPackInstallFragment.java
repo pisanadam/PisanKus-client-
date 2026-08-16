@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,6 +45,7 @@ public class PisanPackInstallFragment extends Fragment implements ModloaderDownl
     private static final String EXTRA_PROXY = TAG + "_proxy";
 
     private Spinner mGameVersionSpinner;
+    private TextView mWhyLabel;
     private Button mInstallButton;
     private ProgressBar mProgressBar;
     private View mRetryView;
@@ -61,6 +63,8 @@ public class PisanPackInstallFragment extends Fragment implements ModloaderDownl
         mInstallButton.setOnClickListener(this::onClickInstall);
         mGameVersionSpinner = view.findViewById(R.id.pisan_pack_game_ver_spinner);
         mGameVersionSpinner.setOnItemSelectedListener(new GameVersionSelectedListener());
+        mWhyLabel = view.findViewById(R.id.pisan_pack_why);
+        showContents(view);
         mProgressBar = view.findViewById(R.id.pisan_pack_progress_bar);
         mRetryView = view.findViewById(R.id.pisan_pack_retry_layout);
         view.findViewById(R.id.pisan_pack_retry_button).setOnClickListener(this::onClickRetry);
@@ -160,6 +164,23 @@ public class PisanPackInstallFragment extends Fragment implements ModloaderDownl
         Tools.dialog(context, context.getString(R.string.pisan_pack_done_title), message.toString());
     }
 
+    /**
+     * Writes out what the pack is, before it is installed.
+     *
+     * The desktop dialog lists this and the phone did not, which left the player
+     * pressing install on thirty-one unnamed mods. The list is the pack's own,
+     * so it costs nothing to show and stays right when the pack changes.
+     */
+    private void showContents(View view) {
+        StringBuilder text = new StringBuilder();
+        for (PisanPack.Mod mod : PisanPack.MODS) {
+            if (text.length() > 0) text.append('\n');
+            text.append("• ").append(mod.name).append(" — ").append(mod.role);
+        }
+        text.append("\n\n").append(getString(R.string.pisan_pack_contents_note));
+        ((TextView) view.findViewById(R.id.pisan_pack_contents)).setText(text);
+    }
+
     private void loadVersions() {
         mProgressBar.setVisibility(View.VISIBLE);
         mInstallButton.setEnabled(false);
@@ -203,11 +224,18 @@ public class PisanPackInstallFragment extends Fragment implements ModloaderDownl
      * installable today, and on the newest one when none of them is.
      */
     private int defaultSelection(List<String> versions) {
-        for (String recommended : PisanPack.RECOMMENDED_VERSIONS) {
-            int index = versions.indexOf(recommended);
+        for (PisanPack.Recommended recommended : PisanPack.RECOMMENDED_VERSIONS) {
+            int index = versions.indexOf(recommended.version);
             if (index != -1) return index;
         }
         return 0;
+    }
+
+    /** Says why a version is recommended, and says nothing about the others. */
+    private void showWhy(String version) {
+        String why = version == null ? null : PisanPack.whyRecommended(version);
+        mWhyLabel.setText(why == null ? "" : getString(R.string.pisan_pack_why, why));
+        mWhyLabel.setVisibility(why == null ? View.GONE : View.VISIBLE);
     }
 
     class GameVersionSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -215,12 +243,14 @@ public class PisanPackInstallFragment extends Fragment implements ModloaderDownl
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             mSelectedGameVersion = (String) adapterView.getAdapter().getItem(i);
             mInstallButton.setEnabled(getListenerProxy() == null);
+            showWhy(mSelectedGameVersion);
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> adapterView) {
             mSelectedGameVersion = null;
             mInstallButton.setEnabled(false);
+            showWhy(null);
         }
     }
 

@@ -580,4 +580,7 @@
     <string name="pisan_mods_installed_title">Installed</string>
     <string name="pisan_mods_installed">%1$s went in, along with everything it needs — %2$d files:</string>
     <string name="pisan_mods_skipped">\n\nNot published for this version:</string>
+    <string name="pisan_pack_contents">What goes in</string>
+    <string name="pisan_pack_contents_note">Mods with no build for the version you pick are skipped during the install and listed for you afterwards.</string>
+    <string name="pisan_pack_why">Recommended — %1$s</string>
 </resources>

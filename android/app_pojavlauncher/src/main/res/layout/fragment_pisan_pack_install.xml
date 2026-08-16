@@ -93,6 +93,43 @@
             android:text="@string/global_retry" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/pisan_pack_why"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/padding_small"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pisan_pack_game_ver_spinner" />
+
+    <TextView
+        android:id="@+id/pisan_pack_contents_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/padding_large"
+        android:text="@string/pisan_pack_contents"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pisan_pack_why" />
+
+    <ScrollView
+        android:id="@+id/pisan_pack_contents_scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/padding_small"
+        app:layout_constraintBottom_toTopOf="@+id/pisan_pack_retry_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pisan_pack_contents_label">
+
+        <TextView
+            android:id="@+id/pisan_pack_contents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="@dimen/padding_small" />
+    </ScrollView>
+
     <com.kdt.mcgui.MineButton
         android:id="@+id/pisan_pack_install_button"
         android:layout_width="0dp"

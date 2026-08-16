@@ -4,7 +4,7 @@ import { Icon, type IconName } from './Icon'
 
 const HIGHLIGHTS: { icon: IconName; title: string; text: string }[] = [
   { icon: 'compass', title: 'Modrinth', text: 'Mod, doku paketi, shader ve dünyaları tek tıkla kur' },
-  { icon: 'grid', title: 'Profiller', text: 'Vanilla, Fabric, Forge ve NeoForge yan yana' },
+  { icon: 'grid', title: 'Profiller', text: 'Vanilla, Fabric, Forge, NeoForge ve OptiFine yan yana' },
   { icon: 'sparkle', title: 'Skin', text: 'Skinini ve pelerinini launcher içinden değiştir' }
 ]
 

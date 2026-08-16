@@ -1,11 +1,13 @@
 package net.kdt.pojavlaunch.fragments;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
@@ -185,7 +187,12 @@ public class SkinFragment extends Fragment {
         mUrlButton.setEnabled(enabled);
         mResetButton.setEnabled(enabled);
         mSaveButton.setEnabled(enabled);
+        // Disabling the group alone leaves its buttons pressable, and a model
+        // switched mid-upload would apply to the next upload, not this one.
         mVariantGroup.setEnabled(enabled);
+        for (int i = 0; i < mVariantGroup.getChildCount(); i++) {
+            mVariantGroup.getChildAt(i).setEnabled(enabled);
+        }
     }
 
     /**
@@ -475,8 +482,25 @@ public class SkinFragment extends Fragment {
         }
     }
 
-    /** The name the picker shows, so the collection does not fill up with "content://…". */
+    /**
+     * The name the picker showed, so the collection does not fill up with
+     * "msf:1000000042".
+     *
+     * A document uri's last path segment is the provider's own identifier and
+     * only sometimes looks like a file name, so the provider is asked for the
+     * display name and the segment is the fallback.
+     */
     private String displayName(Uri uri) {
+        try (Cursor cursor = requireContext().getContentResolver()
+                .query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(0);
+                if (name != null && !name.isEmpty()) return name;
+            }
+        } catch (RuntimeException e) {
+            Log.w(TAG, "The picker would not say what the file is called", e);
+        }
+
         String path = uri.getLastPathSegment();
         if (path == null) return "skin.png";
         int slash = path.lastIndexOf('/');

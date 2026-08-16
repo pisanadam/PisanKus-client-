@@ -56,6 +56,9 @@ public class PisanModsFragment extends Fragment {
     /** The publisher whose catalogue this screen is. Same account the desktop tab reads. */
     private static final String AUTHOR = "pisankusgaming";
 
+    /** Where a long press goes, for the details a list row has no room for. */
+    private static final String MODRINTH_PAGE = "https://modrinth.com/mod/";
+
     private final Map<String, Bitmap> mIcons = new HashMap<>();
     private final Set<String> mIconsLoading = new HashSet<>();
     private final List<ModrinthClient.Project> mProjects = new ArrayList<>();
@@ -84,6 +87,13 @@ public class PisanModsFragment extends Fragment {
         mAdapter = new ModAdapter();
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener((parent, itemView, position, id) -> confirm(mProjects.get(position)));
+        // A row says a title and a sentence; the page says what the mod is,
+        // what it looks like and which versions it runs on.
+        mListView.setOnItemLongClickListener((parent, itemView, position, id) -> {
+            ModrinthClient.Project project = mProjects.get(position);
+            Tools.openURL(requireActivity(), MODRINTH_PAGE + project.slug);
+            return true;
+        });
 
         load();
     }

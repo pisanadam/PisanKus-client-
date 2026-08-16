@@ -64,3 +64,14 @@ giriş sökülü.
 **Oyun gerçek bir cihazda çalışıyor.** 1.7.10 ve 26.2 açıldı; 26.2 ile sunucuda
 oynandı. Üç Java çalışma zamanı da (8, 17, 21) pakete giriyor, yani eski ve
 güncel sürümler birlikte destekleniyor.
+
+Masaüstünden taşınan işler — hepsinin ayrıntısı `UPSTREAM.md`'de:
+
+| | |
+|---|---|
+| **Pisan Optimized** | Profil türü ekranında. Mod listesi kurulum anında Modrinth'ten seçilen sürüme göre çözülür, Fabric kurulur, modlar profile iner. |
+| **Skin değiştirme** | Ana menüde. Dosyadan/bağlantıdan uygulama, klasik-ince model, pelerin, cihazda duran kitaplık. |
+| **PisanKus modları** | Ana menüde. Yayıncının Modrinth katalogu; seçilen mod, bağımlılıklarıyla birlikte o an seçili profile kurulur. |
+
+Bu üçü henüz cihazda denenmedi; derleme dışında doğrulanan tek şey
+kullandıkları Modrinth ve Mojang uç noktaları.

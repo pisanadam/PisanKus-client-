@@ -28,11 +28,35 @@ public final class PisanPack {
      */
     public static final String LOADER = "fabric";
 
+    /** A version worth defaulting to, and the reason it is worth it. */
+    public static final class Recommended {
+        public final String version;
+        public final String why;
+
+        private Recommended(String version, String why) {
+            this.version = version;
+            this.why = why;
+        }
+    }
+
     /**
      * Versions worth defaulting to, newest first. Others stay selectable — this
-     * only decides where the spinner lands when the screen opens.
+     * only decides where the spinner lands when the screen opens, and what the
+     * note under it says.
      */
-    public static final String[] RECOMMENDED_VERSIONS = {"26.2", "1.21.11", "1.21.1"};
+    public static final Recommended[] RECOMMENDED_VERSIONS = {
+            new Recommended("26.2", "Güncel sürüm"),
+            new Recommended("1.21.11", "1.21 serisinin sonu"),
+            new Recommended("1.21.1", "Sunucuların ve modların çoğu burada")
+    };
+
+    /** The reason this version is recommended, or null when it is not one. */
+    public static String whyRecommended(String version) {
+        for (Recommended entry : RECOMMENDED_VERSIONS) {
+            if (entry.version.equals(version)) return entry.why;
+        }
+        return null;
+    }
 
     /** One entry of the pack. */
     public static final class Mod {
