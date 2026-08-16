@@ -71,6 +71,7 @@ jobs:
           name: jre8-pojav
 
       - name: Get JRE 17
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v9
         with:
           workflow: build.yml
@@ -81,6 +82,7 @@ jobs:
           name: jre17-pojav
 
       - name: Get JRE 21
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v9
         with:
           workflow: build.yml
@@ -95,10 +97,16 @@ jobs:
       - name: Verify runtimes arrived
         run: |
           cd android/app_pojavlauncher/src/main/assets/components
-          for dir in jre jre-new jre-21; do
+          # Java 8 is the one the launcher cannot do without: every Minecraft
+          # version needs some runtime, and 8 is the only one always published.
+          count=$(find jre -type f 2>/dev/null | wc -l)
+          echo "jre (Java 8): $count dosya"
+          [ "$count" -gt 0 ] || { echo "::error::Java 8 çalışma zamanı inmemiş"; exit 1; }
+
+          for dir in jre-new jre-21; do
             count=$(find "$dir" -type f 2>/dev/null | wc -l)
             echo "$dir: $count dosya"
-            [ "$count" -gt 0 ] || { echo "::error::$dir boş — çalışma zamanı inmemiş"; exit 1; }
+            [ "$count" -gt 0 ] || echo "::warning::$dir yok — bu Java'yı isteyen Minecraft sürümleri başlamayacak"
           done
 
       - name: Build
