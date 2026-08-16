@@ -4,6 +4,14 @@
     <string name="app_name" translatable="false">PisanKus Client</string>
     <string name="pisankus_about_category">PisanKus Client</string>
     <string name="pisankus_version_title">Yüklü sürüm</string>
+    <string name="pisankus_update_title">Güncellemeleri denetle</string>
+    <string name="pisankus_update_summary">Yeni sürüm varsa indirip kurar</string>
+    <string name="pisankus_update_checking">Denetleniyor…</string>
+    <string name="pisankus_update_none">Güncel sürümü kullanıyorsunuz (%1$s)</string>
+    <string name="pisankus_update_downloading">İndiriliyor %1$s</string>
+    <string name="pisankus_update_progress">İndiriliyor… %%%1$d</string>
+    <string name="pisankus_update_installing">Kurulum ekranı açılıyor…</string>
+    <string name="pisankus_update_failed">Başarısız: %1$s</string>
 
     <!-- Action bar part -->
 

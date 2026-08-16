@@ -11,6 +11,12 @@
 
     <PreferenceCategory android:title="@string/pisankus_about_category">
         <Preference
+            android:key="pisankus_check_update"
+            android:title="@string/pisankus_update_title"
+            android:summary="@string/pisankus_update_summary"
+            android:icon="@drawable/pk_ic_jar" />
+
+        <Preference
             android:key="pisankus_version_info"
             android:title="@string/pisankus_version_title"
             android:summary="@string/pisankus_version"

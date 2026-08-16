@@ -23,7 +23,9 @@ public class LauncherPreferenceFragment extends PreferenceFragmentCompat impleme
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        view.setBackgroundColor(getResources().getColor(R.color.background_app));
+        // Left transparent so the window's ambient ground shows through. A flat
+        // colour here is what hid it on every settings screen.
+        view.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -31,6 +33,56 @@ public class LauncherPreferenceFragment extends PreferenceFragmentCompat impleme
     public void onCreatePreferences(Bundle b, String str) {
         addPreferencesFromResource(R.xml.pref_main);
         setupNotificationRequestPreference();
+        setupUpdatePreference();
+    }
+
+    /**
+     * Wires the update entry.
+     *
+     * Progress is reported into the entry's own summary rather than a dialog:
+     * the download is large enough that the player will want to leave the
+     * screen, and a modal would either block that or be dismissed and lose the
+     * status.
+     */
+    private void setupUpdatePreference() {
+        Preference update = findPreference("pisankus_check_update");
+        if (update == null) return;
+
+        update.setOnPreferenceClickListener(preference -> {
+            Activity activity = getActivity();
+            if (activity == null) return true;
+
+            preference.setEnabled(false);
+            preference.setSummary(R.string.pisankus_update_checking);
+
+            new net.kdt.pojavlaunch.PisanKusUpdater(activity, new net.kdt.pojavlaunch.PisanKusUpdater.Listener() {
+                @Override public void onUpToDate(String currentVersion) {
+                    preference.setSummary(getString(R.string.pisankus_update_none, currentVersion));
+                    preference.setEnabled(true);
+                }
+
+                @Override public void onUpdateFound(String newVersion) {
+                    preference.setSummary(getString(R.string.pisankus_update_downloading, newVersion));
+                }
+
+                @Override public void onProgress(int percent) {
+                    preference.setSummary(percent < 0
+                            ? getString(R.string.pisankus_update_downloading, "")
+                            : getString(R.string.pisankus_update_progress, percent));
+                }
+
+                @Override public void onReadyToInstall() {
+                    preference.setSummary(R.string.pisankus_update_installing);
+                    preference.setEnabled(true);
+                }
+
+                @Override public void onFailed(String message) {
+                    preference.setSummary(getString(R.string.pisankus_update_failed, message));
+                    preference.setEnabled(true);
+                }
+            }).checkAndInstall();
+            return true;
+        });
     }
 
     private void setupNotificationRequestPreference() {

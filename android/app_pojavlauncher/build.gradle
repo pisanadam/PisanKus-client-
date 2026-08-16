@@ -111,11 +111,16 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
         // Android decides whether one package upgrades another purely by
-        // versionCode. Upstream left it at a constant, so every build looked
-        // like the same version and an installed copy would never accept a
-        // newer one. It now follows the CI build number, which only ever goes
-        // up. Local builds get 1 so they stay below anything published.
-        versionCode pisanKusBuild
+        // versionCode. Upstream left it at a constant 10000000, so every build
+        // looked like the same version and an installed copy never accepted a
+        // newer one.
+        //
+        // The build number alone cannot replace it: a run number like 80 is far
+        // below 10000000, so already-installed copies read the new package as a
+        // downgrade and refuse it outright with "App not installed". Keeping the
+        // old constant as a floor makes every published build sort above every
+        // build that came before the change, and above each other.
+        versionCode 10000000 + pisanKusBuild
         versionName "1.1." + pisanKusBuild
 
         // Exposed as a resource so the settings screen can show it without any
