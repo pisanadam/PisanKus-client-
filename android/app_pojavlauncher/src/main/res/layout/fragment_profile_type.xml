@@ -80,6 +80,14 @@
             />
 
         <com.kdt.mcgui.MineButton
+            android:id="@+id/modded_profile_pisan_pack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/padding_large"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/create_pisan_pack_profile" />
+
+        <com.kdt.mcgui.MineButton
             android:id="@+id/modded_profile_fabric"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -126,14 +134,6 @@
             android:layout_marginHorizontal="@dimen/padding_large"
             android:layout_marginTop="@dimen/padding_large"
             android:text="@string/create_lwjgl3ify_profile" />
-
-        <com.kdt.mcgui.MineButton
-            android:id="@+id/modded_profile_bta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/padding_large"
-            android:layout_marginTop="@dimen/padding_large"
-            android:text="@string/create_bta_profile" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"

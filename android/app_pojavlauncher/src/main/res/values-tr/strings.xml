@@ -424,4 +424,13 @@
     <string name="preference_touchcontroller_vibrate_length_description">DokunmatikKontrolcü kullanılır iken oluşan titreşim uzunluğunu ayarla.</string>
     <string name="error_vanilla_json_corrupt">Vanila json dosyaları görünüşe göre bozulmuş veya deforme halde. Lütfen Github veya discord\'a bir Hata raporu yollayınız.</string>
     <string name="preference_ask_for_microphone_title">Mikrofona izin ver</string>
+    <!-- PisanKus: Pisan Optimized paketi -->
+    <string name="create_pisan_pack_profile">\"Pisan Optimized\" profili oluştur</string>
+    <string name="pisan_pack_title">Pisan Optimized</string>
+    <string name="pisan_pack_summary">PisanKus ekibinin derlediği Fabric paketi: performans modları ve günlük oyunu rahatlatan eklentiler. Tek seferde kurulur, oyun ayarlarınıza dokunmaz.</string>
+    <string name="pisan_pack_progress_resolving">Mod listesi çözümleniyor\u2026 (%s)</string>
+    <string name="pisan_pack_progress_loader">Fabric %s kuruluyor\u2026</string>
+    <string name="pisan_pack_done_title">Pisan Optimized kuruldu</string>
+    <string name="pisan_pack_done_message">Minecraft %1$s için %2$d mod kuruldu.</string>
+    <string name="pisan_pack_done_skipped">\n\nBu sürüm için yayımlanmamış olanlar:%1$s</string>
 </resources>

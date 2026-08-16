@@ -49,9 +49,39 @@ binlerce içe aktarma ona bağlı ve değiştirmek, kazanılan hiçbir şey kar�
 turkuaza (`#14b8b8`) çevrildi, nötr griler masaüstü uygulamasının turkuaz
 tonlu koyu paletine taşındı, açık sarı vurgu ve koyu yazı rengi eklendi.
 
+### 4. "Better than Adventure" yerine Pisan Optimized
+
+Profil türü ekranındaki *"Better than Adventure!" profili oluştur* düğmesi
+kaldırıldı; yerine, modlu bölümün başına *"Pisan Optimized" profili oluştur*
+kondu. Masaüstündeki küratörlü paketin (`src/shared/curatedPack.ts`) aynısı:
+Minecraft sürümü seçilir, mod listesi Modrinth'ten o sürüme göre çözülür,
+Fabric kurulur ve modlar profile iner.
+
+Eklenen dosyalar — hepsi ayrı bir pakette (`modloaders/pisan/`) durur, üst
+kaynakla çakışmasın diye:
+
+| | |
+|---|---|
+| `modloaders/pisan/PisanPack.java` | paketin kendisi: Modrinth kısa adları, roller, önerilen sürümler |
+| `modloaders/pisan/PisanPackResolver.java` | Modrinth çözümlemesi — hangi sürüme ne kurulabilir |
+| `modloaders/pisan/PisanPackInstallTask.java` | Fabric + modlar + profil |
+| `fragments/PisanPackInstallFragment.java` | tek ekran: sürüm seç, kur |
+| `res/layout/fragment_pisan_pack_install.xml` | o ekranın düzeni |
+
+Dokunulan üst kaynak dosyaları dörtle sınırlı tutuldu:
+
+- `fragments/ProfileTypeSelectFragment.java` ve `res/layout/fragment_profile_type.xml` — düğme takası.
+- `modloaders/FabriclikeDownloadTask.java` — sürüm json'unu yazan kısım `installVersionJson()` olarak ayrıldı; paket kurucusu Fabric'i kendi profilini kurmadan çağırabilsin diye. Görevin kendi davranışı değişmedi.
+- `profiles/ProfileIconCache.java` — `pisan` ikon adı eklendi.
+
+BTA'nın sınıfları (`modloaders/BTA*.java`, `fragments/BTAInstallFragment.java`)
+ve dizeleri **silinmedi**, yalnızca erişilemez hâle geldi — korsan giriş
+düğmesinde olduğu gibi, üst kaynakla farkın küçük kalması birleştirmeyi
+kolaylaştırıyor.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.
 2. Yeni kaynağı aynı yöntemle çek (yalnızca izlenen dosyalar).
-3. Yukarıdaki üç değişikliği yeniden uygula.
+3. Yukarıdaki değişiklikleri yeniden uygula.
 4. Bu dosyadaki commit bilgisini güncelle.

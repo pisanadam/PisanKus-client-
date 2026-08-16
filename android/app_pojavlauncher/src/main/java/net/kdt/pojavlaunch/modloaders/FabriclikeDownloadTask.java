@@ -42,20 +42,35 @@ public class FabriclikeDownloadTask implements Runnable, Tools.DownloaderFeedbac
         ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
     }
 
-    private boolean runCatching() throws IOException{
-        String fabricJson = DownloadUtils.downloadString(mUtils.createJsonDownloadUrl(mGameVersion, mLoaderVersion));
+    /**
+     * Downloads the loader's version json and writes it where the launcher looks
+     * for versions.
+     *
+     * Split out of the task so an installer that needs the loader but builds its
+     * own profile — the Pisan Optimized pack does — does not have to repeat it.
+     *
+     * @return the version id the loader declares, or null if its metadata could not be read
+     */
+    public static String installVersionJson(FabriclikeUtils utils, String gameVersion, String loaderVersion) throws IOException {
+        String fabricJson = DownloadUtils.downloadString(utils.createJsonDownloadUrl(gameVersion, loaderVersion));
         String versionId;
         try {
             JSONObject fabricJsonObject = new JSONObject(fabricJson);
             versionId = fabricJsonObject.getString("id");
         }catch (JSONException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
         File versionJsonDir = new File(Tools.DIR_HOME_VERSION, versionId);
         File versionJsonFile = new File(versionJsonDir, versionId+".json");
         FileUtils.ensureDirectory(versionJsonDir);
         Tools.write(versionJsonFile.getAbsolutePath(), fabricJson);
+        return versionId;
+    }
+
+    private boolean runCatching() throws IOException{
+        String versionId = installVersionJson(mUtils, mGameVersion, mLoaderVersion);
+        if(versionId == null) return false;
         if(mCreateProfile) {
             LauncherProfiles.load();
             MinecraftProfile fabricProfile = new MinecraftProfile();

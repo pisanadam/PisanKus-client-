@@ -528,4 +528,13 @@
     <string name="import_modpack_json">Reading modpack info…</string>
     <string name="import_modpack_copy">Copying modpack file to cache… (%s MB/ %s MB)</string>
 
+    <!-- PisanKus: Pisan Optimized pack -->
+    <string name="create_pisan_pack_profile">Create \"Pisan Optimized\" profile</string>
+    <string name="pisan_pack_title">Pisan Optimized</string>
+    <string name="pisan_pack_summary">The Fabric pack put together by the PisanKus team: performance mods and the additions that make everyday play easier. Installed in one go, and it leaves your game settings alone.</string>
+    <string name="pisan_pack_progress_resolving">Resolving the mod list\u2026 (%s)</string>
+    <string name="pisan_pack_progress_loader">Installing Fabric %s\u2026</string>
+    <string name="pisan_pack_done_title">Pisan Optimized installed</string>
+    <string name="pisan_pack_done_message">%2$d mods installed for Minecraft %1$s.</string>
+    <string name="pisan_pack_done_skipped">\n\nNot published for this version:%1$s</string>
 </resources>

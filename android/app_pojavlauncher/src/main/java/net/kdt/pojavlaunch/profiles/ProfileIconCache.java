@@ -85,6 +85,8 @@ public class ProfileIconCache {
             case "default": return R.drawable.ic_pojav_full;
             case "fabric": return R.drawable.ic_fabric;
             case "quilt": return R.drawable.ic_quilt;
+            // PisanKus: the launcher's own pack wears the launcher's own mark.
+            case "pisan": return R.mipmap.ic_launcher;
             default: return -1;
         }
     }

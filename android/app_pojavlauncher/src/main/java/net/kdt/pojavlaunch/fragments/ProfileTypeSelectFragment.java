@@ -47,8 +47,8 @@ public class ProfileTypeSelectFragment extends Fragment {
                 tryInstall(LWJGL3ifyInstallFragment.class, LWJGL3ifyInstallFragment.TAG));
         view.findViewById(R.id.modded_profile_quilt).setOnClickListener((v)->
                 tryInstall(QuiltInstallFragment.class, QuiltInstallFragment.TAG));
-        view.findViewById(R.id.modded_profile_bta).setOnClickListener((v)->
-                tryInstall(BTAInstallFragment.class, BTAInstallFragment.TAG));
+        view.findViewById(R.id.modded_profile_pisan_pack).setOnClickListener((v)->
+                tryInstall(PisanPackInstallFragment.class, PisanPackInstallFragment.TAG));
     }
 
     private void tryInstall(Class<? extends Fragment> fragmentClass, String tag){
