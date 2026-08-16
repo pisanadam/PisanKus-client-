@@ -3,6 +3,9 @@
     <!-- PisanKus palette: turquoise accent, light-yellow highlight, dark ink. -->
     <color name="pisankus_accent_2">#FFE17A</color>
     <color name="pisankus_on_accent">#04302F</color>
+    <color name="accent">#14B8B8</color>
+    <color name="surface">#0F2221</color>
+    <color name="accent_ripple">#3314B8B8</color>
 
     <color name="control_button_color">#4CC4C4C4</color>
     <color name="control_button_pressed_color">#4D000000</color>
