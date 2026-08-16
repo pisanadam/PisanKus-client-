@@ -9,6 +9,7 @@
     <color name="accent_2">#FFE17A</color>
     <color name="accent_pressed">#2FD3D0</color>
     <color name="accent_2_pressed">#FFEAA0</color>
+    <color name="border_soft">#1C3B39</color>
 
     <color name="control_button_color">#4CC4C4C4</color>
     <color name="control_button_pressed_color">#4D000000</color>
