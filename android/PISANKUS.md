@@ -59,5 +59,14 @@ bir daha güncellenemez.
 ## Durum
 
 Derleme yerelde ve CI'da geçiyor, paket kimliği `com.pisankus.client`, korsan
-giriş sökülü. **Gerçek bir cihazda Minecraft oturumunun açıldığı henüz
-doğrulanmadı** — indirme sayfasındaki kart bu yüzden "Deneysel" etiketli.
+giriş sökülü.
+
+**Oyun gerçek bir cihazda çalışıyor:** 1.7.10 açıldı ve oynanabildi.
+
+Bilinen sınır: yalnızca Java 8 çalışma zamanı pakete giriyor, yani **1.16 ve
+öncesi** başlıyor. 1.17 ve sonrası Java 17 veya 21 istiyor; o çalışma zamanları
+üst kaynağın CI'sında düzenli yayımlanmadığı için indirme adımları isteğe bağlı
+ve şu an boş dönüyorlar. O sürümler `Failed to autopick runtime!` verir.
+
+İndirme sayfasındaki kart bu yüzden hâlâ "Deneysel": launcher çalışıyor ama
+güncel Minecraft sürümlerini henüz açamıyor.
