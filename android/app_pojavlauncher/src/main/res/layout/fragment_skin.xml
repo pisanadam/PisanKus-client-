@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.kdt.DefocusableScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_app">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/fragment_padding_medium"
+        android:paddingBottom="@dimen/padding_large">
+
+        <TextView
+            android:id="@+id/title_textview"
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/skin_title" />
+
+        <View
+            style="@style/ThickDivider"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/padding_large" />
+
+        <ImageView
+            android:id="@+id/skin_preview"
+            android:layout_width="@dimen/_128sdp"
+            android:layout_height="@dimen/_128sdp"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/padding_large"
+            android:contentDescription="@string/skin_title"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/skin_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:gravity="center"
+            android:text="@string/skin_loading" />
+
+        <ProgressBar
+            android:id="@+id/skin_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/skin_model" />
+
+        <RadioGroup
+            android:id="@+id/skin_variant_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/skin_variant_classic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:minHeight="@dimen/_30sdp"
+                android:text="@string/skin_model_classic" />
+
+            <RadioButton
+                android:id="@+id/skin_variant_slim"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/padding_large"
+                android:minHeight="@dimen/_30sdp"
+                android:text="@string/skin_model_slim" />
+        </RadioGroup>
+
+        <com.kdt.mcgui.MineButton
+            android:id="@+id/skin_pick_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/skin_pick_file" />
+
+        <com.kdt.mcgui.MineButton
+            android:id="@+id/skin_url_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/skin_from_url" />
+
+        <com.kdt.mcgui.MineButton
+            android:id="@+id/skin_reset_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/skin_reset" />
+
+        <com.kdt.mcgui.MineButton
+            android:id="@+id/skin_save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/skin_save_current" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_extra_extra_large"
+            android:text="@string/skin_library" />
+
+        <TextView
+            android:id="@+id/skin_library_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_small"
+            android:text="@string/skin_library_empty" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_small"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/skin_library_strip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_extra_extra_large"
+            android:text="@string/skin_capes" />
+
+        <TextView
+            android:id="@+id/skin_capes_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_small"
+            android:text="@string/skin_capes_empty" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_small"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/skin_cape_strip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+    </LinearLayout>
+</com.kdt.DefocusableScrollView>

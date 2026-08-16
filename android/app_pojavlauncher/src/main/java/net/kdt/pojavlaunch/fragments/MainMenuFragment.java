@@ -54,6 +54,7 @@ public class MainMenuFragment extends Fragment {
         Button mInstallJarButton = view.findViewById(R.id.install_jar_button);
         Button mShareLogsButton = view.findViewById(R.id.share_logs_button);
         Button mOpenDirectoryButton = view.findViewById(R.id.open_files_button);
+        Button mSkinButton = view.findViewById(R.id.skin_button);
 
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
         Button mPlayButton = view.findViewById(R.id.play_button);
@@ -89,6 +90,13 @@ public class MainMenuFragment extends Fragment {
         });
 
         mShareLogsButton.setOnClickListener((v) -> shareLog(requireContext()));
+
+        // Changing a skin needs a real Minecraft session, so the same gate the
+        // other account-bound features use applies here.
+        mSkinButton.setOnClickListener((v) -> {
+            if (!hasOnlineProfile()) hasNoOnlineProfileDialog(requireActivity());
+            else Tools.swapFragment(requireActivity(), SkinFragment.class, SkinFragment.TAG, null);
+        });
 
         mOpenDirectoryButton.setOnClickListener((v)-> {
             if (Tools.isDemoProfile(v.getContext())){ // Say a different message when on demo profile since they might see the hidden demo folder

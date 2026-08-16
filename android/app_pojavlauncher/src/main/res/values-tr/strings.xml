@@ -433,4 +433,33 @@
     <string name="pisan_pack_done_title">Pisan Optimized kuruldu</string>
     <string name="pisan_pack_done_message">Minecraft %1$s için %2$d mod kuruldu.</string>
     <string name="pisan_pack_done_skipped">\n\nBu sürüm için yayımlanmamış olanlar:%1$s</string>
+    <!-- PisanKus: skin -->
+    <string name="skin_button">Skin değiştir</string>
+    <string name="skin_title">Skin</string>
+    <string name="skin_loading">Skin bilgisi alınıyor\u2026</string>
+    <string name="skin_working">Minecraft servislerine bağlanılıyor\u2026</string>
+    <string name="skin_current">%1$s hesabının skini</string>
+    <string name="skin_none">Bu hesapta yüklü bir skin yok; varsayılan kullanılıyor.</string>
+    <string name="skin_model">Model</string>
+    <string name="skin_model_classic">Klasik</string>
+    <string name="skin_model_slim">İnce</string>
+    <string name="skin_pick_file">Dosyadan seç ve uygula</string>
+    <string name="skin_from_url">Bağlantıdan uygula</string>
+    <string name="skin_url_message">Skin dosyasının doğrudan adresini yapıştırın. Adres herkese açık olmalı.</string>
+    <string name="skin_url_hint">https://\u2026/skin.png</string>
+    <string name="skin_apply">Uygula</string>
+    <string name="skin_applied">Skin uygulandı.</string>
+    <string name="skin_reset">Varsayılana dön</string>
+    <string name="skin_reset_message">Yüklü skin kaldırılacak ve hesap varsayılan görünüme dönecek. Kitaplığınızdaki skinler silinmez.</string>
+    <string name="skin_reset_done">Skin varsayılana döndü.</string>
+    <string name="skin_save_current">Şu anki skini kitaplığa kaydet</string>
+    <string name="skin_saved">Skin kitaplığa kaydedildi.</string>
+    <string name="skin_library">Kitaplık</string>
+    <string name="skin_library_empty">Kitaplık boş. Uyguladığınız skinler burada birikir; dokunarak geri yükleyebilirsiniz.</string>
+    <string name="skin_library_delete">Sil</string>
+    <string name="skin_library_delete_message">Bu skin kitaplıktan silinsin mi? Hesabınızdaki skin değişmez.</string>
+    <string name="skin_capes">Pelerinler</string>
+    <string name="skin_capes_empty">Bu hesabın pelerini yok.</string>
+    <string name="skin_cape_applied">%1$s pelerini takıldı.</string>
+    <string name="skin_cape_removed">%1$s pelerini çıkarıldı.</string>
 </resources>

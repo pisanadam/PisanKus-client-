@@ -79,6 +79,28 @@ ve dizeleri **silinmedi**, yalnızca erişilemez hâle geldi — korsan giriş
 düğmesinde olduğu gibi, üst kaynakla farkın küçük kalması birleştirmeyi
 kolaylaştırıyor.
 
+### 5. Skin değiştirme
+
+Masaüstünde vardı, Android'de yoktu. Ana menüye *Skin değiştir* düğmesi kondu —
+gizlenen Discord düğmesinden boşta kalan yarım satıra. Açtığı ekran:
+dosyadan ya da bağlantıdan skin uygulama, klasik/ince model seçimi,
+varsayılana dönme, pelerin takıp çıkarma ve cihazda duran bir skin kitaplığı.
+
+İhtiyaç duyduğu oturum jetonu zaten cihazdaydı; oyunu başlatmak için giriş
+yapılıyor. Yeni bir izin ya da yeni bir hesap akışı yok.
+
+| | |
+|---|---|
+| `skins/SkinApi.java` | Minecraft servisleri: skin/pelerin okuma, yükleme, sıfırlama |
+| `skins/SkinLibrary.java` | cihazdaki kitaplık (`<oyun kökü>/skins`) |
+| `skins/SkinRender.java` | doku sayfasından karakterin önden görünüşünü çizer |
+| `fragments/SkinFragment.java` | ekranın kendisi |
+| `res/layout/fragment_skin.xml`, `res/drawable/pk_ic_skin.xml` | düzen ve ikon |
+
+Üst kaynaktan yalnızca ana menü dosyası ve düzeni değişti
+(`fragments/MainMenuFragment.java`, `res/layout/fragment_launcher.xml`):
+bir düğme ve bir dinleyici.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.

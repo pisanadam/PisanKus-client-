@@ -537,4 +537,33 @@
     <string name="pisan_pack_done_title">Pisan Optimized installed</string>
     <string name="pisan_pack_done_message">%2$d mods installed for Minecraft %1$s.</string>
     <string name="pisan_pack_done_skipped">\n\nNot published for this version:%1$s</string>
+    <!-- PisanKus: skin -->
+    <string name="skin_button">Change skin</string>
+    <string name="skin_title">Skin</string>
+    <string name="skin_loading">Reading the account\u2019s skin\u2026</string>
+    <string name="skin_working">Talking to Minecraft services\u2026</string>
+    <string name="skin_current">The skin on %1$s</string>
+    <string name="skin_none">This account has no uploaded skin; the default one is in use.</string>
+    <string name="skin_model">Model</string>
+    <string name="skin_model_classic">Classic</string>
+    <string name="skin_model_slim">Slim</string>
+    <string name="skin_pick_file">Pick a file and apply</string>
+    <string name="skin_from_url">Apply from a link</string>
+    <string name="skin_url_message">Paste the direct address of the skin file. It has to be publicly reachable.</string>
+    <string name="skin_url_hint">https://\u2026/skin.png</string>
+    <string name="skin_apply">Apply</string>
+    <string name="skin_applied">Skin applied.</string>
+    <string name="skin_reset">Back to default</string>
+    <string name="skin_reset_message">The uploaded skin is removed and the account goes back to its default look. Your library is untouched.</string>
+    <string name="skin_reset_done">Skin reset to the default.</string>
+    <string name="skin_save_current">Keep the current skin in the library</string>
+    <string name="skin_saved">Saved to the library.</string>
+    <string name="skin_library">Library</string>
+    <string name="skin_library_empty">The library is empty. Skins you apply are kept here; tap one to put it back on.</string>
+    <string name="skin_library_delete">Delete</string>
+    <string name="skin_library_delete_message">Remove this skin from the library? The skin on your account does not change.</string>
+    <string name="skin_capes">Capes</string>
+    <string name="skin_capes_empty">This account owns no capes.</string>
+    <string name="skin_cape_applied">Wearing the %1$s cape.</string>
+    <string name="skin_cape_removed">Took off the %1$s cape.</string>
 </resources>

@@ -51,6 +51,17 @@
 				app:layout_constraintStart_toEndOf="@id/social_divider"
 				app:layout_constraintEnd_toEndOf="parent"/>
 
+			<!-- PisanKus: takes the half-row the hidden Discord button left empty. -->
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/skin_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:text="@string/skin_button"
+				android:drawableStart="@drawable/pk_ic_skin"
+				app:layout_constraintTop_toTopOf="parent"
+				app:layout_constraintStart_toEndOf="@id/social_divider"
+				app:layout_constraintEnd_toEndOf="parent"/>
+
 
 			<com.kdt.mcgui.LauncherMenuButton
 				android:id="@+id/custom_control_button"
