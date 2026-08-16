@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The window ground, matching the desktop launcher's ambience: two soft glows
+  bleeding in from the edges over a near-black base — turquoise from the top
+  left, light yellow from the right.
+
+  Radial gradients here rather than a bitmap so it costs nothing to ship, scales
+  to any screen, and follows the palette if the colours ever change.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <color android:color="@color/background_app" />
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.12" android:centerY="0.02"
+                android:gradientRadius="620"
+                android:startColor="@color/glow_accent"
+                android:endColor="@android:color/transparent" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.95" android:centerY="0.22"
+                android:gradientRadius="520"
+                android:startColor="@color/glow_accent_2"
+                android:endColor="@android:color/transparent" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.5" android:centerY="1.0"
+                android:gradientRadius="700"
+                android:startColor="@color/glow_accent_low"
+                android:endColor="@android:color/transparent" />
+        </shape>
+    </item>
+</layer-list>

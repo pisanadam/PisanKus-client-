@@ -33,7 +33,7 @@
         <item name="colorControlNormal">@color/secondary_text</item>
         <item name="colorControlHighlight">@color/accent_ripple</item>
 
-        <item name="android:windowBackground">@color/background_app</item>
+        <item name="android:windowBackground">@drawable/pk_ambient_background</item>
         <item name="alertDialogTheme">@style/PisanKusDialog</item>
         <item name="android:alertDialogTheme">@style/PisanKusDialog</item>
     </style>
@@ -85,6 +85,7 @@
     <style name="PisanKusPreferences" parent="@style/PreferenceThemeOverlay.v14.Material">
         <item name="preferenceStyle">@style/PisanKusPreference</item>
         <item name="switchPreferenceCompatStyle">@style/PisanKusPreference.Switch</item>
+        <item name="switchPreferenceStyle">@style/PisanKusPreference.Switch</item>
         <item name="checkBoxPreferenceStyle">@style/PisanKusPreference.Switch</item>
         <!-- Slider entries keep their own layout on purpose: the seek bar is a
              view inside it with a fixed id, not something in the widget frame,

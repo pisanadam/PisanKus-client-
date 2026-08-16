@@ -10,6 +10,10 @@
     <color name="accent_pressed">#2FD3D0</color>
     <color name="accent_2_pressed">#FFEAA0</color>
     <color name="border_soft">#1C3B39</color>
+    <!-- Deliberately faint: an ambience should be felt, not looked at. -->
+    <color name="glow_accent">#2614B8B8</color>
+    <color name="glow_accent_2">#1AFFE17A</color>
+    <color name="glow_accent_low">#1414B8B8</color>
 
     <color name="control_button_color">#4CC4C4C4</color>
     <color name="control_button_pressed_color">#4D000000</color>
