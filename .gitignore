@@ -8,10 +8,12 @@ release/
 .env.local
 *.tsbuildinfo
 
-# Android
+# Android — the vendored launcher is a Gradle project of its own, so build
+# output appears under every module, not just one.
 android/.gradle/
-android/build/
-android/app/build/
 android/local.properties
 android/.idea/
-android/*.iml
+android/**/build/
+android/**/*.iml
+android/.cxx/
+android/**/.cxx/

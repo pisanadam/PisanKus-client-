@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The PK badge, matching the desktop launcher's sidebar mark. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-  <corners android:radius="26dp" />
-  <gradient
-    android:startColor="@color/accent"
-    android:endColor="@color/accent_2"
-    android:angle="315" />
-</shape>

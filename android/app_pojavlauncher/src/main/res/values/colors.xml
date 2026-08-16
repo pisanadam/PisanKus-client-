@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PisanKus palette: turquoise accent, light-yellow highlight, dark ink. -->
+    <color name="pisankus_accent_2">#FFE17A</color>
+    <color name="pisankus_on_accent">#04302F</color>
+
+    <color name="control_button_color">#4CC4C4C4</color>
+    <color name="control_button_pressed_color">#4D000000</color>
+
+    <color name="minebutton_color">#14b8b8</color>
+    <color name="background_app">#071312</color>
+    <color name="divider">@color/background_overlay</color>
+    <color name="background_overlay">#1c3b39</color>
+    <color name="background_status_bar">#0a1817</color>
+    <color name="background_bottom_bar">#0f2221</color>
+
+    <color name="primary_text">#FFFFFF</color>
+    <color name="secondary_text">#98b3af</color>
+</resources>
