@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A document with text rules. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24"
     android:tint="@color/accent">
-    <path android:fillColor="#FFFFFF"
-        android:pathData="M5,3h9l5,5v13H5zM13,4.5V8.5h4zM7.5,11h9v1.4h-9zM7.5,14h9v1.4h-9zM7.5,17h6v1.4h-6z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M3,5h18v11H3zM4.6,6.6v7.8h14.8V6.6zM8.5,18.4h7V20h-7z" />
 </vector>
