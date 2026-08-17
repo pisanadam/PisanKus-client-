@@ -92,6 +92,20 @@ aynısı: skin hesaba ait, cihaza değil. Ana menüde, gizlenen Discord düğmes
 bıraktığı boşluğa kondu. Önizleme, dokudaki ön yüzleri düz olarak birleştirir —
 skin dosyasını olduğu gibi göstermek oyuncuya bir şey anlatmıyor.
 
+### 9. Tek tek mod kurma
+
+`PisanKusModrinth.java`, `PisanKusProfileTarget.java`,
+`fragments/PisanModsFragment.java`
+
+Üst kaynak yalnızca modpack kurabiliyor ve her modpack kendi profilini
+oluşturuyor. Eksik olan sıradan durumdu: elinde zaten bir Fabric profili olan
+oyuncunun ona bir mod daha eklemesi. Ana menüdeki "Modlar" düğmesi, seçili
+profilin yükleyicisine ve sürümüne göre Modrinth'te arıyor ve dosyayı o
+profilin kendi `mods` klasörüne indiriyor.
+
+Profil ne yükleyicisini ne de sürümünü saklıyor; ikisi de sürüm kimliğinin
+biçiminden ve sürüm json'ındaki `inheritsFrom` alanından okunuyor.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.

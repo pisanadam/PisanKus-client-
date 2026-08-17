@@ -23,6 +23,23 @@
     <string name="pisan_optimized_progress_loader">Fabric hazırlanıyor…</string>
     <string name="pisan_optimized_progress_mod">Mod %1$d/%2$d: %3$s</string>
     <string name="pisan_optimized_no_loader">%1$s için Fabric sürümü bulunamadı.</string>
+    <!-- Mod kurma -->
+    <string name="pisan_mods_title">Mod kur</string>
+    <string name="pisan_mods_button">Modlar</string>
+    <string name="pisan_mods_search_hint">Mod ara…</string>
+    <string name="pisan_mods_target">Kurulacak profil: %1$s (%2$s %3$s)</string>
+    <string name="pisan_mods_no_loader_word">yükleyicisiz</string>
+    <string name="pisan_mods_no_profile">Seçili profil yok</string>
+    <string name="pisan_mods_needs_loader">Bu profilde mod yükleyici yok. Fabric, Quilt, Forge veya NeoForge profili seçin — ya da Pisan Optimized kurun.</string>
+    <string name="pisan_mods_searching">Aranıyor…</string>
+    <string name="pisan_mods_found">%1$d sonuç</string>
+    <string name="pisan_mods_empty">Sonuç yok</string>
+    <string name="pisan_mods_confirm">%1$s, %2$s profiline kurulsun mu?</string>
+    <string name="pisan_mods_install">Kur</string>
+    <string name="pisan_mods_installing">%1$s kuruluyor…</string>
+    <string name="pisan_mods_installed">Kuruldu: %1$s</string>
+    <string name="pisan_mods_no_version">%1$s için %2$s sürümünde yapı yok</string>
+
     <!-- Skin -->
     <string name="pisan_skin_title">Skin değiştir</string>
     <string name="pisan_skin_button">Skin</string>

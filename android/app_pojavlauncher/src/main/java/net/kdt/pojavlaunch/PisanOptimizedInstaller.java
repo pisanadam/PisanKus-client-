@@ -1,16 +1,9 @@
 package net.kdt.pojavlaunch;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Installs the Pisan Optimized mod set into a profile's mods folder.
@@ -94,10 +87,6 @@ public class PisanOptimizedInstaller {
             mod("controlify", "Controlify")
     };
 
-    private static final String API = "https://api.modrinth.com/v2";
-    /** Modrinth asks callers to identify themselves; anonymous traffic gets throttled harder. */
-    private static final String USER_AGENT = "PisanKusClient/1.0 (+https://github.com/pisanadam/PisanKus-client-)";
-
     public interface Listener {
         /** {@code index} is 1-based; {@code total} is the whole set, including any that fail. */
         void onModStarted(int index, int total, Mod mod);
@@ -175,88 +164,12 @@ public class PisanOptimizedInstaller {
         return e.getMessage() == null ? e.toString() : e.getMessage();
     }
 
-    /**
-     * The build of {@code slug} to install for {@code gameVersion}, or null when
-     * the project has none.
-     *
-     * Modrinth returns versions newest first, so the newest release is the first
-     * one flagged as such. The newest build overall is only the fallback: many
-     * of these projects keep a beta at the top for months, and a curated pack
-     * should not hand a player a beta while a stable build exists. The filters
-     * are applied server-side to avoid pulling a project's entire history to
-     * pick one item out of it.
-     */
-    private static JSONObject latestVersion(String slug, String gameVersion) throws Exception {
-        String url = API + "/project/" + encode(slug) + "/version"
-                + "?loaders=" + encode("[\"fabric\"]")
-                + "&game_versions=" + encode("[\"" + gameVersion + "\"]");
-        JSONArray versions = new JSONArray(read(url));
-        if (versions.length() == 0) return null;
-        for (int i = 0; i < versions.length(); i++) {
-            JSONObject version = versions.getJSONObject(i);
-            if ("release".equals(version.optString("version_type"))) return version;
-        }
-        return versions.getJSONObject(0);
+    /** The pack is Fabric only, so the loader is not a parameter here. */
+    private static JSONObject latestVersion(String slug, String gameVersion) throws IOException {
+        return PisanKusModrinth.latestVersion(slug, "fabric", gameVersion);
     }
 
-    /**
-     * Writes a version's primary file into {@code modsDir}.
-     *
-     * A version can carry several files — sources, javadoc, extra variants — and
-     * only the one flagged primary is the mod itself. Where nothing is flagged,
-     * the first entry is what Modrinth's own client uses.
-     */
-    private static String download(JSONObject version, File modsDir) throws Exception {
-        JSONArray files = version.getJSONArray("files");
-        JSONObject chosen = files.getJSONObject(0);
-        for (int i = 0; i < files.length(); i++) {
-            if (files.getJSONObject(i).optBoolean("primary", false)) {
-                chosen = files.getJSONObject(i);
-                break;
-            }
-        }
-
-        String fileName = chosen.getString("filename");
-        // The name comes from a remote service, so it must not be able to point
-        // anywhere except inside the mods folder.
-        fileName = new File(fileName).getName();
-
-        HttpURLConnection connection = open(chosen.getString("url"));
-        File target = new File(modsDir, fileName);
-        try (InputStream in = connection.getInputStream();
-             FileOutputStream out = new FileOutputStream(target)) {
-            byte[] buffer = new byte[64 * 1024];
-            int count;
-            while ((count = in.read(buffer)) != -1) out.write(buffer, 0, count);
-        } finally {
-            connection.disconnect();
-        }
-        return fileName;
-    }
-
-    private static String read(String url) throws Exception {
-        HttpURLConnection connection = open(url);
-        try (InputStream in = connection.getInputStream()) {
-            java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
-            byte[] chunk = new byte[8192];
-            int count;
-            while ((count = in.read(chunk)) != -1) buffer.write(chunk, 0, count);
-            return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
-        } finally {
-            connection.disconnect();
-        }
-    }
-
-    private static HttpURLConnection open(String url) throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestProperty("User-Agent", USER_AGENT);
-        connection.setInstanceFollowRedirects(true);
-        connection.setConnectTimeout(15000);
-        connection.setReadTimeout(60000);
-        return connection;
-    }
-
-    private static String encode(String value) throws Exception {
-        return URLEncoder.encode(value, "UTF-8");
+    private static String download(JSONObject version, File modsDir) throws IOException {
+        return PisanKusModrinth.downloadPrimaryFile(version, modsDir);
     }
 }

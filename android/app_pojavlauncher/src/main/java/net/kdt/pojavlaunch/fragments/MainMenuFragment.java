@@ -64,6 +64,8 @@ public class MainMenuFragment extends Fragment {
         // wired to belongs to the project this launcher was forked from. Sending
         // our players there would misrepresent both sides, so the button goes.
         mDiscordButton.setVisibility(View.GONE);
+        view.findViewById(R.id.mods_button).setOnClickListener(v ->
+                Tools.swapFragment(requireActivity(), PisanModsFragment.class, PisanModsFragment.TAG, null));
         view.findViewById(R.id.skin_button).setOnClickListener(v -> {
             if (hasOnlineProfile()) {
                 Tools.swapFragment(requireActivity(), SkinFragment.class, SkinFragment.TAG, null);
