@@ -12,6 +12,19 @@
     <string name="pisankus_update_progress">İndiriliyor… %%%1$d</string>
     <string name="pisankus_update_installing">Kurulum ekranı açılıyor…</string>
     <string name="pisankus_update_failed">Başarısız: %1$s</string>
+    <string name="pisankus_pack_title" translatable="false">Pisan Optimized</string>
+    <string name="pisankus_pack_summary">PisanKus ekibinin derlediği Fabric paketi: performans modları ve günlük oyunu rahatlatan eklentiler. Tek seferde kurulur, oyun ayarlarınıza dokunmaz.</string>
+    <string name="pisankus_pack_game_version">Minecraft sürümü</string>
+    <string name="pisankus_pack_install">Paketi kur</string>
+    <string name="pisankus_pack_resolving">Paket çözümleniyor…</string>
+    <string name="pisankus_pack_loader">Fabric kuruluyor…</string>
+    <string name="pisankus_pack_downloading">Modlar indiriliyor (%1$d / %2$d)</string>
+    <string name="pisankus_pack_no_versions">Kurulabilir sürüm bulunamadı</string>
+    <string name="pisankus_pack_essential_missing">%1$s modunun %2$s için yayınlanmış bir sürümü yok; paket bu sürüme kurulamıyor. Başka bir Minecraft sürümü seçin.</string>
+    <string name="pisankus_pack_loader_failed">Fabric sürüm bilgisi alınamadı.</string>
+    <string name="pisankus_pack_done_title">Pisan Optimized kuruldu</string>
+    <string name="pisankus_pack_done">%1$d mod kuruldu.</string>
+    <string name="pisankus_pack_done_skipped">Bu sürüme kurulamayanlar:</string>
 
     <!-- Action bar part -->
 

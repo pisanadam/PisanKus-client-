@@ -35,6 +35,8 @@ public class ProfileTypeSelectFragment extends Fragment {
         // in FabricInstallFragment.onDownloadFinished() and ModVersionListFragment.onDownloadFinished()
         view.findViewById(R.id.optifine_profile).setOnClickListener(v ->
                 tryInstall(OptiFineInstallFragment.class, OptiFineInstallFragment.TAG));
+        view.findViewById(R.id.modded_profile_pisan_pack).setOnClickListener((v)->
+                tryInstall(PisanPackInstallFragment.class, PisanPackInstallFragment.TAG));
         view.findViewById(R.id.modded_profile_fabric).setOnClickListener((v)->
                 tryInstall(FabricInstallFragment.class, FabricInstallFragment.TAG));
         view.findViewById(R.id.modded_profile_forge).setOnClickListener((v)->

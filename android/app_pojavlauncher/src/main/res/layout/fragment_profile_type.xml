@@ -80,6 +80,14 @@
             />
 
         <com.kdt.mcgui.MineButton
+            android:id="@+id/modded_profile_pisan_pack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/padding_large"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisankus_pack_title" />
+
+        <com.kdt.mcgui.MineButton
             android:id="@+id/modded_profile_fabric"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

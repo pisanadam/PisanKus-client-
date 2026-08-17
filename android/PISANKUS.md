@@ -64,3 +64,11 @@ giriş sökülü.
 **Oyun gerçek bir cihazda çalışıyor.** 1.7.10 ve 26.2 açıldı; 26.2 ile sunucuda
 oynandı. Üç Java çalışma zamanı da (8, 17, 21) pakete giriyor, yani eski ve
 güncel sürümler birlikte destekleniyor.
+
+**Pisan Optimized** artık Android'de de kurulabiliyor: profil türü ekranındaki
+düğme, masaüstündeki `src/shared/curatedPack.ts` ile aynı mod listesini kurulum
+anında Modrinth'e çözümlüyor, Fabric'i yerleştiriyor ve modları paketin kendi
+örneğine indiriyor. Sürüm listesi, temel modların (Fabric API, Sodium) yayınlandığı
+sürümlerle sınırlı; kalanlardan o sürüme yetişememiş olanlar kurulum sonunda
+rapor ediliyor. Kod cihazda henüz denenmedi — bu ortamda Android SDK'sı yok,
+dolayısıyla yalnızca CI'nın derlemesiyle doğrulanacak.
