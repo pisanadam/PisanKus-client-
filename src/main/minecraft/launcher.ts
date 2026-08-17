@@ -98,7 +98,8 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       profile.gameVersion,
       profile.loaderVersion,
       (detail) => report('Yükleyici hazırlanıyor', -1, detail),
-      offline
+      offline,
+      profile.javaPath ?? settings.javaPath
     )
     log(`Sürüm: ${versionId}`)
     if (offline) log('Çevrimdışı mod: ağ indirmeleri ve oturum yenileme kapalı.')
@@ -305,7 +306,16 @@ export async function prepareOnly(
   signal?: AbortSignal
 ): Promise<VersionJson> {
   const taskId = `prepare-${profile.id}`
-  const versionId = await installLoader(settings.dataDir, profile.loader, profile.gameVersion, profile.loaderVersion)
+  const versionId = await installLoader(
+    settings.dataDir,
+    profile.loader,
+    profile.gameVersion,
+    profile.loaderVersion,
+    (detail) =>
+      onProgress({ id: taskId, label: `${profile.name} hazırlanıyor`, progress: -1, detail, state: 'running' }),
+    false,
+    profile.javaPath ?? settings.javaPath
+  )
   const version = await resolveVersion(settings.dataDir, versionId)
   const libraries = resolveLibraries(version, settings.dataDir)
   const assets = await resolveAssets(version, settings.dataDir)

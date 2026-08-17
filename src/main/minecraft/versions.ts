@@ -22,6 +22,14 @@ export interface Library {
   name: string
   downloads?: { artifact?: Artifact; classifiers?: Record<string, Artifact> }
   url?: string
+  /**
+   * Marks a jar the launcher produced on this machine rather than fetched.
+   *
+   * OptiFine's library is patched out of the vanilla client jar at install time
+   * and exists on no maven repository, so it has to stay on the classpath while
+   * never being queued for download.
+   */
+  local?: boolean
   natives?: Record<string, string>
   extract?: { exclude?: string[] }
   rules?: Rule[]

@@ -125,6 +125,9 @@ export function resolveLibraries(version: VersionJson, dataDir: string): Resolve
       const destination = path.join(librariesDir, artifact.path ?? mavenPath(library.name))
       downloads.push({ url: artifact.url, destination, sha1: artifact.sha1, size: artifact.size })
       if (!library.natives) classpath.push(destination)
+    } else if (library.local) {
+      // Built locally by the loader install; there is nowhere to download it from.
+      classpath.push(path.join(librariesDir, mavenPath(library.name)))
     } else if (!library.natives) {
       // Loader manifests often give only a maven repository root.
       const relative = mavenPath(library.name)

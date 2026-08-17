@@ -7,7 +7,7 @@ import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 
-const LOADERS: LoaderId[] = ['vanilla', 'fabric', 'quilt', 'neoforge', 'forge']
+const LOADERS: LoaderId[] = ['vanilla', 'fabric', 'quilt', 'neoforge', 'forge', 'optifine']
 const ICONS = ['🎮', '⛏️', '🌲', '🔥', '🧪', '🏰', '🚀', '🐉', '💎', '🌌', '🍄', '⚙️']
 
 export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void }): JSX.Element {
@@ -346,6 +346,12 @@ function CreateProfileModal({
             </button>
           ))}
         </div>
+        {loader === 'optifine' && (
+          <p className="field__hint">
+            OptiFine bir mod yükleyicisi değildir: bu profil Fabric veya Forge modlarını çalıştıramaz,
+            yalnızca OptiFine shader ve doku paketlerini kullanır.
+          </p>
+        )}
       </div>
 
       <div className="field">

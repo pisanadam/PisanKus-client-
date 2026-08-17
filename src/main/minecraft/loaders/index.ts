@@ -4,6 +4,8 @@ import type { LoaderId } from '../../../shared/types'
 import { downloadFile, fetchJson } from '../downloader'
 import { compareVersions, type VersionJson } from '../versions'
 import { extractZip } from '../../archive'
+import { installOptiFine } from './optifine'
+import { listOptiFineVersions } from './optifineSite'
 
 /** Meta endpoints for the loaders sharing Fabric's API shape. */
 const FABRIC_LIKE: Partial<Record<LoaderId, string>> = {
@@ -66,6 +68,11 @@ export async function listLoaderVersions(loader: LoaderId, gameVersion: string):
       return neoForgeVersions(gameVersion)
     case 'forge':
       return forgeVersions(gameVersion)
+    case 'optifine':
+      return (await listOptiFineVersions(gameVersion)).map((release) => ({
+        version: release.version,
+        stable: !release.preview
+      }))
   }
 }
 
@@ -82,6 +89,8 @@ export function loaderVersionId(loader: LoaderId, gameVersion: string, loaderVer
       return `neoforge-${loaderVersion}`
     case 'forge':
       return `${loaderVersion}-forge`
+    case 'optifine':
+      return `${gameVersion}-OptiFine_${loaderVersion}`
   }
 }
 
@@ -106,6 +115,9 @@ async function installedLoaderVersionId(
       if (loader === 'quilt') return id.startsWith('quilt-loader-') && id.endsWith(`-${gameVersion}`)
       if (loader === 'forge') return id.startsWith(`${gameVersion}-`) && id.endsWith('-forge')
       if (loader === 'neoforge') return id.startsWith(`neoforge-${neoForgeGamePrefix(gameVersion)}`)
+      // The version json is written only after OptiFine's jars are in place, so
+      // finding it is enough to know the install completed.
+      if (loader === 'optifine') return id.startsWith(`${gameVersion}-OptiFine_`)
       return id === gameVersion
     })
     .sort(compareVersions)
@@ -129,7 +141,9 @@ export async function installLoader(
   gameVersion: string,
   loaderVersion: string | undefined,
   onProgress?: (detail: string) => void,
-  offline = false
+  offline = false,
+  /** Java the player configured, if any. Only OptiFine runs a JVM to install. */
+  javaPath?: string
 ): Promise<string> {
   if (loader === 'vanilla') return gameVersion
 
@@ -165,6 +179,14 @@ export async function installLoader(
     json = await fetchJson<VersionJson>(
       `${FABRIC_LIKE[loader]}/versions/loader/${encodeURIComponent(gameVersion)}/${encodeURIComponent(resolved)}/profile/json`
     )
+  } else if (loader === 'optifine') {
+    json = await installOptiFine({
+      dataDir,
+      gameVersion,
+      version: resolved,
+      javaPath,
+      onProgress
+    })
   } else if (loader === 'neoforge') {
     json = await installFromInstaller(
       dataDir,
