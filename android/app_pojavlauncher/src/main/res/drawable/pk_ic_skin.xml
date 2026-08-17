@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A character seen from the front: the same thing the skin screen previews. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M8,2h8v7h-8zM4,10h4v7h-4zM16,10h4v7h-4zM8,10h8v5h-8zM8,16h3.5v6h-3.5zM12.5,16h3.5v6h-3.5z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="2" android:startY="2"
+                android:endX="22" android:endY="22"
+                android:type="linear">
+                <item android:offset="0" android:color="#FF14B8B8" />
+                <item android:offset="1" android:color="#FFFFE17A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

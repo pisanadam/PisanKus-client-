@@ -83,6 +83,15 @@ kendi klasörüne iner. Dosya adları sabitlenmediği için paket, yeni bir Mine
 sürümü çıktığında liste düzenlenmeden çalışmaya devam eder; o sürüme henüz
 yayınlanmamış modlar atlanır.
 
+### 8. Skin değiştirme
+
+`PisanKusSkins.java`, `PisanKusSkinPreview.java`, `fragments/SkinFragment.java`
+
+Üst kaynakta yoktu. Masaüstü uygulamasının kullandığı Mojang profil uçlarının
+aynısı: skin hesaba ait, cihaza değil. Ana menüde, gizlenen Discord düğmesinin
+bıraktığı boşluğa kondu. Önizleme, dokudaki ön yüzleri düz olarak birleştirir —
+skin dosyasını olduğu gibi göstermek oyuncuya bir şey anlatmıyor.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.

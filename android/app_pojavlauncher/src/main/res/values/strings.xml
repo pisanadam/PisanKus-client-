@@ -23,6 +23,21 @@
     <string name="pisan_optimized_progress_loader">Fabric hazırlanıyor…</string>
     <string name="pisan_optimized_progress_mod">Mod %1$d/%2$d: %3$s</string>
     <string name="pisan_optimized_no_loader">%1$s için Fabric sürümü bulunamadı.</string>
+    <!-- Skin -->
+    <string name="pisan_skin_title">Skin değiştir</string>
+    <string name="pisan_skin_button">Skin</string>
+    <string name="pisan_skin_pick">PNG seç</string>
+    <string name="pisan_skin_apply">Uygula</string>
+    <string name="pisan_skin_reset">Varsayılana dön</string>
+    <string name="pisan_skin_variant_classic">Klasik</string>
+    <string name="pisan_skin_variant_slim">İnce</string>
+    <string name="pisan_skin_loading">Skin okunuyor…</string>
+    <string name="pisan_skin_current">Hesabınızın şu anki skini</string>
+    <string name="pisan_skin_none">Hesabınızda özel skin yok</string>
+    <string name="pisan_skin_picked">Önizleme hazır — uygulamak için Uygula\'ya basın</string>
+    <string name="pisan_skin_uploading">Gönderiliyor…</string>
+    <string name="pisan_skin_applied">Skin değiştirildi</string>
+
     <string name="pisan_optimized_essential_missing">%1$s henüz %2$s sürümü için yayınlanmamış. Paket bu sürüme kurulamıyor; başka bir sürüm seçin.</string>
 
     <!-- Action bar part -->
