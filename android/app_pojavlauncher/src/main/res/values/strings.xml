@@ -13,6 +13,18 @@
     <string name="pisankus_update_installing">Kurulum ekranı açılıyor…</string>
     <string name="pisankus_update_failed">Başarısız: %1$s</string>
 
+    <!-- Pisan Optimized: the launcher's own mod pack. Turkish in the default
+         file on purpose, like the strings above: these name our own features,
+         and upstream's translations will never carry them. -->
+    <string name="pisan_optimized_title">Pisan Optimized</string>
+    <string name="pisan_optimized_button">Pisan Optimized kur</string>
+    <string name="pisan_optimized_summary">PisanKus performans paketi — %1$d mod, Fabric profili olarak kurulur.</string>
+    <string name="pisan_optimized_note">Modlar bu profile ait ayrı bir klasöre kurulur; diğer profilleriniz etkilenmez. Seçtiğiniz sürüm için yayınlanmamış modlar atlanır.</string>
+    <string name="pisan_optimized_progress_loader">Fabric hazırlanıyor…</string>
+    <string name="pisan_optimized_progress_mod">Mod %1$d/%2$d: %3$s</string>
+    <string name="pisan_optimized_no_loader">%1$s için Fabric sürümü bulunamadı.</string>
+    <string name="pisan_optimized_essential_missing">%1$s henüz %2$s sürümü için yayınlanmamış. Paket bu sürüme kurulamıyor; başka bir sürüm seçin.</string>
+
     <!-- Action bar part -->
 
     <!-- Languages list part -->

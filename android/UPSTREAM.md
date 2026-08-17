@@ -49,9 +49,43 @@ binlerce içe aktarma ona bağlı ve değiştirmek, kazanılan hiçbir şey kar�
 turkuaza (`#14b8b8`) çevrildi, nötr griler masaüstü uygulamasının turkuaz
 tonlu koyu paletine taşındı, açık sarı vurgu ve koyu yazı rengi eklendi.
 
+### 4. Tema ve ekranlar
+
+`res/values/styles.xml` paleti tema düzeyinde taşır; `pk_preference*`,
+`pk_card*`, `pk_ambient_background` ve `pk_ic_*` kaynakları eklendi. Ayarlar,
+profil ve kurulum ekranları masaüstü uygulamasının kart düzenine ve kenarlardan
+gelen turkuaz–sarı ambiansına getirildi. `mine_button_*_shape.xml`, rengi
+bitmap'e gömülü olan nine-patch'in yerini aldı.
+
+### 5. Uygulama içi güncelleme
+
+`PisanKusUpdater.java` sürümü GitHub'daki yayından okur, APK'yı indirir ve
+kurulum ekranını açar; ayarlardaki "Güncellemeleri denetle" düğmesi buna bağlı.
+`versionCode` `10000000 + yapı numarası` olarak üretilir — Android yükseltme
+kararını yalnızca bu sayıya bakarak verir.
+
+### 6. Better Than Adventure kaldırıldı
+
+`fragments/ProfileTypeSelectFragment.java`, `res/layout/fragment_profile_type.xml`
+
+Ayrı bir oyun; PisanKus'un dağıttığı bir şey değil. Yerine Pisan Optimized
+kondu. `BTAInstallFragment` ve `modloaders/BTA*` dosyaları, üst kaynakla farkı
+büyütmemek için yerinde bırakıldı — hiçbir yerden çağrılmıyorlar.
+
+### 7. Pisan Optimized
+
+`PisanOptimizedInstaller.java`, `modloaders/PisanOptimizedDownloadTask.java`,
+`fragments/PisanOptimizedInstallFragment.java`
+
+Masaüstü uygulamasının paketinin aynısı (`src/shared/curatedPack.ts`). Seçilen
+sürüm için Fabric kurulur, modlar Modrinth'ten o sürüme göre çözülerek profilin
+kendi klasörüne iner. Dosya adları sabitlenmediği için paket, yeni bir Minecraft
+sürümü çıktığında liste düzenlenmeden çalışmaya devam eder; o sürüme henüz
+yayınlanmamış modlar atlanır.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.
 2. Yeni kaynağı aynı yöntemle çek (yalnızca izlenen dosyalar).
-3. Yukarıdaki üç değişikliği yeniden uygula.
+3. Yukarıdaki değişiklikleri yeniden uygula.
 4. Bu dosyadaki commit bilgisini güncelle.
