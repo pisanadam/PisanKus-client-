@@ -134,7 +134,9 @@ jobs:
 
             Bu kanal yalnızca masaüstü istemcileri içindir. Android sürümü ayrı yayımlanır.
           prerelease: false
-          make_latest: true
+          # Keep GitHub's global latest pointer on Android so installations made
+          # before the channel split can receive the one-time bridge update.
+          make_latest: false
           overwrite_files: true
 
       - name: Publish pinned desktop release

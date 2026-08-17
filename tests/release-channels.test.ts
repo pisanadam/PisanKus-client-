@@ -20,8 +20,17 @@ test('each updater is pinned to its own channel', () => {
   const android = read('android/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/PisanKusUpdater.java')
 
   assert.match(desktop, /desktop-latest/)
+  assert.match(desktop, /provider: 'generic'/)
   assert.doesNotMatch(desktop, /android-latest/)
   assert.match(android, /android-latest\/android-update\.json/)
   assert.doesNotMatch(android, /releases\/latest/)
   assert.match(android, /publishedCode <= BuildConfig\.VERSION_CODE/)
+})
+
+test('repository latest remains the Android migration bridge', () => {
+  const desktop = read('.github/workflows/release.yml')
+  const android = read('.github/workflows/android-release.yml')
+
+  assert.match(desktop, /tag_name: desktop-latest[\s\S]*?make_latest: false/)
+  assert.match(android, /tag_name: android-latest[\s\S]*?make_latest: true/)
 })

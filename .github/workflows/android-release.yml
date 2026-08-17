@@ -174,7 +174,9 @@ jobs:
 
             Masaüstü güncellemeleri bu kanalı değiştirmez.
           prerelease: false
-          make_latest: false
+          # Old Android builds read /releases/latest. Keeping this release as the
+          # repository latest lets them migrate to android-update.json once.
+          make_latest: true
           overwrite_files: true
 
       - name: Publish pinned Android release

@@ -3,6 +3,8 @@ import { autoUpdater } from 'electron-updater'
 import type { UpdateStatus } from '../shared/types'
 
 const RELEASES_PAGE = 'https://github.com/pisanadam/PisanKus-client-/releases/tag/desktop-latest'
+const DESKTOP_FEED =
+  'https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest'
 
 /**
  * Whether the running build can replace itself in place.
@@ -73,6 +75,10 @@ export function initUpdater(onStatus: (status: UpdateStatus) => void, focus: () 
   // a running game would be worse than a stale version.
   autoUpdater.autoInstallOnAppQuit = false
   autoUpdater.logger = null
+  // Do not use GitHub's repository-wide latest pointer: it intentionally stays
+  // on Android so pre-split Android installations can migrate. A generic feed
+  // pins every desktop check and download to desktop-latest instead.
+  autoUpdater.setFeedURL({ provider: 'generic', url: DESKTOP_FEED })
 
   autoUpdater.on('update-available', (info) => {
     set({ state: 'available', version: info.version, canSelfUpdate })
