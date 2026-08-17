@@ -74,6 +74,9 @@ configurations {
 
 // CI passes its run number; anything else is a local build.
 def pisanKusBuild = (System.getenv("PISANKUS_BUILD") ?: "1") as int
+// Android has its own deliberately slow version line. CI passes the version
+// only when an Android release is intentionally cut.
+def pisanKusVersion = System.getenv("PISANKUS_VERSION") ?: "1.1." + pisanKusBuild
 
 android {
     namespace 'net.kdt.pojavlaunch'
@@ -121,11 +124,11 @@ android {
         // old constant as a floor makes every published build sort above every
         // build that came before the change, and above each other.
         versionCode 10000000 + pisanKusBuild
-        versionName "1.1." + pisanKusBuild
+        versionName pisanKusVersion
 
         // Exposed as a resource so the settings screen can show it without any
         // code to look it up.
-        resValue "string", "pisankus_version", "1.1." + pisanKusBuild
+        resValue "string", "pisankus_version", pisanKusVersion
         multiDexEnabled true //important
         resValue 'string', 'curseforge_api_key', getCFApiKey()
         externalNativeBuild {

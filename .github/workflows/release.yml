@@ -1,159 +1,29 @@
-name: Release
+name: Desktop Release
 
-# Packages are published automatically: every push to main refreshes the rolling
-# "latest" release, so the download page always has working links without anyone
-# cutting a release by hand. Pushing a v* tag additionally publishes a pinned
-# versioned release.
-# Runs on whatever the repository's default branch is called, so packaging works
-# before anyone creates a branch named "main".
+# Desktop is the fast channel: every push to the repository default branch
+# refreshes desktop-latest. Android is deliberately absent from this workflow.
 on:
   push:
     branches: ['**']
-    tags: ['v*']
+    tags:
+      - 'v*'
+      - 'desktop-v*'
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # The Android launcher. Signing needs no secrets: the release build falls back
-  # to the keystore already committed in the repository, which is enough to make
-  # the package installable. See app_pojavlauncher/build.gradle for what that
-  # costs and when it must change.
-  android:
-    name: Android
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      startsWith(github.ref, 'refs/tags/') ||
-      github.ref_name == github.event.repository.default_branch
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # Two JDKs, both required. Gradle itself runs on 17, but the MioLibPatcher
-      # module asks for a language level 8 toolchain and the build stops during
-      # configuration without one: "Cannot find a Java installation ... matching
-      # {languageVersion=8}". Installing 8 last leaves JAVA_HOME on 17.
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 8
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - uses: gradle/actions/setup-gradle@v4
-
-      # The launcher compiles native code, so the exact NDK the project pins has
-      # to be present; runners ship a different one.
-      - name: Install NDK and CMake
-        run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.3.13750724" "cmake;3.22.1"
-
-      # Without these the APK ships with no Java runtime at all and the game
-      # never starts: pickRuntime finds nothing and throws "Failed to autopick
-      # runtime!". The runtimes are built separately and published as workflow
-      # artifacts, which is why they are fetched rather than vendored.
-      #
-      # One per Java generation, because Minecraft needs different ones: 8 for
-      # versions up to 1.16, 17 for 1.17–1.20.4, 21 for 1.20.5 and newer.
-      - name: Get JRE 8
-        uses: dawidd6/action-download-artifact@v9
-        with:
-          workflow: build.yml
-          path: android/app_pojavlauncher/src/main/assets/components/jre
-          workflow_conclusion: completed
-          repo: AngelAuraMC/angelauramc-openjdk-build
-          branch: buildjre8
-          name: jre8-pojav
-
-      - name: Get JRE 17
-        continue-on-error: true
-        uses: dawidd6/action-download-artifact@v9
-        with:
-          workflow: build.yml
-          path: android/app_pojavlauncher/src/main/assets/components/jre-new
-          workflow_conclusion: completed
-          repo: AngelAuraMC/angelauramc-openjdk-build
-          branch: buildjre17-21
-          name: jre17-pojav
-
-      - name: Get JRE 21
-        continue-on-error: true
-        uses: dawidd6/action-download-artifact@v9
-        with:
-          workflow: build.yml
-          path: android/app_pojavlauncher/src/main/assets/components/jre-21
-          workflow_conclusion: completed
-          repo: AngelAuraMC/angelauramc-openjdk-build
-          branch: buildjre17-21
-          name: jre21-pojav
-
-      # A missing runtime is the one failure that only shows up on a device, so
-      # it is checked here instead.
-      - name: Verify runtimes arrived
-        run: |
-          cd android/app_pojavlauncher/src/main/assets/components
-          # Java 8 is the one the launcher cannot do without: every Minecraft
-          # version needs some runtime, and 8 is the only one always published.
-          count=$(find jre -type f 2>/dev/null | wc -l)
-          echo "jre (Java 8): $count dosya"
-          [ "$count" -gt 0 ] || { echo "::error::Java 8 çalışma zamanı inmemiş"; exit 1; }
-
-          for dir in jre-new jre-21; do
-            count=$(find "$dir" -type f 2>/dev/null | wc -l)
-            echo "$dir: $count dosya"
-            [ "$count" -gt 0 ] || echo "::warning::$dir yok — bu Java'yı isteyen Minecraft sürümleri başlamayacak"
-          done
-
-      - name: Build
-        working-directory: android
-        env:
-          # Monotonic, so an installed copy always sees a published build as
-          # newer. Android upgrades strictly by this number.
-          PISANKUS_BUILD: ${{ github.run_number }}
-        run: |
-          ./gradlew --no-daemon \
-            -Porg.gradle.java.installations.paths="${JAVA_HOME_8_X64},${JAVA_HOME_17_X64}" \
-            :app_pojavlauncher:assembleDebug :app_pojavlauncher:assembleRelease
-
-      # Proves the branding actually reached the package rather than just the
-      # build files: a build type's resValue can quietly override app_name.
-      - name: Verify identity
-        working-directory: android
-        run: |
-          badging=$("$ANDROID_HOME"/build-tools/35.0.0/aapt2 dump badging \
-            app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk)
-          echo "$badging" | grep -E "^package: name|application-label:'"
-          echo "$badging" | grep -q "name='com.pisankus.client" \
-            || { echo "::error::Paket adı PisanKus değil"; exit 1; }
-          echo "$badging" | grep -q "application-label:'PisanKus Client" \
-            || { echo "::error::Uygulama etiketi PisanKus Client değil"; exit 1; }
-
-      - name: Package signed APK
-        working-directory: android
-        run: |
-          apk=app_pojavlauncher/build/outputs/apk/release/app_pojavlauncher-release.apk
-          [ -f "$apk" ] || { echo "::error::İmzalı APK üretilmedi."; exit 1; }
-          "$ANDROID_HOME"/build-tools/35.0.0/apksigner verify "$apk"
-          mkdir -p out && cp "$apk" out/PisanKusClient-android.apk
-
-      # Only this upload puts the APK on the download page; the publish job
-      # collects every artifact in the run.
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android-package
-          path: android/out/PisanKusClient-android.apk
-          if-no-files-found: error
-
   package:
     name: Package ${{ matrix.os }}
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      startsWith(github.ref, 'refs/tags/') ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      startsWith(github.ref, 'refs/tags/desktop-v') ||
       github.ref_name == github.event.repository.default_branch
     runs-on: ${{ matrix.os }}
     strategy:
@@ -182,26 +52,20 @@ jobs:
           npm audit --omit=dev --audit-level=high
           npm test
 
-      # electron-updater compares the version inside latest*.yml against the
-      # version of the installed build. package.json alone never changes, so
-      # every rolling build would look identical to the one already installed
-      # and no update would ever be offered. The run number is monotonic, which
-      # is all semver needs here.
-      - name: Stamp build version
+      - name: Stamp desktop version
         shell: bash
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/desktop-v* ]]; then
+            version="${GITHUB_REF#refs/tags/desktop-v}"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             version="${GITHUB_REF#refs/tags/v}"
           else
             series=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')")
             version="$series.$GITHUB_RUN_NUMBER"
           fi
           npm version --no-git-tag-version --allow-same-version "$version"
-          echo "Yapı sürümü: $version"
+          echo "Masaüstü yapı sürümü: $version"
 
-      # electron-builder pulls its helper binaries (electron, nsis, winCodeSign…)
-      # from GitHub releases on every run. Caching them removes most of the
-      # network exposure that makes packaging flaky.
       - name: Cache packaging binaries
         uses: actions/cache@v4
         with:
@@ -215,9 +79,6 @@ jobs:
           key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
           restore-keys: ${{ runner.os }}-electron-
 
-      # Those downloads still fail outright now and then — a dropped connection
-      # mid-transfer aborts the whole build. Retrying costs a few minutes; not
-      # retrying leaves one platform's package stale on the rolling release.
       - name: Build installers
         shell: bash
         run: |
@@ -233,7 +94,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-packages
+          name: ${{ matrix.os }}-desktop-packages
           path: |
             release/*.exe
             release/*.dmg
@@ -244,13 +105,8 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: Publish
-    needs: [package, android]
-    # One platform failing should not withhold the packages that did build; the
-    # download page reports any platform whose asset is missing. A matrix job's
-    # result collapses to a single value, so this cannot test individual
-    # platforms — the artifact check below decides whether there is anything to
-    # publish.
+    name: Publish desktop channel
+    needs: package
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
@@ -259,64 +115,33 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Check something was built
+      - name: Check packages
         run: |
           ls -lh artifacts
           if [ -z "$(ls -A artifacts 2>/dev/null)" ]; then
-            echo "::error::Hiçbir platform paketlenemedi; yayımlanacak dosya yok."
+            echo "::error::Hiçbir masaüstü paketi üretilemedi."
             exit 1
           fi
 
-      # Rolling release. The tag is moved to the built commit each time, which is
-      # what keeps github.com/<repo>/releases/latest/download/<name> resolving.
-      - name: Publish rolling build
-        if: startsWith(github.ref, 'refs/tags/') == false
+      - name: Publish rolling desktop channel
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
-          tag_name: latest
-          name: Son sürüm (otomatik)
+          tag_name: desktop-latest
+          name: Masaüstü — son sürüm
           body: |
-            `main` dalındaki son commit'ten otomatik üretilen paketler.
+            Windows, macOS ve Linux için sık yayımlanan küçük güncellemeler.
 
-            Bu sürüm her push'ta güncellenir; aşağıdaki bağlantılar her zaman en yeni yapıyı indirir.
+            Bu kanal yalnızca masaüstü istemcileri içindir. Android sürümü ayrı yayımlanır.
           prerelease: false
           make_latest: true
+          overwrite_files: true
 
-      # The rolling release is never recreated, only added to, so an artifact
-      # that changes name leaves its predecessor sitting there for good. That is
-      # exactly what the Opbay → PisanKus rename did: both sets of installers
-      # ended up side by side, with the retired brand still on the page.
-      #
-      # Only files whose name no longer matches the build are removed, so a
-      # platform that failed this run keeps the copy it published last time —
-      # which is the whole point of publishing partial builds.
-      - name: Retire renamed assets
-        if: startsWith(github.ref, 'refs/tags/') == false
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          prefix=$(ls artifacts | grep -m1 -E '\.(exe|dmg|AppImage|deb)$' | sed 's/-.*//')
-          if [ -z "$prefix" ]; then
-            echo "::warning::Kurulum dosyası bulunamadı; temizlik atlanıyor."
-            exit 0
-          fi
-          echo "Geçerli önek: $prefix"
-
-          gh release view latest --repo "$GITHUB_REPOSITORY" \
-            --json assets --jq '.assets[].name' > existing.txt
-
-          while read -r name; do
-            case "$name" in
-              ''|latest*.yml|"$prefix"-*) continue ;;
-            esac
-            echo "Eski markaya ait dosya siliniyor: $name"
-            gh release delete-asset latest "$name" --repo "$GITHUB_REPOSITORY" --yes
-          done < existing.txt
-
-      - name: Publish tagged release
+      - name: Publish pinned desktop release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
           generate_release_notes: true
+          make_latest: false
+          overwrite_files: true

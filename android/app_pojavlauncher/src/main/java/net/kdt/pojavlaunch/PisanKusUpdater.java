@@ -8,31 +8,25 @@ import android.os.Looper;
 
 import androidx.core.content.FileProvider;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 /**
- * Checks for a newer published build, downloads it and hands it to Android's
- * installer.
- *
- * The launcher is distributed outside any store, so nothing updates it on our
- * behalf. Versions are compared by version code rather than by name: that is
- * the only number Android itself honours when deciding whether one package
- * upgrades another, so agreeing with it avoids offering an "update" the system
- * would then refuse to install.
+ * Checks only the Android release channel, downloads the APK and hands it to
+ * Android's installer. Desktop releases can never trigger this updater.
  */
 public class PisanKusUpdater {
-    /** Rolling release; the tag never moves off "latest". */
-    private static final String RELEASE_API =
-            "https://api.github.com/repos/pisanadam/PisanKus-client-/releases/latest";
+    private static final String METADATA_URL =
+            "https://github.com/pisanadam/PisanKus-client-/releases/download/android-latest/android-update.json";
     private static final String ASSET_NAME = "PisanKusClient-android.apk";
 
     public interface Listener {
@@ -56,24 +50,34 @@ public class PisanKusUpdater {
     public void checkAndInstall() {
         new Thread(() -> {
             try {
-                String body = read(RELEASE_API);
-                JSONObject release = new JSONObject(body);
-                String tag = release.optString("name", release.optString("tag_name", ""));
+                // A cache-buster matters because the rolling asset keeps the
+                // same URL even when a new large Android release is published.
+                JSONObject metadata = new JSONObject(
+                        read(METADATA_URL + "?build=" + System.currentTimeMillis()));
+                long publishedCode = metadata.getLong("versionCode");
+                String publishedName = metadata.getString("versionName");
 
-                // The published build number is carried in the asset's own
-                // version, which is not in the release JSON, so the release body
-                // is not authoritative. What is authoritative is whether the
-                // downloaded package installs: Android rejects a same-or-older
-                // version code by itself. The check below is therefore a hint,
-                // and the installer has the final say.
-                String url = assetUrl(release);
-                if (url == null) {
-                    post(() -> listener.onFailed("Yayında Android paketi bulunamadı."));
+                if (publishedCode <= BuildConfig.VERSION_CODE) {
+                    post(() -> listener.onUpToDate(BuildConfig.VERSION_NAME));
                     return;
                 }
 
-                post(() -> listener.onUpdateFound(tag));
+                String url = metadata.getString("downloadUrl");
+                String expectedSha256 = metadata.getString("sha256");
+                post(() -> listener.onUpdateFound(publishedName));
+
                 File apk = download(url);
+                String actualSha256 = sha256(apk);
+                if (!expectedSha256.equalsIgnoreCase(actualSha256)) {
+                    // Never hand a truncated or replaced package to the installer.
+                    // The public debug signing key cannot provide provenance, so
+                    // the release metadata checksum is still a useful integrity
+                    // check against broken downloads.
+                    //noinspection ResultOfMethodCallIgnored
+                    apk.delete();
+                    throw new IllegalStateException("İndirilen Android paketinin doğrulaması başarısız.");
+                }
+
                 post(listener::onReadyToInstall);
                 post(() -> install(apk));
             } catch (Exception e) {
@@ -83,21 +87,11 @@ public class PisanKusUpdater {
         }, "PisanKusUpdater").start();
     }
 
-    private String assetUrl(JSONObject release) {
-        JSONArray assets = release.optJSONArray("assets");
-        if (assets == null) return null;
-        for (int i = 0; i < assets.length(); i++) {
-            JSONObject asset = assets.optJSONObject(i);
-            if (asset != null && ASSET_NAME.equals(asset.optString("name"))) {
-                return asset.optString("browser_download_url", null);
-            }
-        }
-        return null;
-    }
-
     private String read(String url) throws Exception {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestProperty("Accept", "application/vnd.github+json");
+        connection.setInstanceFollowRedirects(true);
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Cache-Control", "no-cache");
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(20000);
         try (InputStream in = connection.getInputStream()) {
@@ -111,11 +105,6 @@ public class PisanKusUpdater {
         }
     }
 
-    /**
-     * Downloads into the app's own cache. A file there needs no storage
-     * permission, and Android clears it if space runs short — which is the right
-     * behaviour for a 150 MB package that is useless once installed.
-     */
     private File download(String url) throws Exception {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setInstanceFollowRedirects(true);
@@ -147,13 +136,19 @@ public class PisanKusUpdater {
         return target;
     }
 
-    /**
-     * Hands the package to the system installer.
-     *
-     * A file:// path is refused outright on modern Android, so the APK is shared
-     * through the provider already declared for the game folder, with read
-     * permission granted to whoever handles the intent.
-     */
+    private String sha256(File file) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream in = new FileInputStream(file)) {
+            byte[] buffer = new byte[64 * 1024];
+            int count;
+            while ((count = in.read(buffer)) != -1) digest.update(buffer, 0, count);
+        }
+
+        StringBuilder value = new StringBuilder();
+        for (byte item : digest.digest()) value.append(String.format("%02x", item));
+        return value.toString();
+    }
+
     private void install(File apk) {
         try {
             Uri uri = FileProvider.getUriForFile(activity,

@@ -34,7 +34,7 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 
 ## Platformlar
 
-Windows, macOS (Intel + Apple Silicon) ve Linux. Paketler her güncellemede otomatik derlenir.
+Windows, macOS (Intel + Apple Silicon), Linux ve Android. Masaüstü sık; Android ise seyrek ve toplu güncellenir.
 
 ## Kurulum
 
@@ -97,24 +97,30 @@ Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulama
 
 ## Yayınlama
 
-Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
+Masaüstü ve Android birbirinden bağımsız iki yayın kanalı kullanır. Böylece masaüstündeki küçük ve sık
+değişiklikler Android kullanıcılarına gereksiz güncelleme olarak görünmez.
 
-- **Paketler:** Deponun varsayılan dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon) ve
-  Linux paketleri derlenir ve `latest` sürümüne yüklenir. İş akışları dal adını sabit yazmaz; deponun
-  varsayılan dalı neyse orada çalışırlar. Paket adları sürüm numarası içermediği için indirme bağlantıları
-  sabittir:
+- **Masaüstü — `desktop-latest`:** Varsayılan dala her gönderimde Windows, macOS ve Linux paketleri
+  otomatik yenilenir. Sabit indirme adresleri:
 
   ```
-  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-win-x64.exe
-  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-mac-arm64.dmg
-  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-mac-x64.dmg
-  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-linux-x64.AppImage
-  https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-linux-x64.deb
+  https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest/PisanKusClient-win-x64.exe
+  https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest/PisanKusClient-mac-arm64.dmg
+  https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest/PisanKusClient-mac-x64.dmg
+  https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest/PisanKusClient-linux-x64.AppImage
+  https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest/PisanKusClient-linux-x64.deb
   ```
 
-  İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.
-  Sabitlenmiş bir sürüm istersen `v*` etiketi gönder (`git tag v1.1.0 && git push --tags`); ayrıca
-  numaralandırılmış bir Release oluşturulur.
+  Numaralandırılmış masaüstü sürümü için `desktop-v1.2.0` etiketi gönderilir. Eski `v1.2.0` biçimi de
+  uyumluluk için desteklenir.
+
+- **Android — `android-latest`:** Normal kod gönderimleri Android APK üretmez. Özellikler biriktikten sonra
+  `android-v1.2.0` etiketi gönderilir veya GitHub Actions içindeki **Android Release** işi sürüm numarasıyla
+  elle çalıştırılır. Android uygulaması yalnızca bu kanalın `android-update.json` dosyasını kontrol eder:
+
+  ```
+  https://github.com/pisanadam/PisanKus-client-/releases/download/android-latest/PisanKusClient-android.apk
+  ```
 
 - **İndirme sayfası:** Varsayılan dala her gönderimde GitHub Pages'e dağıtılır:
   <https://pisanadam.github.io/PisanKus-client-/> — adres büyük/küçük harfe duyarlıdır.

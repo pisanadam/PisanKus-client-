@@ -1,0 +1,187 @@
+name: Android Release
+
+# Android is the slow channel. It is never rebuilt by ordinary branch pushes:
+# publish only an intentional android-v* tag or run this workflow with a version.
+on:
+  push:
+    tags:
+      - 'android-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Android sürümü (ör. 1.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve Android version
+        id: version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/android-v* ]]; then
+            version="${GITHUB_REF#refs/tags/android-v}"
+          else
+            version="${{ inputs.version }}"
+          fi
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Android sürümü 1.2.0 biçiminde olmalı."
+            exit 1
+          fi
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+          echo "Android sürümü: $version"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install NDK and CMake
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.3.13750724" "cmake;3.22.1"
+
+      - name: Get JRE 8
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: android/app_pojavlauncher/src/main/assets/components/jre
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre8
+          name: jre8-pojav
+
+      - name: Get JRE 17
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: android/app_pojavlauncher/src/main/assets/components/jre-new
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre17-21
+          name: jre17-pojav
+
+      - name: Get JRE 21
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: android/app_pojavlauncher/src/main/assets/components/jre-21
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre17-21
+          name: jre21-pojav
+
+      - name: Verify runtimes
+        run: |
+          cd android/app_pojavlauncher/src/main/assets/components
+          count=$(find jre -type f 2>/dev/null | wc -l)
+          [ "$count" -gt 0 ] || { echo "::error::Java 8 çalışma zamanı inmemiş"; exit 1; }
+
+          for dir in jre-new jre-21; do
+            count=$(find "$dir" -type f 2>/dev/null | wc -l)
+            [ "$count" -gt 0 ] || echo "::warning::$dir yok — bu Java'yı isteyen Minecraft sürümleri başlamayacak"
+          done
+
+      - name: Build Android package
+        working-directory: android
+        env:
+          PISANKUS_BUILD: ${{ github.run_number }}
+          PISANKUS_VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          ./gradlew --no-daemon \
+            -Porg.gradle.java.installations.paths="${JAVA_HOME_8_X64},${JAVA_HOME_17_X64}" \
+            :app_pojavlauncher:assembleRelease
+
+      - name: Verify identity and signature
+        working-directory: android
+        run: |
+          apk=app_pojavlauncher/build/outputs/apk/release/app_pojavlauncher-release.apk
+          [ -f "$apk" ] || { echo "::error::İmzalı APK üretilmedi."; exit 1; }
+          "$ANDROID_HOME"/build-tools/35.0.0/apksigner verify "$apk"
+
+          badging=$("$ANDROID_HOME"/build-tools/35.0.0/aapt2 dump badging "$apk")
+          echo "$badging" | grep -q "name='com.pisankus.client" \
+            || { echo "::error::Paket adı PisanKus değil"; exit 1; }
+          echo "$badging" | grep -q "versionName='${{ steps.version.outputs.name }}'" \
+            || { echo "::error::APK sürümü beklenen değer değil"; exit 1; }
+
+      - name: Package APK and update metadata
+        working-directory: android
+        env:
+          PISANKUS_VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          apk=app_pojavlauncher/build/outputs/apk/release/app_pojavlauncher-release.apk
+          mkdir -p out
+          cp "$apk" out/PisanKusClient-android.apk
+          sha=$(sha256sum out/PisanKusClient-android.apk | cut -d' ' -f1)
+          version_code=$((10000000 + GITHUB_RUN_NUMBER))
+          cat > out/android-update.json <<EOF
+          {
+            "versionCode": $version_code,
+            "versionName": "$PISANKUS_VERSION",
+            "downloadUrl": "https://github.com/pisanadam/PisanKus-client-/releases/download/android-latest/PisanKusClient-android.apk",
+            "sha256": "$sha"
+          }
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-packages
+          path: |
+            android/out/PisanKusClient-android.apk
+            android/out/android-update.json
+          if-no-files-found: error
+
+  publish:
+    name: Publish Android channel
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-packages
+          path: artifacts
+
+      - name: Publish rolling Android channel
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          tag_name: android-latest
+          name: Android — son büyük sürüm
+          body: |
+            Android için seyrek yayımlanan, daha büyük değişiklik paketleri.
+
+            Masaüstü güncellemeleri bu kanalı değiştirmez.
+          prerelease: false
+          make_latest: false
+          overwrite_files: true
+
+      - name: Publish pinned Android release
+        if: startsWith(github.ref, 'refs/tags/android-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+          make_latest: false
+          overwrite_files: true
