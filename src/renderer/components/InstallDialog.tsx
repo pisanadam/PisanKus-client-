@@ -38,11 +38,18 @@ export function checkCompatibility(
     const matches = supports.loaders.some((loader) => accepted.includes(loader.toLowerCase()))
 
     if (!matches) {
-      issues.push(
-        profile.loader === 'vanilla'
-          ? 'Bu profilde mod yükleyici yok (vanilla)'
-          : `${profile.loader} yükleyicisi desteklenmiyor`
-      )
+      // OptiFine is picked like a loader but loads no mods; saying "OptiFine is
+      // not supported" would read as the mod's shortcoming rather than the
+      // profile's.
+      if (profile.loader === 'optifine') {
+        issues.push('OptiFine profilleri mod yüklemez; kaynak paketi ve shader kurulabilir')
+      } else {
+        issues.push(
+          profile.loader === 'vanilla'
+            ? 'Bu profilde mod yükleyici yok (vanilla)'
+            : `${profile.loader} yükleyicisi desteklenmiyor`
+        )
+      }
     }
   }
 

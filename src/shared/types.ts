@@ -1,6 +1,6 @@
 /** Types shared between the Electron main process and the React renderer. */
 
-export type LoaderId = 'vanilla' | 'fabric' | 'quilt' | 'forge' | 'neoforge'
+export type LoaderId = 'vanilla' | 'fabric' | 'quilt' | 'forge' | 'neoforge' | 'optifine'
 
 export type ContentKind = 'mod' | 'resourcepack' | 'shader' | 'datapack' | 'world' | 'modpack'
 
@@ -22,6 +22,18 @@ export type AuthMode = 'legacy' | 'azure'
  */
 export function loaderApplies(kind: ContentKind): boolean {
   return kind === 'mod' || kind === 'modpack'
+}
+
+/**
+ * Whether a loader is one that mods are published for.
+ *
+ * OptiFine is a loader here because it is chosen the same way and installs the
+ * same way, but it does not load mods — it patches the game itself. Filtering a
+ * mod search by it would return an empty list on every search, so it is treated
+ * like vanilla wherever mods are looked up.
+ */
+export function loadsMods(loader: LoaderId): boolean {
+  return loader !== 'vanilla' && loader !== 'optifine'
 }
 
 /** Where each kind of content is installed, relative to a profile directory. */

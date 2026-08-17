@@ -1,4 +1,4 @@
-import type { ContentKind, ProjectVersion, SearchQuery, SearchResult } from '../../shared/types'
+import { loadsMods, type ContentKind, type LoaderId, type ProjectVersion, type SearchQuery, type SearchResult } from '../../shared/types'
 import { fetchJson } from '../minecraft/downloader'
 
 const API = 'https://api.modrinth.com/v2'
@@ -60,7 +60,7 @@ export async function search(query: SearchQuery): Promise<SearchPage> {
   const facets: string[][] = [[`project_type:${projectType}`]]
   if (query.gameVersion) facets.push([`versions:${query.gameVersion}`])
   // Resource packs and shaders are loader-independent, so only filter mods/modpacks.
-  if (query.loader && query.loader !== 'vanilla' && (query.kind === 'mod' || query.kind === 'modpack')) {
+  if (query.loader && loadsMods(query.loader) && (query.kind === 'mod' || query.kind === 'modpack')) {
     facets.push([`categories:${query.loader}`])
   }
 
@@ -183,7 +183,9 @@ export async function listVersions(
 ): Promise<ProjectVersion[]> {
   const params = new URLSearchParams()
   if (gameVersion) params.set('game_versions', JSON.stringify([gameVersion]))
-  if (loader && loader !== 'vanilla') params.set('loaders', JSON.stringify([loader]))
+  // A facet string may be passed straight through here (a pack names its own),
+  // so only the launcher's own loader ids are filtered out.
+  if (loader && loadsMods(loader as LoaderId)) params.set('loaders', JSON.stringify([loader]))
 
   const versions = await fetchJson<ModrinthVersion[]>(
     `${API}/project/${encodeURIComponent(projectId)}/version?${params}`

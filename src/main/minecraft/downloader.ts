@@ -39,6 +39,18 @@ export async function fetchJson<T>(url: string, init: RequestInit = {}): Promise
   return (await response.json()) as T
 }
 
+/** For the one source that publishes no API: OptiFine's download pages. */
+export async function fetchText(url: string, init: RequestInit = {}): Promise<string> {
+  const response = await fetch(url, {
+    ...init,
+    headers: { 'User-Agent': USER_AGENT, ...(init.headers ?? {}) }
+  })
+  if (!response.ok) {
+    throw new Error(`İstek başarısız (${response.status} ${response.statusText}): ${url}`)
+  }
+  return await response.text()
+}
+
 export async function fileHash(file: string, algorithm: 'sha1' | 'sha256'): Promise<string> {
   const hash = createHash(algorithm)
   await pipeline(fs.createReadStream(file), hash)

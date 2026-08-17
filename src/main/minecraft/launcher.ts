@@ -244,9 +244,18 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       }
     }
 
-    const gameArgs = version.minecraftArguments
-      ? version.minecraftArguments.split(' ').map((arg) => substitute(arg, values))
-      : flattenArguments(version.arguments?.game as ArgumentEntry[], values, features)
+    // Pre-1.13 versions carry `minecraftArguments`, newer ones `arguments.game`.
+    // A loader installed on top of an old version writes the modern block even
+    // so — OptiFine's `--tweakClass` is the case here — and dropping it would
+    // start launchwrapper with nothing to load, so the two are joined rather
+    // than chosen between. Only one of them is ever populated by vanilla, so
+    // nothing is duplicated.
+    const gameArgs = [
+      ...(version.minecraftArguments
+        ? version.minecraftArguments.split(' ').map((arg) => substitute(arg, values))
+        : []),
+      ...flattenArguments(version.arguments?.game as ArgumentEntry[], values, features)
+    ]
 
     const args = [...jvmArgs, version.mainClass, ...gameArgs]
 

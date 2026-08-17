@@ -4,6 +4,7 @@ import type { LoaderId } from '../../../shared/types'
 import { downloadFile, fetchJson } from '../downloader'
 import { compareVersions, type VersionJson } from '../versions'
 import { extractZip } from '../../archive'
+import { installOptiFine, listOptiFineBuilds, optiFineVersionId } from './optifine'
 
 /** Meta endpoints for the loaders sharing Fabric's API shape. */
 const FABRIC_LIKE: Partial<Record<LoaderId, string>> = {
@@ -66,6 +67,11 @@ export async function listLoaderVersions(loader: LoaderId, gameVersion: string):
       return neoForgeVersions(gameVersion)
     case 'forge':
       return forgeVersions(gameVersion)
+    case 'optifine':
+      return (await listOptiFineBuilds(gameVersion)).map((build) => ({
+        version: build.patch,
+        stable: !build.preview
+      }))
   }
 }
 
@@ -82,6 +88,8 @@ export function loaderVersionId(loader: LoaderId, gameVersion: string, loaderVer
       return `neoforge-${loaderVersion}`
     case 'forge':
       return `${loaderVersion}-forge`
+    case 'optifine':
+      return optiFineVersionId(gameVersion, loaderVersion)
   }
 }
 
@@ -106,6 +114,7 @@ async function installedLoaderVersionId(
       if (loader === 'quilt') return id.startsWith('quilt-loader-') && id.endsWith(`-${gameVersion}`)
       if (loader === 'forge') return id.startsWith(`${gameVersion}-`) && id.endsWith('-forge')
       if (loader === 'neoforge') return id.startsWith(`neoforge-${neoForgeGamePrefix(gameVersion)}`)
+      if (loader === 'optifine') return id.startsWith(`${gameVersion}-OptiFine_`)
       return id === gameVersion
     })
     .sort(compareVersions)
@@ -165,6 +174,12 @@ export async function installLoader(
     json = await fetchJson<VersionJson>(
       `${FABRIC_LIKE[loader]}/versions/loader/${encodeURIComponent(gameVersion)}/${encodeURIComponent(resolved)}/profile/json`
     )
+  } else if (loader === 'optifine') {
+    // The build carries the page its download link lives on, which the version
+    // string alone cannot reconstruct.
+    const build = (await listOptiFineBuilds(gameVersion)).find((entry) => entry.patch === resolved)
+    if (!build) throw new Error(`OptiFine ${resolved} sürümü ${gameVersion} için artık yayınlanmıyor.`)
+    json = await installOptiFine(dataDir, gameVersion, build, onProgress)
   } else if (loader === 'neoforge') {
     json = await installFromInstaller(
       dataDir,
