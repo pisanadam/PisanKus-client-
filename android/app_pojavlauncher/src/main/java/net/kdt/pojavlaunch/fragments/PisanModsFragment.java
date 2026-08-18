@@ -8,9 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -43,15 +47,39 @@ import java.util.List;
 public class PisanModsFragment extends Fragment {
     public static final String TAG = "PisanModsFragment";
     private static final int PAGE_SIZE = 30;
+    /** Modrinth's own index names, in the order the spinner lists them. */
+    private static final String[] SORTS = {"relevance", "downloads", "follows", "updated", "newest"};
+    private static final int[] SORT_LABELS = {
+            R.string.pisan_mods_sort_relevance,
+            R.string.pisan_mods_sort_downloads,
+            R.string.pisan_mods_sort_follows,
+            R.string.pisan_mods_sort_updated,
+            R.string.pisan_mods_sort_newest
+    };
 
     private EditText mSearch;
     private ProgressBar mProgress;
     private TextView mStatus;
     private TextView mTarget;
     private RecyclerView mList;
+    private Spinner mSort;
+    private CheckBox mVersionFilter;
 
     private PisanKusProfileTarget mProfile;
     private final ModAdapter mAdapter = new ModAdapter();
+    /** Where the next page starts, and how many there are in all. */
+    private int mLoaded;
+    private int mTotal;
+    private String mQuery = "";
+    private boolean mLoading;
+    /**
+     * Which search the pages in flight belong to.
+     *
+     * Changing a filter starts a new search while the previous page may still
+     * be on its way back; without this, those results would be appended to a
+     * list they no longer match.
+     */
+    private int mGeneration;
 
     public PisanModsFragment() {
         super(R.layout.fragment_pisan_mods);
@@ -64,9 +92,23 @@ public class PisanModsFragment extends Fragment {
         mProgress = view.findViewById(R.id.pisan_mods_progress);
         mStatus = view.findViewById(R.id.pisan_mods_status);
         mTarget = view.findViewById(R.id.pisan_mods_target);
+        mSort = view.findViewById(R.id.pisan_mods_sort);
+        mVersionFilter = view.findViewById(R.id.pisan_mods_version_filter);
         mList = view.findViewById(R.id.pisan_mods_list);
-        mList.setLayoutManager(new LinearLayoutManager(requireContext()));
+        LinearLayoutManager layout = new LinearLayoutManager(requireContext());
+        mList.setLayoutManager(layout);
         mList.setAdapter(mAdapter);
+
+        // Modrinth pages its search, so the rest of the catalogue arrives as the
+        // player reaches the end of what is on screen rather than stopping at
+        // the first thirty.
+        mList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy <= 0 || mLoading || mLoaded >= mTotal) return;
+                if (layout.findLastVisibleItemPosition() >= mAdapter.getItemCount() - 5) loadMore();
+            }
+        });
 
         mProfile = PisanKusProfileTarget.current();
         if (mProfile == null) {
@@ -89,24 +131,60 @@ public class PisanModsFragment extends Fragment {
 
         mSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                search(mSearch.getText().toString());
+                mQuery = mSearch.getText().toString();
+                restart();
                 return true;
             }
             return false;
         });
-        // Opens on the popular mods for this profile, so the screen is useful
-        // before anything is typed.
-        search("");
+
+        String[] labels = new String[SORT_LABELS.length];
+        for (int i = 0; i < labels.length; i++) labels[i] = getString(SORT_LABELS[i]);
+        mSort.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, labels));
+        mSort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                // Fires once while the spinner is being set up, which is also
+                // what performs the screen's first search.
+                restart();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        mVersionFilter.setOnCheckedChangeListener((v, checked) -> restart());
     }
 
-    private void search(String query) {
+    /** A new set of results: back to the first page. */
+    private void restart() {
+        mGeneration++;
+        mLoaded = 0;
+        mTotal = 0;
+        // Whatever is in flight belongs to the previous search, so the new one
+        // must not be held back waiting for it.
+        mLoading = false;
+        mAdapter.replace(new ArrayList<>());
+        loadMore();
+    }
+
+    private void loadMore() {
+        if (mLoading) return;
+        mLoading = true;
+        final int generation = mGeneration;
+        final int offset = mLoaded;
         setBusy(true);
-        mStatus.setText(R.string.pisan_mods_searching);
+        mStatus.setText(offset == 0 ? getString(R.string.pisan_mods_searching)
+                : getString(R.string.pisan_mods_loading_more));
+        final String sort = SORTS[Math.max(0, Math.min(SORTS.length - 1, mSort.getSelectedItemPosition()))];
+        final String gameVersion = mVersionFilter.isChecked() ? mProfile.gameVersion : null;
         PojavApplication.sExecutorService.execute(() -> {
             try {
-                JSONArray hits = PisanKusModrinth.searchMods(
-                        query, mProfile.loader, mProfile.gameVersion, 0, PAGE_SIZE);
+                PisanKusModrinth.SearchPage page = PisanKusModrinth.searchMods(
+                        mQuery, mProfile.loader, gameVersion, sort, offset, PAGE_SIZE);
                 final List<ModHit> results = new ArrayList<>();
+                JSONArray hits = page.hits;
                 if (hits != null) {
                     for (int i = 0; i < hits.length(); i++) {
                         JSONObject hit = hits.optJSONObject(i);
@@ -118,15 +196,25 @@ public class PisanModsFragment extends Fragment {
                                 hit.optString("icon_url", null)));
                     }
                 }
+                final int total = page.total;
                 Tools.runOnUiThread(() -> {
+                    // A page from an abandoned search is dropped — and must not
+                    // clear the flag belonging to the search that replaced it.
+                    if (generation != mGeneration) return;
+                    mLoading = false;
                     if (!isAdded()) return;
                     setBusy(false);
-                    mAdapter.replace(results);
-                    mStatus.setText(results.isEmpty()
+                    mTotal = total;
+                    mLoaded += results.size();
+                    mAdapter.append(results);
+                    mStatus.setText(mAdapter.getItemCount() == 0
                             ? getString(R.string.pisan_mods_empty)
-                            : getString(R.string.pisan_mods_found, results.size()));
+                            : getString(R.string.pisan_mods_found, mAdapter.getItemCount(), total));
                 });
             } catch (Exception e) {
+                Tools.runOnUiThread(() -> {
+                    if (generation == mGeneration) mLoading = false;
+                });
                 showError(e);
             }
         });
@@ -171,7 +259,6 @@ public class PisanModsFragment extends Fragment {
 
     private void setBusy(boolean busy) {
         mProgress.setVisibility(busy ? View.VISIBLE : View.GONE);
-        mSearch.setEnabled(!busy);
     }
 
     private void showError(Exception e) {
@@ -209,6 +296,12 @@ public class PisanModsFragment extends Fragment {
             mItems.clear();
             mItems.addAll(items);
             notifyDataSetChanged();
+        }
+
+        void append(List<ModHit> items) {
+            int start = mItems.size();
+            mItems.addAll(items);
+            notifyItemRangeInserted(start, items.size());
         }
 
         @NonNull

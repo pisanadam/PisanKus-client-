@@ -45,6 +45,40 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pisan_mods_target" />
 
+    <!--
+      Filters. Sorting is what turns a search into browsing, and the version
+      switch matters because a mod that has not tagged the newest Minecraft
+      release yet is invisible without it.
+    -->
+    <LinearLayout
+        android:id="@+id/pisan_mods_filters"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/padding_medium"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_search">
+
+        <Spinner
+            android:id="@+id/pisan_mods_sort"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/background_line"
+            android:minHeight="@dimen/_34sdp"
+            android:paddingHorizontal="7dp" />
+
+        <CheckBox
+            android:id="@+id/pisan_mods_version_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/padding_large"
+            android:checked="true"
+            android:text="@string/pisan_mods_only_this_version" />
+    </LinearLayout>
+
     <ProgressBar
         android:id="@+id/pisan_mods_progress"
         style="?android:attr/progressBarStyleHorizontal"
@@ -54,7 +88,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_search" />
+        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_filters" />
 
     <TextView
         android:id="@+id/pisan_mods_status"

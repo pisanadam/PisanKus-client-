@@ -10,6 +10,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Skin changing, against Mojang's own profile service.
@@ -30,6 +32,22 @@ public class PisanKusSkins {
         /** Texture url of the active skin, or null when the account has none. */
         public String skinUrl;
         public String variant = CLASSIC;
+        /** Every cape the account owns, in the order Mojang lists them. */
+        public final List<Cape> capes = new ArrayList<>();
+    }
+
+    public static class Cape {
+        public final String id;
+        public final String name;
+        public final String url;
+        public final boolean active;
+
+        Cape(String id, String name, String url, boolean active) {
+            this.id = id;
+            this.name = name;
+            this.url = url;
+            this.active = active;
+        }
     }
 
     /** Mojang answered, and said no. Carries the wording the player should see. */
@@ -47,12 +65,46 @@ public class PisanKusSkins {
             for (int i = 0; i < skins.length(); i++) {
                 JSONObject skin = skins.optJSONObject(i);
                 if (skin == null || !"ACTIVE".equals(skin.optString("state"))) continue;
-                info.skinUrl = skin.optString("url", null);
+                info.skinUrl = secure(skin.optString("url", null));
                 info.variant = SLIM.equalsIgnoreCase(skin.optString("variant")) ? SLIM : CLASSIC;
                 break;
             }
         }
+        JSONArray capes = profile.optJSONArray("capes");
+        if (capes != null) {
+            for (int i = 0; i < capes.length(); i++) {
+                JSONObject cape = capes.optJSONObject(i);
+                if (cape == null) continue;
+                info.capes.add(new Cape(
+                        cape.optString("id"),
+                        cape.optString("alias", "Cape"),
+                        secure(cape.optString("url", null)),
+                        "ACTIVE".equals(cape.optString("state"))));
+            }
+        }
         return info;
+    }
+
+    /**
+     * Mojang still hands out texture links over plain http, and Android refuses
+     * cleartext traffic — which is why loading a skin failed with "Cleartext
+     * HTTP traffic to textures.minecraft.net not permitted". The same host
+     * serves them over https.
+     */
+    private static String secure(String url) {
+        if (url == null) return null;
+        return url.startsWith("http://") ? "https://" + url.substring("http://".length()) : url;
+    }
+
+    /** Puts one of the account's capes on, or takes the current one off. */
+    public static void setCape(String accessToken, String capeId) throws IOException {
+        if (capeId == null) {
+            request(accessToken, API + "/capes/active", "DELETE", null, null);
+            return;
+        }
+        String body = "{\"capeId\":\"" + capeId + "\"}";
+        request(accessToken, API + "/capes/active", "PUT", "application/json",
+                body.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One cape the account owns; the active one carries a mark. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/_56sdp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/padding_medium"
+    android:background="@drawable/pk_card_selectable"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="@dimen/padding_medium">
+
+    <ImageView
+        android:id="@+id/pk_cape_item_image"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_48sdp"
+        android:contentDescription="@string/pisan_skin_capes"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/pk_cape_item_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/padding_small"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/primary_text" />
+</LinearLayout>

@@ -24,25 +24,42 @@ public class PisanKusModrinth {
     /** Modrinth asks callers to identify themselves; anonymous traffic gets throttled harder. */
     private static final String USER_AGENT = "PisanKusClient/1.0 (+https://github.com/pisanadam/PisanKus-client-)";
 
+    /** One page of results, plus how many there are in total. */
+    public static class SearchPage {
+        public final JSONArray hits;
+        public final int total;
+
+        SearchPage(JSONArray hits, int total) {
+            this.hits = hits;
+            this.total = total;
+        }
+    }
+
     /**
-     * Searches mods for one loader and game version.
+     * One page of mods for a loader and, optionally, a game version.
      *
-     * Facets are AND-ed between the outer entries, so this reads as
-     * "a mod, for this loader, for this version".
+     * Modrinth pages its search — there is no "give me everything" — so the
+     * caller asks for the next slice as the player scrolls. `total` is what
+     * lets it know when to stop.
+     *
+     * The version facet is optional on purpose: filtering by it hides mods that
+     * simply have not tagged the newest Minecraft release yet, and a player who
+     * knows what they are doing should be able to look anyway.
      */
-    public static JSONArray searchMods(String query, String loader, String gameVersion,
-                                       int offset, int limit) throws IOException {
+    public static SearchPage searchMods(String query, String loader, String gameVersion,
+                                        String sort, int offset, int limit) throws IOException {
         StringBuilder facets = new StringBuilder("[[\"project_type:mod\"]");
         if (loader != null) facets.append(",[\"categories:").append(loader).append("\"]");
         if (gameVersion != null) facets.append(",[\"versions:").append(gameVersion).append("\"]");
         facets.append("]");
 
         String url = API + "/search?limit=" + limit + "&offset=" + offset
-                + "&index=relevance"
+                + "&index=" + (sort == null ? "relevance" : sort)
                 + "&facets=" + encode(facets.toString())
                 + (query == null || query.isEmpty() ? "" : "&query=" + encode(query));
         try {
-            return new JSONObject(get(url)).optJSONArray("hits");
+            JSONObject response = new JSONObject(get(url));
+            return new SearchPage(response.optJSONArray("hits"), response.optInt("total_hits"));
         } catch (JSONException e) {
             throw unreadable(e);
         }

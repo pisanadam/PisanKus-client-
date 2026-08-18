@@ -62,6 +62,20 @@
         <item name="android:layout_height">@dimen/_66sdp</item>
     </style>
 
+    <!--
+      Secondary actions: on-theme, but clearly not the main button.
+
+      Without a style of its own a plain Button falls back to the platform's
+      grey, which is what made "varsayılana dön" look like it belonged to a
+      different application.
+    -->
+    <style name="PisanKusSecondaryButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:background">@drawable/pk_card_selectable</item>
+        <item name="android:textColor">@color/accent</item>
+        <item name="android:minHeight">@dimen/_34sdp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
     <style name="ThickDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/_1sdp</item>

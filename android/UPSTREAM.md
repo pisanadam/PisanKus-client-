@@ -92,6 +92,13 @@ aynısı: skin hesaba ait, cihaza değil. Ana menüde, gizlenen Discord düğmes
 bıraktığı boşluğa kondu. Önizleme, dokudaki ön yüzleri düz olarak birleştirir —
 skin dosyasını olduğu gibi göstermek oyuncuya bir şey anlatmıyor.
 
+Masaüstündeki gibi kitaplık (`PisanKusSkinLibrary`) ve pelerin seçimi de var.
+Kitaplık dosyaların kopyasını tutar, bağlantısını değil: galeriden seçilen bir
+görsel telefon tarafından her an taşınabilir ya da silinebilir.
+
+Doku bağlantıları https'e çevriliyor — Mojang hâlâ http veriyor, Android ise
+düz metin trafiğini reddediyor.
+
 ### 9. Tek tek mod kurma
 
 `PisanKusModrinth.java`, `PisanKusProfileTarget.java`,

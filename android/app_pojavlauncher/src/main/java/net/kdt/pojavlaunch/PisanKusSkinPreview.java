@@ -72,6 +72,20 @@ public class PisanKusSkinPreview {
         return scaled;
     }
 
+    /**
+     * The front face of a cape, magnified by {@code scale}.
+     *
+     * A cape texture is mostly the inside and the edges; the part anyone
+     * recognises is the 10×16 block at the top left.
+     */
+    public static Bitmap cape(Bitmap texture, int scale) {
+        if (texture.getWidth() < 11 || texture.getHeight() < 17) return null;
+        Bitmap front = Bitmap.createBitmap(texture, 1, 1, 10, 16);
+        Bitmap scaled = Bitmap.createScaledBitmap(front, 10 * scale, 16 * scale, false);
+        front.recycle();
+        return scaled;
+    }
+
     private static void blit(Canvas canvas, Bitmap skin, int sourceX, int sourceY,
                              int width, int height, int destX, int destY, boolean mirror) {
         if (sourceX + width > skin.getWidth() || sourceY + height > skin.getHeight()) return;

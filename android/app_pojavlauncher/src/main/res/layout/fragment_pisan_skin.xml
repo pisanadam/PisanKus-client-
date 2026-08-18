@@ -1,125 +1,183 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!--
+  Scrolls, because the page carries three sections now: the character, the
+  player's saved skins and their capes. On a phone in landscape — which is how
+  the launcher is usually held — none of that fits standing still.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/pk_ambient_background"
     android:paddingHorizontal="@dimen/fragment_padding_medium">
 
-    <TextView
-        android:id="@+id/title_textview"
-        style="@style/TextAppearance.AppCompat.Title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/padding_large"
-        android:text="@string/pisan_skin_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/pisan_skin_username"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/padding_small"
-        android:textColor="@color/secondary_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_textview" />
-
-    <View
-        android:id="@+id/view"
-        style="@style/ThickDivider"
-        android:layout_width="match_parent"
-        android:layout_marginTop="@dimen/padding_medium"
-        app:layout_constraintTop_toBottomOf="@+id/pisan_skin_username" />
-
-    <!-- The character sits on its own card, like the desktop launcher's skin page. -->
-    <FrameLayout
-        android:id="@+id/pisan_skin_card"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/padding_large"
-        android:background="@drawable/pk_card"
-        android:padding="@dimen/padding_large"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@+id/pisan_skin_controls"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view"
-        app:layout_constraintWidth_percent="0.4">
-
-        <ImageView
-            android:id="@+id/pisan_skin_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/pisan_skin_title"
-            android:scaleType="fitCenter" />
-    </FrameLayout>
-
     <LinearLayout
-        android:id="@+id/pisan_skin_controls"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/padding_large"
         android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/pisan_skin_card"
-        app:layout_constraintTop_toTopOf="@+id/pisan_skin_card">
+        android:paddingBottom="@dimen/padding_large">
 
-        <RadioGroup
-            android:id="@+id/pisan_skin_variant"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/title_textview"
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisan_skin_title" />
 
-            <RadioButton
-                android:id="@+id/pisan_skin_variant_classic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/pisan_skin_variant_classic" />
+        <TextView
+            android:id="@+id/pisan_skin_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/padding_small"
+            android:textColor="@color/secondary_text" />
 
-            <RadioButton
-                android:id="@+id/pisan_skin_variant_slim"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/padding_large"
-                android:text="@string/pisan_skin_variant_slim" />
-        </RadioGroup>
+        <View
+            style="@style/ThickDivider"
+            android:layout_marginTop="@dimen/padding_medium" />
 
-        <com.kdt.mcgui.MineButton
-            android:id="@+id/pisan_skin_pick"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_large"
-            android:text="@string/pisan_skin_pick" />
+            android:orientation="horizontal">
 
-        <com.kdt.mcgui.MineButton
-            android:id="@+id/pisan_skin_apply"
+            <!-- The character sits on its own card, like the desktop skin page. -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_120sdp"
+                android:layout_weight="0.4"
+                android:background="@drawable/pk_card"
+                android:padding="@dimen/padding_large">
+
+                <ImageView
+                    android:id="@+id/pisan_skin_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/pisan_skin_title"
+                    android:scaleType="fitCenter" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/padding_large"
+                android:layout_weight="0.6"
+                android:orientation="vertical">
+
+                <RadioGroup
+                    android:id="@+id/pisan_skin_variant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/pisan_skin_variant_classic"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="@string/pisan_skin_variant_classic" />
+
+                    <RadioButton
+                        android:id="@+id/pisan_skin_variant_slim"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/padding_large"
+                        android:text="@string/pisan_skin_variant_slim" />
+                </RadioGroup>
+
+                <com.kdt.mcgui.MineButton
+                    android:id="@+id/pisan_skin_pick"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_medium"
+                    android:text="@string/pisan_skin_pick" />
+
+                <com.kdt.mcgui.MineButton
+                    android:id="@+id/pisan_skin_apply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_medium"
+                    android:text="@string/pisan_skin_apply" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_medium"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/pisan_skin_save"
+                        style="@style/PisanKusSecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/pisan_skin_save" />
+
+                    <Button
+                        android:id="@+id/pisan_skin_reset"
+                        style="@style/PisanKusSecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_marginStart="@dimen/padding_medium"
+                        android:layout_weight="1"
+                        android:text="@string/pisan_skin_reset" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/pisan_skin_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:gravity="center"
+            android:textColor="@color/secondary_text" />
+
+        <TextView
+            style="@style/TextAppearance.AppCompat.Subhead"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisan_skin_library"
+            android:textColor="@color/accent" />
+
+        <TextView
+            android:id="@+id/pisan_skin_library_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pisan_skin_library_hint"
+            android:textColor="@color/secondary_text" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pisan_skin_library_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_medium"
-            android:text="@string/pisan_skin_apply" />
+            android:clipToPadding="false"
+            android:orientation="horizontal" />
 
-        <Button
-            android:id="@+id/pisan_skin_reset"
+        <TextView
+            style="@style/TextAppearance.AppCompat.Subhead"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisan_skin_capes"
+            android:textColor="@color/accent" />
+
+        <TextView
+            android:id="@+id/pisan_skin_capes_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pisan_skin_capes_hint"
+            android:textColor="@color/secondary_text" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pisan_skin_capes_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_medium"
-            android:text="@string/pisan_skin_reset" />
+            android:clipToPadding="false"
+            android:orientation="horizontal" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/pisan_skin_status"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="@dimen/padding_large"
-        android:gravity="center"
-        android:textColor="@color/secondary_text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pisan_skin_card"
-        app:layout_constraintVertical_bias="0" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
