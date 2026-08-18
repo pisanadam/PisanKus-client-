@@ -14,7 +14,15 @@
             android:key="bigCoreAffinity"
             android:title="@string/preference_force_big_core_title"
             android:summary="@string/preference_force_big_core_desc" />
-        <net.kdt.pojavlaunch.prefs.MathQuestionPreference
+        <!--
+          A plain switch. Upstream guards this one with a maths question, to
+          keep people from turning Sodium on by accident and then asking for
+          support. PisanKus ships Sodium on purpose — with the patch mod that
+          lets it start and the renderer it runs on — so the quiz would only
+          stand between our own players and a setting we already turn on for
+          them.
+        -->
+        <SwitchPreferenceCompat
             android:title="@string/sodium_override_title"
             android:summaryOff="@string/sodium_override_summaryOff"
             android:summaryOn="@string/sodium_override_summaryOn"

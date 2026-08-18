@@ -95,6 +95,11 @@ kaldırılıyor (`PisanKusSodium.java`):
 3. **Launcher'ın kendi engeli.** Üst kaynak, mods klasöründe Sodium varken
    oynamayı kesiyor ve tek seçenek olarak silmeyi sunuyor; deneysel ayarlardaki
    anahtar açılmadıkça geçilmiyor. Kendi paketimiz için o anahtar açılıyor.
+   Anahtarın önündeki matematik sorusu da kaldırıldı (`pref_experimental.xml`
+   artık düz bir `SwitchPreferenceCompat` kullanıyor): soru, Sodium'u yanlışlıkla
+   açanları caydırmak için var; onu yamasıyla ve görüntüleyicisiyle bilerek
+   dağıtan bizde yalnızca oyuncunun önüne çıkıyor. `MathQuestionPreference`
+   sınıfı, üst kaynakla farkı büyütmemek için yerinde duruyor — çağrılmıyor.
 
 Dördüncü parçayı üst kaynak zaten kendisi yapıyor: başlatırken Sodium'un mixin
 ayarlarını yazıp `-Dsodium.checks.issue2561=false` geçiyor.
