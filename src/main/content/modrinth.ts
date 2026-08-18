@@ -212,19 +212,20 @@ export async function bestVersion(
  */
 export async function getProjects(
   idsOrSlugs: string[]
-): Promise<{ id: string; slug: string; title: string; gameVersions: string[] }[]> {
+): Promise<{ id: string; slug: string; title: string; gameVersions: string[]; iconUrl?: string }[]> {
   if (idsOrSlugs.length === 0) return []
 
   const params = new URLSearchParams({ ids: JSON.stringify(idsOrSlugs) })
   const projects = await fetchJson<
-    { id: string; slug: string; title: string; game_versions: string[] }[]
+    { id: string; slug: string; title: string; game_versions: string[]; icon_url?: string | null }[]
   >(`${API}/projects?${params}`)
 
   return projects.map((project) => ({
     id: project.id,
     slug: project.slug,
     title: project.title,
-    gameVersions: project.game_versions
+    gameVersions: project.game_versions,
+    iconUrl: project.icon_url ?? undefined
   }))
 }
 

@@ -134,6 +134,18 @@ export async function installContent(
       }
     )
 
+    // Icons come from the projects themselves rather than from whoever asked
+    // for the install. The caller only has one when the player installed from
+    // a search result: a pack installs by slug and knows no icons at all, and
+    // a dependency pulled in along the way was never on screen to have one.
+    // Both used to end up as blank squares in the profile's mod list.
+    const icons = new Map(
+      (await modrinth
+        .getProjects([...new Set(queue.map((entry) => entry.projectId))])
+        .catch(() => []))
+        .map((project) => [project.id, project.iconUrl])
+    )
+
     const installed: InstalledContent[] = queue.map((entry) => ({
       id: `modrinth:${entry.projectId}`,
       source: 'modrinth',
@@ -142,7 +154,7 @@ export async function installContent(
       kind: request.kind,
       name: entry.name,
       fileName: entry.version.fileName,
-      iconUrl: entry.required ? request.iconUrl : undefined,
+      iconUrl: icons.get(entry.projectId) ?? (entry.required ? request.iconUrl : undefined),
       enabled: true,
       installedAt: Date.now()
     }))
@@ -489,6 +501,7 @@ export async function syncProfileContent(profileId: string): Promise<InstalledCo
       .getProjects([...new Set([...matches.values()].map((match) => match.projectId))])
       .catch(() => [])
     const titles = new Map(projects.map((project) => [project.id, project.title]))
+    const icons = new Map(projects.map((project) => [project.id, project.iconUrl]))
 
     for (const [index, entry] of unknown.entries()) {
       const match = hashes[index] ? matches.get(hashes[index]) : undefined
@@ -502,6 +515,7 @@ export async function syncProfileContent(profileId: string): Promise<InstalledCo
         kind: entry.kind,
         name: (match && titles.get(match.projectId)) ?? entry.fileName.replace(/\.(jar|zip)(\.disabled)?$/i, ''),
         fileName: entry.fileName,
+        iconUrl: match ? icons.get(match.projectId) : undefined,
         enabled: entry.enabled,
         installedAt: Date.now()
       })
@@ -515,10 +529,41 @@ export async function syncProfileContent(profileId: string): Promise<InstalledCo
   )
 
   const merged = [...surviving.filter((entry) => !added.some((item) => item.id === entry.id)), ...added]
-  if (merged.length !== profile.content.length || added.length > 0) {
+
+  // Entries installed before icons were recorded — everything a pack put there,
+  // and every dependency pulled in with a mod — carry none. Filling them in
+  // here means an existing profile picks its icons up the next time it is
+  // opened, instead of needing everything reinstalled.
+  const filledIcons = await fillMissingIcons(merged)
+
+  if (merged.length !== profile.content.length || added.length > 0 || filledIcons) {
     store.updateProfile(profileId, { content: merged })
   }
   return merged
+}
+
+/** Looks up the icons of entries that have none. Returns whether any were found. */
+async function fillMissingIcons(entries: InstalledContent[]): Promise<boolean> {
+  const missing = entries.filter((entry) => entry.projectId && !entry.iconUrl)
+  if (missing.length === 0) return false
+
+  const ids = [...new Set(missing.map((entry) => entry.projectId!))]
+  const icons = new Map<string, string | undefined>()
+  // Chunked: a large modpack's profile can hold hundreds of entries, and one
+  // request carrying all of them is asking to be refused.
+  for (let index = 0; index < ids.length; index += 100) {
+    const projects = await modrinth.getProjects(ids.slice(index, index + 100)).catch(() => [])
+    for (const project of projects) icons.set(project.id, project.iconUrl)
+  }
+
+  let changed = false
+  for (const entry of missing) {
+    const icon = icons.get(entry.projectId!)
+    if (!icon) continue
+    entry.iconUrl = icon
+    changed = true
+  }
+  return changed
 }
 
 /**
