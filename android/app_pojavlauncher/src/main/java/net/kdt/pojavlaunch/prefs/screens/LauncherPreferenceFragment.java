@@ -2,9 +2,11 @@ package net.kdt.pojavlaunch.prefs.screens;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,42 +49,59 @@ public class LauncherPreferenceFragment extends PreferenceFragmentCompat impleme
      * the download is large enough that the player will want to leave the
      * screen, and a modal would either block that or be dismissed and lose the
      * status.
+     *
+     * Which is exactly why nothing here may go through the fragment. Leaving
+     * settings mid-download detaches it, and the next progress callback then
+     * crashed on {@code getString} with "not attached to a context". The
+     * strings come from the application context instead, and the summary is
+     * only touched while the entry is still on screen.
      */
     private void setupUpdatePreference() {
         Preference update = findPreference("pisankus_check_update");
         if (update == null) return;
 
         update.setOnPreferenceClickListener(preference -> {
-            Activity activity = getActivity();
-            if (activity == null) return true;
+            final Context context = preference.getContext().getApplicationContext();
 
             preference.setEnabled(false);
             preference.setSummary(R.string.pisankus_update_checking);
 
-            new net.kdt.pojavlaunch.PisanKusUpdater(activity, new net.kdt.pojavlaunch.PisanKusUpdater.Listener() {
+            new net.kdt.pojavlaunch.PisanKusUpdater(context, new net.kdt.pojavlaunch.PisanKusUpdater.Listener() {
+                /** A closed screen has no summary worth writing to. */
+                private void show(String summary, boolean done) {
+                    if (!isAdded()) return;
+                    preference.setSummary(summary);
+                    if (done) preference.setEnabled(true);
+                }
+
                 @Override public void onUpToDate(String currentVersion) {
-                    preference.setSummary(getString(R.string.pisankus_update_none, currentVersion));
-                    preference.setEnabled(true);
+                    show(context.getString(R.string.pisankus_update_none, currentVersion), true);
                 }
 
                 @Override public void onUpdateFound(String newVersion) {
-                    preference.setSummary(getString(R.string.pisankus_update_downloading, newVersion));
+                    show(context.getString(R.string.pisankus_update_downloading, newVersion), false);
                 }
 
                 @Override public void onProgress(int percent) {
-                    preference.setSummary(percent < 0
-                            ? getString(R.string.pisankus_update_downloading, "")
-                            : getString(R.string.pisankus_update_progress, percent));
+                    show(percent < 0
+                            ? context.getString(R.string.pisankus_update_downloading, "")
+                            : context.getString(R.string.pisankus_update_progress, percent), false);
                 }
 
                 @Override public void onReadyToInstall() {
-                    preference.setSummary(R.string.pisankus_update_installing);
-                    preference.setEnabled(true);
+                    show(context.getString(R.string.pisankus_update_installing), true);
                 }
 
                 @Override public void onFailed(String message) {
-                    preference.setSummary(getString(R.string.pisankus_update_failed, message));
-                    preference.setEnabled(true);
+                    // Worth saying out loud: a failure the player cannot see is
+                    // a download that looks like it is still running.
+                    if (!isAdded()) {
+                        Toast.makeText(context,
+                                context.getString(R.string.pisankus_update_failed, message),
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    show(context.getString(R.string.pisankus_update_failed, message), true);
                 }
             }).checkAndInstall();
             return true;

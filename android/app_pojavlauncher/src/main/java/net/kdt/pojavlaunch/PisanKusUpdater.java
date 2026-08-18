@@ -1,6 +1,6 @@
 package net.kdt.pojavlaunch;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
@@ -44,12 +44,20 @@ public class PisanKusUpdater {
         void onFailed(String message);
     }
 
-    private final Activity activity;
+    /**
+     * The application context, not the screen that started the update.
+     *
+     * The download outlives the settings screen on purpose — a 150 MB package
+     * should not stop because the player walked away from it — so holding the
+     * Activity would keep a destroyed screen alive for the whole transfer. The
+     * install intent carries FLAG_ACTIVITY_NEW_TASK, so it does not need one.
+     */
+    private final Context context;
     private final Listener listener;
     private final Handler main = new Handler(Looper.getMainLooper());
 
-    public PisanKusUpdater(Activity activity, Listener listener) {
-        this.activity = activity;
+    public PisanKusUpdater(Context context, Listener listener) {
+        this.context = context.getApplicationContext();
         this.listener = listener;
     }
 
@@ -122,7 +130,7 @@ public class PisanKusUpdater {
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(60000);
 
-        File target = new File(activity.getCacheDir(), ASSET_NAME);
+        File target = new File(context.getCacheDir(), ASSET_NAME);
         long total = connection.getContentLengthLong();
         long done = 0;
         int lastPercent = -2;
@@ -156,12 +164,12 @@ public class PisanKusUpdater {
      */
     private void install(File apk) {
         try {
-            Uri uri = FileProvider.getUriForFile(activity,
-                    activity.getPackageName() + ".updates", apk);
+            Uri uri = FileProvider.getUriForFile(context,
+                    context.getPackageName() + ".updates", apk);
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(uri, "application/vnd.android.package-archive");
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(intent);
+            context.startActivity(intent);
         } catch (Exception e) {
             listener.onFailed("Kurulum başlatılamadı: " + e.getMessage());
         }

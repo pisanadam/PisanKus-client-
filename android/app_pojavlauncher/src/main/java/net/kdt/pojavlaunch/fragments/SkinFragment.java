@@ -1,5 +1,6 @@
 package net.kdt.pojavlaunch.fragments;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -66,6 +67,17 @@ public class SkinFragment extends Fragment {
     private RecyclerView mCapesList;
 
     private ActivityResultLauncher<Object> mPicker;
+    /**
+     * A context that outlives the screen.
+     *
+     * Every piece of work here — reading the account's skin, saving to the
+     * library, rendering a thumbnail — runs off the main thread and can finish
+     * after the player has left. Reaching for the fragment's own context at
+     * that point throws "not attached to a context", so the background paths
+     * use this instead and only the UI updates check that the screen is still
+     * there.
+     */
+    private Context mContext;
     private MinecraftAccount mAccount;
     /** The picked or selected file, held until the player presses apply. */
     private byte[] mPending;
@@ -89,6 +101,7 @@ public class SkinFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mContext = requireContext().getApplicationContext();
         mPreview = view.findViewById(R.id.pisan_skin_preview);
         mStatus = view.findViewById(R.id.pisan_skin_status);
         mUsername = view.findViewById(R.id.pisan_skin_username);
@@ -166,7 +179,7 @@ public class SkinFragment extends Fragment {
      */
     private List<CapeItem> loadCapes(PisanKusSkins.SkinInfo info) {
         List<CapeItem> items = new ArrayList<>();
-        items.add(new CapeItem(null, getString(R.string.pisan_skin_cape_none), null,
+        items.add(new CapeItem(null, mContext.getString(R.string.pisan_skin_cape_none), null,
                 info.capes.stream().noneMatch(cape -> cape.active)));
         for (PisanKusSkins.Cape cape : info.capes) {
             Bitmap image = null;
@@ -204,8 +217,8 @@ public class SkinFragment extends Fragment {
                 final Bitmap preview = render(png, isSlimSelected());
                 // A picked skin goes into the library straight away: a player
                 // who found a skin once should not have to find the file again.
-                PisanKusSkinLibrary.add(requireContext(), png,
-                        Tools.getFileName(requireContext(), uri),
+                PisanKusSkinLibrary.add(mContext, png,
+                        Tools.getFileName(mContext, uri),
                         isSlimSelected() ? PisanKusSkins.SLIM : PisanKusSkins.CLASSIC);
                 Tools.runOnUiThread(() -> {
                     if (!isAdded()) return;
@@ -225,7 +238,7 @@ public class SkinFragment extends Fragment {
     private void select(PisanKusSkinLibrary.Entry entry) {
         PojavApplication.sExecutorService.execute(() -> {
             try {
-                byte[] png = PisanKusSkinLibrary.bytes(requireContext(), entry);
+                byte[] png = PisanKusSkinLibrary.bytes(mContext, entry);
                 final Bitmap preview = render(png, PisanKusSkins.SLIM.equals(entry.variant));
                 Tools.runOnUiThread(() -> {
                     if (!isAdded()) return;
@@ -367,7 +380,7 @@ public class SkinFragment extends Fragment {
     }
 
     private byte[] readAll(Uri uri) throws Exception {
-        try (InputStream in = requireContext().getContentResolver().openInputStream(uri)) {
+        try (InputStream in = mContext.getContentResolver().openInputStream(uri)) {
             if (in == null) throw new Exception("Dosya açılamadı.");
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             byte[] chunk = new byte[8192];
@@ -423,7 +436,7 @@ public class SkinFragment extends Fragment {
                 });
                 PojavApplication.sExecutorService.execute(() -> {
                     try {
-                        byte[] png = PisanKusSkinLibrary.bytes(requireContext(), entry);
+                        byte[] png = PisanKusSkinLibrary.bytes(mContext, entry);
                         final Bitmap thumb = render(png, PisanKusSkins.SLIM.equals(entry.variant), THUMB_SCALE);
                         if (thumb == null) return;
                         Tools.runOnUiThread(() -> {
