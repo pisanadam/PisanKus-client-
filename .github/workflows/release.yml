@@ -1,11 +1,15 @@
 name: Release
 
-# Packages are published automatically: every push to main refreshes the rolling
-# "latest" release, so the download page always has working links without anyone
-# cutting a release by hand. Pushing a v* tag additionally publishes a pinned
-# versioned release.
-# Runs on whatever the repository's default branch is called, so packaging works
-# before anyone creates a branch named "main".
+# Packages are published automatically: every push to the default branch
+# refreshes a rolling release, so the download page always has working links
+# without anyone cutting a release by hand. Pushing a v* tag additionally
+# publishes a pinned versioned release.
+#
+# Desktop and Android are separate channels — a different release tag each, and
+# each built only when its own side of the repository changed. They ship the
+# same product but not the same package, and a desktop-only change used to
+# republish the APK too: the phone then offered an "update" that was byte for
+# byte the app already installed, minus a version number.
 on:
   push:
     branches: ['**']
@@ -16,16 +20,74 @@ permissions:
   contents: write
 
 jobs:
+  # Which side of the repository this push touched. A tag or a manual run
+  # rebuilds everything, because that is what someone asking for a release
+  # means by it.
+  changes:
+    name: Neler değişti
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/') ||
+      github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      desktop: ${{ steps.filter.outputs.desktop }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Değişen dosyalara bak
+        id: filter
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          both() {
+            echo "android=true" >> "$GITHUB_OUTPUT"
+            echo "desktop=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          # A tag, a manual run, a brand-new branch or a force push over
+          # rewritten history: in all of these there is no honest "what
+          # changed", so everything is built.
+          [ "$GITHUB_EVENT_NAME" = "push" ] || both
+          [ -n "$BEFORE" ] || both
+          git cat-file -e "$BEFORE^{commit}" 2>/dev/null || both
+
+          files=$(git diff --name-only "$BEFORE" "$GITHUB_SHA")
+          echo "Değişen dosyalar:"; echo "$files"
+
+          android=false
+          desktop=false
+          while read -r file; do
+            [ -n "$file" ] || continue
+            case "$file" in
+              # Documentation ships with neither package, wherever it lives.
+              android/*.md|android/*/*.md) ;;
+              android/*) android=true ;;
+              # The workflow itself decides how both are built, so a change to
+              # it rebuilds both.
+              .github/workflows/release.yml) android=true; desktop=true ;;
+              # The website and the docs ship with neither package.
+              docs/*|*.md) ;;
+              *) desktop=true ;;
+            esac
+          done <<< "$files"
+
+          echo "android=$android" >> "$GITHUB_OUTPUT"
+          echo "desktop=$desktop" >> "$GITHUB_OUTPUT"
+          echo "Android: $android · Masaüstü: $desktop"
+
   # The Android launcher. Signing needs no secrets: the release build falls back
   # to the keystore already committed in the repository, which is enough to make
   # the package installable. See app_pojavlauncher/build.gradle for what that
   # costs and when it must change.
   android:
     name: Android
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      startsWith(github.ref, 'refs/tags/') ||
-      github.ref_name == github.event.repository.default_branch
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -141,20 +203,26 @@ jobs:
           "$ANDROID_HOME"/build-tools/35.0.0/apksigner verify "$apk"
           mkdir -p out && cp "$apk" out/PisanKusClient-android.apk
 
-      # Only this upload puts the APK on the download page; the publish job
-      # collects every artifact in the run.
+          # The version the app compares against before downloading 150 MB.
+          # Read out of the built package rather than recomputed here, so it is
+          # the number Android itself will see.
+          badging=$("$ANDROID_HOME"/build-tools/35.0.0/aapt2 dump badging "$apk")
+          code=$(echo "$badging" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" | head -1)
+          name=$(echo "$badging" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
+          [ -n "$code" ] || { echo "::error::versionCode okunamadı"; exit 1; }
+          printf '{"versionCode":%s,"versionName":"%s"}\n' "$code" "$name" > out/android-version.json
+          cat out/android-version.json
+
       - uses: actions/upload-artifact@v4
         with:
           name: android-package
-          path: android/out/PisanKusClient-android.apk
+          path: android/out/*
           if-no-files-found: error
 
   package:
     name: Package ${{ matrix.os }}
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      startsWith(github.ref, 'refs/tags/') ||
-      github.ref_name == github.event.repository.default_branch
+    needs: changes
+    if: needs.changes.outputs.desktop == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -243,20 +311,21 @@ jobs:
             release/latest*.yml
           if-no-files-found: error
 
-  publish:
-    name: Publish
-    needs: [package, android]
+  publish-desktop:
+    name: Publish desktop
+    needs: package
     # One platform failing should not withhold the packages that did build; the
     # download page reports any platform whose asset is missing. A matrix job's
     # result collapses to a single value, so this cannot test individual
     # platforms — the artifact check below decides whether there is anything to
     # publish.
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.package.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: '*-packages'
           merge-multiple: true
 
       - name: Check something was built
@@ -277,9 +346,11 @@ jobs:
           tag_name: latest
           name: Son sürüm (otomatik)
           body: |
-            `main` dalındaki son commit'ten otomatik üretilen paketler.
+            `main` dalındaki son commit'ten otomatik üretilen masaüstü paketleri.
 
-            Bu sürüm her push'ta güncellenir; aşağıdaki bağlantılar her zaman en yeni yapıyı indirir.
+            Bu sürüm her masaüstü değişikliğinde güncellenir; aşağıdaki bağlantılar her zaman en yeni yapıyı indirir.
+
+            Android paketi ayrı yayımlanır: [android](../../releases/tag/android).
           prerelease: false
           make_latest: true
 
@@ -290,7 +361,9 @@ jobs:
       #
       # Only files whose name no longer matches the build are removed, so a
       # platform that failed this run keeps the copy it published last time —
-      # which is the whole point of publishing partial builds.
+      # which is the whole point of publishing partial builds. The APK is the
+      # one exception: it has a release of its own now, and the copy left here
+      # by the old single-channel builds would sit unchanged for ever.
       - name: Retire renamed assets
         if: startsWith(github.ref, 'refs/tags/') == false
         env:
@@ -308,9 +381,11 @@ jobs:
 
           while read -r name; do
             case "$name" in
-              ''|latest*.yml|"$prefix"-*) continue ;;
+              '') continue ;;
+              *.apk|android-version.json) ;;   # belongs to the android release
+              latest*.yml|"$prefix"-*) continue ;;
             esac
-            echo "Eski markaya ait dosya siliniyor: $name"
+            echo "Bu yayına ait olmayan dosya siliniyor: $name"
             gh release delete-asset latest "$name" --repo "$GITHUB_REPOSITORY" --yes
           done < existing.txt
 
@@ -320,3 +395,34 @@ jobs:
         with:
           files: artifacts/*
           generate_release_notes: true
+
+  publish-android:
+    name: Publish Android
+    needs: android
+    if: ${{ !cancelled() && needs.android.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-package
+          path: artifacts
+
+      - run: ls -lh artifacts
+
+      # Its own rolling tag. The app reads this release and nothing else, so a
+      # desktop build cannot make a phone think there is something to install.
+      - name: Publish Android build
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          tag_name: android
+          name: Android (otomatik)
+          body: |
+            Android paketi. Her Android değişikliğinde güncellenir.
+
+            `android-version.json`, uygulamanın indirmeden önce baktığı sürüm
+            bilgisini taşır.
+          prerelease: false
+          # The desktop release stays the one GitHub calls "latest": that is
+          # where electron-updater and the download page's default links look.
+          make_latest: false

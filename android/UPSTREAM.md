@@ -59,10 +59,16 @@ bitmap'e gömülü olan nine-patch'in yerini aldı.
 
 ### 5. Uygulama içi güncelleme
 
-`PisanKusUpdater.java` sürümü GitHub'daki yayından okur, APK'yı indirir ve
-kurulum ekranını açar; ayarlardaki "Güncellemeleri denetle" düğmesi buna bağlı.
-`versionCode` `10000000 + yapı numarası` olarak üretilir — Android yükseltme
-kararını yalnızca bu sayıya bakarak verir.
+`PisanKusUpdater.java` sürümü GitHub'daki `android` yayınından okur, APK'yı
+indirir ve kurulum ekranını açar; ayarlardaki "Güncellemeleri denetle" düğmesi
+buna bağlı. `versionCode` `10000000 + yapı numarası` olarak üretilir — Android
+yükseltme kararını yalnızca bu sayıya bakarak verir.
+
+Android kendi yayın kanalında: `latest` etiketi masaüstü kurulumlarını taşıyor
+ve masaüstü her değiştiğinde yenileniyor. Oradan okumak, masaüstündeki bir
+değişikliği Android güncellemesi gibi gösteriyordu. Yayında `android-version.json`
+da duruyor; uygulama 150 MB'ı indirmeden önce sürüm kodunu ondan okuyup kendi
+sürümüyle karşılaştırıyor.
 
 ### 6. Better Than Adventure kaldırıldı
 

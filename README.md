@@ -100,7 +100,9 @@ Varsayılan olarak genel bir istemci kimliği kullanılır. Kendi Azure uygulama
 Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
 
 - **Paketler:** Deponun varsayılan dalına her kod gönderiminde Windows, macOS (Intel + Apple Silicon) ve
-  Linux paketleri derlenir ve `latest` sürümüne yüklenir. İş akışları dal adını sabit yazmaz; deponun
+  Linux paketleri derlenir ve `latest` sürümüne yüklenir. Android paketi ayrı bir kanaldır: `android`
+  etiketine yüklenir ve yalnızca `android/` altında bir şey değiştiğinde derlenir — masaüstü tarafındaki
+  bir değişiklik telefona güncelleme olarak düşmesin diye. İş akışları dal adını sabit yazmaz; deponun
   varsayılan dalı neyse orada çalışırlar. Paket adları sürüm numarası içermediği için indirme bağlantıları
   sabittir:
 
@@ -110,6 +112,7 @@ Yayınlama tamamen otomatiktir — elle sürüm çıkarmak gerekmez.
   https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-mac-x64.dmg
   https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-linux-x64.AppImage
   https://github.com/pisanadam/PisanKus-client-/releases/latest/download/PisanKusClient-linux-x64.deb
+  https://github.com/pisanadam/PisanKus-client-/releases/download/android/PisanKusClient-android.apk
   ```
 
   İndirme sayfası bu adresleri kullanır, dolayısıyla GitHub API'sine erişilemese bile düğmeler çalışır.
