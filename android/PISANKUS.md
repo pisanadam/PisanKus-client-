@@ -64,3 +64,18 @@ giriş sökülü.
 **Oyun gerçek bir cihazda çalışıyor.** 1.7.10 ve 26.2 açıldı; 26.2 ile sunucuda
 oynandı. Üç Java çalışma zamanı da (8, 17, 21) pakete giriyor, yani eski ve
 güncel sürümler birlikte destekleniyor.
+
+## Yayın kanalı
+
+Android, masaüstünden bağımsız `android-latest` kanalını kullanır. Varsayılan dala gelen sıradan
+değişiklikler APK üretmez; özellikler biriktikten sonra büyük bir sürüm yayımlanır:
+
+```bash
+git tag android-v1.2.0
+git push origin android-v1.2.0
+```
+
+Alternatif olarak GitHub Actions → **Android Release** elle çalıştırılıp sürüm numarası girilebilir.
+İş akışı APK ile birlikte `android-update.json` üretir. Uygulama önce buradaki `versionCode` değerini
+karşılaştırır, yalnızca gerçekten yeniyse indirir ve APK'nın SHA-256 özetini kurulumdan önce doğrular.
+Masaüstü yayınları Android güncelleme bildirimi oluşturmaz.

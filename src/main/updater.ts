@@ -2,7 +2,9 @@ import { app, Notification, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { UpdateStatus } from '../shared/types'
 
-const RELEASES_PAGE = 'https://github.com/pisanadam/PisanKus-client-/releases/latest'
+const RELEASES_PAGE = 'https://github.com/pisanadam/PisanKus-client-/releases/tag/desktop-latest'
+const DESKTOP_FEED =
+  'https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest'
 
 /**
  * Whether the running build can replace itself in place.
@@ -73,6 +75,10 @@ export function initUpdater(onStatus: (status: UpdateStatus) => void, focus: () 
   // a running game would be worse than a stale version.
   autoUpdater.autoInstallOnAppQuit = false
   autoUpdater.logger = null
+  // Do not use GitHub's repository-wide latest pointer: it intentionally stays
+  // on Android so pre-split Android installations can migrate. A generic feed
+  // pins every desktop check and download to desktop-latest instead.
+  autoUpdater.setFeedURL({ provider: 'generic', url: DESKTOP_FEED })
 
   autoUpdater.on('update-available', (info) => {
     set({ state: 'available', version: info.version, canSelfUpdate })
@@ -127,10 +133,10 @@ export function isNewer(candidate: string, installed: string): boolean {
  * electron-builder writes no `latest-mac.yml` and a normal check would fail with
  * "channel file not found" rather than reporting a version. The version is the
  * same on every platform, so the Windows channel file answers the question —
- * `/releases/latest/download/` is a permanent url that follows the rolling tag.
+ * `desktop-latest` is the dedicated rolling desktop channel.
  */
 async function checkViaChannelFile(): Promise<UpdateStatus> {
-  const url = 'https://github.com/pisanadam/PisanKus-client-/releases/latest/download/latest.yml'
+  const url = 'https://github.com/pisanadam/PisanKus-client-/releases/download/desktop-latest/latest.yml'
   const response = await fetch(url, { redirect: 'follow' })
   if (!response.ok) throw new Error(`ERR_UPDATER_CHANNEL_FILE_NOT_FOUND ${response.status}`)
 

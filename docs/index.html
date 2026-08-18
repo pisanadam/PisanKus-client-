@@ -871,7 +871,7 @@
             <details>
               <summary>İndirdiğim sürüm ne kadar güncel?</summary>
               <p>
-                Paketler her kod güncellemesinde otomatik derlenir ve buradaki bağlantılar her zaman en son yapıyı
+                Masaüstü paketleri her kod güncellemesinde; Android ise özellikler biriktikçe derlenir. Buradaki bağlantılar ilgili kanalın en son yapısını
                 indirir. Bağlantı adresleri sabittir, sürüm numarası içermez.
               </p>
             </details>
@@ -904,11 +904,11 @@
     <script>
       const REPO = 'pisanadam/PisanKus-client-'
       const RELEASES_URL = `https://github.com/${REPO}/releases`
+      const DESKTOP_CHANNEL = 'desktop-latest'
+      const ANDROID_CHANNEL = 'android-latest'
 
-      // The Android build is a different program — a PojavLauncher-lineage
-      // runtime rather than the Electron desktop app — but it lives in the same
-      // repository, under android/, and rides the same release. One address,
-      // one version, nothing to keep in sync by hand.
+      // Desktop changes frequently and Android changes in larger batches. Each
+      // card therefore reads and downloads from its own rolling release tag.
 
       document.addEventListener('scroll', () => {
         document.getElementById('site-header').classList.toggle('scrolled', window.scrollY > 8)
@@ -938,7 +938,8 @@
        * automatic build. The page therefore works with no API call at all —
        * the API is used only to fill in version and file sizes.
        */
-      const dl = (name, repo = REPO) => `https://github.com/${repo}/releases/latest/download/${name}`
+      const dl = (name, repo = REPO, channel = DESKTOP_CHANNEL) =>
+        `https://github.com/${repo}/releases/download/${channel}/${name}`
 
       const PLATFORMS = [
         {
@@ -973,6 +974,7 @@
           name: 'Android',
           icon: '🤖',
           note: 'Android 8 ve üzeri · Play Store dışı kurulum',
+          channel: ANDROID_CHANNEL,
           assets: [{ label: 'Kurulum (.apk)', file: 'PisanKusClient-android.apk' }],
           soon: 'Yakında',
           soonNote: 'Android sürümü hazırlanıyor'
@@ -1007,7 +1009,9 @@
 
         container.innerHTML = PLATFORMS.map((platform) => {
           const repo = platform.repo ?? REPO
-          const { release = null, known = null } = sources.get(repo) ?? {}
+          const channel = platform.channel ?? DESKTOP_CHANNEL
+          const sourceKey = `${repo}@${channel}`
+          const { release = null, known = null } = sources.get(sourceKey) ?? {}
           const meta = new Map((release?.assets ?? []).map((asset) => [asset.name, asset]))
           // A platform whose build failed keeps its previous file, so a release
           // can hold packages of different ages. Showing each date makes that
@@ -1027,7 +1031,7 @@
                     const behind = newest - Date.parse(info.updated_at) > 24 * 3600e3
                     sub += behind ? ` · ${formatDate(info.updated_at)} yapısı` : ''
                   }
-                  return `<a class="dl__link" href="${dl(asset.file, repo)}">${asset.label}<br><span style="font-weight:400;opacity:.6;font-size:12px">${sub}</span></a>`
+                  return `<a class="dl__link" href="${dl(asset.file, repo, channel)}">${asset.label}<br><span style="font-weight:400;opacity:.6;font-size:12px">${sub}</span></a>`
                 })
                 .join('')
             : `<span class="dl__link" style="opacity:.55;cursor:default">${platform.soon ?? 'Derleniyor…'}<br><span style="font-weight:400;font-size:12px">${platform.soonNote ?? 'birkaç dakika sürer'}</span></span>`
@@ -1046,7 +1050,9 @@
         // Point the hero button at the detected platform's primary asset.
         const primary = PLATFORMS.find((platform) => platform.id === detected)
         const primaryRepo = primary?.repo ?? REPO
-        const primaryKnown = sources.get(primaryRepo)?.known ?? null
+        const primaryChannel = primary?.channel ?? DESKTOP_CHANNEL
+        const primaryKey = `${primaryRepo}@${primaryChannel}`
+        const primaryKnown = sources.get(primaryKey)?.known ?? null
         const primaryAsset = primary?.assets.find(
           (asset) => primaryKnown === null || primaryKnown.has(asset.file)
         )
@@ -1054,7 +1060,7 @@
         const label = document.getElementById('primary-download-label')
 
         if (primaryAsset) {
-          button.href = dl(primaryAsset.file, primaryRepo)
+          button.href = dl(primaryAsset.file, primaryRepo, primaryChannel)
           label.textContent = `${primary.name} için indir`
         } else {
           button.href = '#indir'
@@ -1071,7 +1077,7 @@
           // Links still work — they resolve server-side once the first build lands.
           tag.textContent = 'otomatik'
           date.textContent = 'İlk otomatik yapı hazırlanıyor. Bağlantılar yayımlandığı anda çalışır.'
-          note.textContent = 'Her güncellemede otomatik derlenir · Windows, macOS, Linux, Android'
+          note.textContent = 'Masaüstü sık güncellenir · Android büyük paketler hâlinde yayımlanır'
           return
         }
 
@@ -1082,7 +1088,7 @@
           year: 'numeric'
         })} tarihinde güncellendi`
         document.getElementById('release-notes-link').href = release.html_url
-        note.textContent = `${release.tag_name} · Windows, macOS, Linux ve Android · ücretsiz ve açık kaynak`
+        note.textContent = `${release.tag_name} · Masaüstü hızlı kanal · ücretsiz ve açık kaynak`
       }
 
       /**
@@ -1093,11 +1099,14 @@
        * other failure returns `known: null`, which leaves the links in place —
        * a rate-limited API must not hide packages that are actually there.
        */
-      async function readRelease(repo) {
+      async function readRelease(repo, channel) {
         try {
-          const response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
-            headers: { Accept: 'application/vnd.github+json' }
-          })
+          const response = await fetch(
+            `https://api.github.com/repos/${repo}/releases/tags/${channel}`,
+            {
+              headers: { Accept: 'application/vnd.github+json' }
+            }
+          )
           if (response.status === 404) return { release: null, known: new Set() }
           if (!response.ok) throw new Error(String(response.status))
 
@@ -1112,11 +1121,23 @@
         // Draw the cards immediately; the API calls refine them afterwards.
         render(new Map())
 
-        const repos = [...new Set(PLATFORMS.map((platform) => platform.repo ?? REPO))]
-        const results = await Promise.all(repos.map(readRelease))
-        const sources = new Map(repos.map((repo, index) => [repo, results[index]]))
+        const channels = [
+          ...new Map(
+            PLATFORMS.map((platform) => {
+              const repo = platform.repo ?? REPO
+              const channel = platform.channel ?? DESKTOP_CHANNEL
+              return [`${repo}@${channel}`, { repo, channel }]
+            })
+          ).entries()
+        ]
+        const results = await Promise.all(
+          channels.map(([, source]) => readRelease(source.repo, source.channel))
+        )
+        const sources = new Map(
+          channels.map(([key], index) => [key, results[index]])
+        )
 
-        renderReleaseMeta(sources.get(REPO)?.release ?? null)
+        renderReleaseMeta(sources.get(`${REPO}@${DESKTOP_CHANNEL}`)?.release ?? null)
         render(sources)
       }
 
