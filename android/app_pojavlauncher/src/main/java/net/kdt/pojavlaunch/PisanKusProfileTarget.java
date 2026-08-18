@@ -23,8 +23,17 @@ public class PisanKusProfileTarget {
     public final String loader;
     public final String gameVersion;
     public final File modsDir;
+    /**
+     * The key this profile is stored under, which is how it is found again.
+     *
+     * Not the game directory: a profile created by the plain Fabric installer
+     * has none, and shares the launcher's own.
+     */
+    public final String profileKey;
 
-    private PisanKusProfileTarget(String profileName, String loader, String gameVersion, File modsDir) {
+    private PisanKusProfileTarget(String profileKey, String profileName, String loader,
+                                  String gameVersion, File modsDir) {
+        this.profileKey = profileKey;
         this.profileName = profileName;
         this.loader = loader;
         this.gameVersion = gameVersion;
@@ -44,6 +53,7 @@ public class PisanKusProfileTarget {
 
         String versionId = profile.lastVersionId == null ? "" : profile.lastVersionId;
         return new PisanKusProfileTarget(
+                key,
                 profile.name == null ? versionId : profile.name,
                 loaderOf(versionId),
                 gameVersionOf(versionId),

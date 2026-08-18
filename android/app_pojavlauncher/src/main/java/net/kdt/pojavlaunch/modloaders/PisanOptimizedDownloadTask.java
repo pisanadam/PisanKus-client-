@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.kdt.mcgui.ProgressLayout;
 
+import net.kdt.pojavlaunch.PisanKusSodium;
 import net.kdt.pojavlaunch.PisanOptimizedInstaller;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
@@ -27,6 +28,11 @@ import java.io.IOException;
  * one, so installing the pack cannot disturb a profile the player already has —
  * and so two Minecraft versions of the pack can exist side by side, each with
  * the mod builds that match it.
+ *
+ * Sodium needs more than a download on Android, and the pack arranges all of it
+ * so the player never has to know — see {@link PisanKusSodium}. The pack's mod
+ * list carries the patch mod; the renderer and the launcher's own block are
+ * handled here as the profile is written.
  */
 public class PisanOptimizedDownloadTask implements Runnable {
     private static final String TAG = "PisanOptimized";
@@ -69,6 +75,7 @@ public class PisanOptimizedDownloadTask implements Runnable {
         // Only now: a profile that points at a folder the install never finished
         // filling would look ready and start without the pack.
         createProfile(versionId);
+        PisanKusSodium.allow();
         Log.i(TAG, "Installed for " + mGameVersion + ", " + skipped + " mod(s) skipped");
         return true;
     }
@@ -122,6 +129,7 @@ public class PisanOptimizedDownloadTask implements Runnable {
                 existing.name = name;
                 existing.lastVersionId = versionId;
                 existing.icon = "pisan_optimized";
+                existing.pojavRendererName = PisanKusSodium.RENDERER;
                 LauncherProfiles.write();
                 return;
             }
@@ -131,6 +139,7 @@ public class PisanOptimizedDownloadTask implements Runnable {
         profile.lastVersionId = versionId;
         profile.gameDir = gameDir;
         profile.icon = "pisan_optimized";
+        profile.pojavRendererName = PisanKusSodium.RENDERER;
         LauncherProfiles.insertMinecraftProfile(profile);
         LauncherProfiles.write();
     }

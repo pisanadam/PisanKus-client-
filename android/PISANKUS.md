@@ -61,6 +61,11 @@ bir daha güncellenemez.
 Derleme yerelde ve CI'da geçiyor, paket kimliği `com.pisankus.client`, korsan
 giriş sökülü.
 
+**Sodium.** Pisan Optimized kurulumu, Sodium'un bu launcher'da başlaması için
+gerekenleri kendisi ayarlıyor: Podium yaması, MobileGlues görüntüleyicisi ve
+launcher'ın Sodium engelinin kapatılması. Ayrıntı `UPSTREAM.md` §7'de.
+Cihazda oynanarak doğrulanmadı.
+
 **Oyun gerçek bir cihazda çalışıyor.** 1.7.10 ve 26.2 açıldı; 26.2 ile sunucuda
 oynandı. Üç Java çalışma zamanı da (8, 17, 21) pakete giriyor, yani eski ve
 güncel sürümler birlikte destekleniyor.

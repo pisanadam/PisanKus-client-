@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.kdt.pojavlaunch.PisanKusModrinth;
+import net.kdt.pojavlaunch.PisanKusSodium;
 import net.kdt.pojavlaunch.PisanKusProfileTarget;
 import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.R;
@@ -246,10 +247,23 @@ public class PisanModsFragment extends Fragment {
                     return;
                 }
                 final String fileName = PisanKusModrinth.downloadPrimaryFile(version, mProfile.modsDir);
+                // Sodium alone does not start on this launcher; it needs the
+                // patch mod and a renderer that can carry it. A player who
+                // installs it here should get the same working setup the pack
+                // gives them, not a profile that refuses to launch.
+                final String patch = PisanKusSodium.isSodium(hit.slug)
+                        ? PisanKusSodium.installPatch(mProfile.modsDir, mProfile.gameVersion)
+                        : null;
+                if (PisanKusSodium.isSodium(hit.slug)) {
+                    PisanKusSodium.useRendererFor(mProfile.profileKey);
+                    PisanKusSodium.allow();
+                }
                 Tools.runOnUiThread(() -> {
                     if (!isAdded()) return;
                     setBusy(false);
-                    mStatus.setText(getString(R.string.pisan_mods_installed, fileName));
+                    mStatus.setText(patch == null
+                            ? getString(R.string.pisan_mods_installed, fileName)
+                            : getString(R.string.pisan_mods_installed_sodium, fileName));
                 });
             } catch (Exception e) {
                 showError(e);

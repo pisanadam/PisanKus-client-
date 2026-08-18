@@ -83,6 +83,26 @@ kendi klasörüne iner. Dosya adları sabitlenmediği için paket, yeni bir Mine
 sürümü çıktığında liste düzenlenmeden çalışmaya devam eder; o sürüme henüz
 yayınlanmamış modlar atlanır.
 
+Sodium'un bu launcher'da çalışması için üç engel var, üçü de kurulum sırasında
+kaldırılıyor (`PisanKusSodium.java`):
+
+1. **Modun kendi denetimi.** Sodium PojavLauncher türevlerini adından tanıyıp
+   başlamayı reddediyor. Bunu kaldırmak için yayınlanmış [Podium][podium] modu
+   pakete eklendi.
+2. **Görüntüleyici.** GL4ES tabanlı çeviriciler Sodium'u taşıyamıyor; bu
+   yapıda gömülü olanlardan MobileGlues taşıyor, profil ona ayarlanıyor.
+   (Zink tam da Sodium için kaçınılması önerilen; LTW burada gömülü değil.)
+3. **Launcher'ın kendi engeli.** Üst kaynak, mods klasöründe Sodium varken
+   oynamayı kesiyor ve tek seçenek olarak silmeyi sunuyor; deneysel ayarlardaki
+   anahtar açılmadıkça geçilmiyor. Kendi paketimiz için o anahtar açılıyor.
+
+Dördüncü parçayı üst kaynak zaten kendisi yapıyor: başlatırken Sodium'un mixin
+ayarlarını yazıp `-Dsodium.checks.issue2561=false` geçiyor.
+
+Aynı hazırlık, mod tarayıcısından Sodium kuran oyuncu için de yapılıyor.
+
+[podium]: https://modrinth.com/mod/podium
+
 ### 8. Skin değiştirme
 
 `PisanKusSkins.java`, `PisanKusSkinPreview.java`, `fragments/SkinFragment.java`

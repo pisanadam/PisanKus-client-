@@ -46,7 +46,9 @@ public class PisanOptimizedInstaller {
      *
      * Kept in step with the desktop launcher's list in
      * {@code src/shared/curatedPack.ts} — the same pack, so the two products
-     * install the same thing.
+     * install the same thing. Podium is the one addition, and it is here
+     * because it only means anything here: it exists to make Sodium run on this
+     * launcher, which is not a problem a desktop has.
      */
     public static final Mod[] MODS = {
             // Libraries
@@ -58,6 +60,14 @@ public class PisanOptimizedInstaller {
 
             // Performance
             essential("sodium", "Sodium"),
+            // Sodium refuses to start on this launcher — it detects it by name
+            // and throws. Podium is a mixin that removes that check, and
+            // without it the pack's most important mod is simply dead weight.
+            //
+            // Not marked essential even so: Podium only exists for 1.20.1 and
+            // newer, and on the older versions the Sodium builds predate the
+            // check, so there is nothing there for it to remove.
+            mod("podium", "Podium (Sodium yaması)"),
             mod("lithium", "Lithium"),
             mod("ferrite-core", "FerriteCore"),
             mod("immediatelyfast", "ImmediatelyFast"),

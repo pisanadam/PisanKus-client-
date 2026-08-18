@@ -19,7 +19,7 @@
     <string name="pisan_optimized_title">Pisan Optimized</string>
     <string name="pisan_optimized_button">Pisan Optimized kur</string>
     <string name="pisan_optimized_summary">PisanKus performans paketi — %1$d mod, Fabric profili olarak kurulur.</string>
-    <string name="pisan_optimized_note">Modlar bu profile ait ayrı bir klasöre kurulur; diğer profilleriniz etkilenmez. Seçtiğiniz sürüm için yayınlanmamış modlar atlanır.</string>
+    <string name="pisan_optimized_note">Modlar bu profile ait ayrı bir klasöre kurulur; diğer profilleriniz etkilenmez. Seçtiğiniz sürüm için yayınlanmamış modlar atlanır.\n\nSodium\'un Android\'de çalışması için gerekenler kendiliğinden ayarlanır: Podium yaması kurulur ve profilin görüntüleyicisi MobileGlues olur.</string>
     <string name="pisan_optimized_progress_loader">Fabric hazırlanıyor…</string>
     <string name="pisan_optimized_progress_mod">Mod %1$d/%2$d: %3$s</string>
     <string name="pisan_optimized_no_loader">%1$s için Fabric sürümü bulunamadı.</string>
@@ -45,6 +45,7 @@
     <string name="pisan_mods_install">Kur</string>
     <string name="pisan_mods_installing">%1$s kuruluyor…</string>
     <string name="pisan_mods_installed">Kuruldu: %1$s</string>
+    <string name="pisan_mods_installed_sodium">Kuruldu: %1$s — Sodium için Podium yaması da kuruldu ve profilin görüntüleyicisi MobileGlues yapıldı.</string>
     <string name="pisan_mods_no_version">%1$s için %2$s sürümünde yapı yok</string>
 
     <!-- Skin -->
