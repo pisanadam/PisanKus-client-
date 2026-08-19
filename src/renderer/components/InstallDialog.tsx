@@ -29,7 +29,7 @@ export function checkCompatibility(
   const issues: string[] = []
 
   if (supports.gameVersions.length > 0 && !supports.gameVersions.includes(profile.gameVersion)) {
-    issues.push(`Minecraft ${profile.gameVersion} desteklenmiyor`)
+    issues.push(t('Minecraft {version} desteklenmiyor', { version: profile.gameVersion }))
   }
 
   if (loaderApplies(kind) && supports.loaders.length > 0) {
@@ -43,12 +43,12 @@ export function checkCompatibility(
       // not supported" would read as the mod's shortcoming rather than the
       // profile's.
       if (profile.loader === 'optifine') {
-        issues.push('OptiFine profilleri mod yüklemez; kaynak paketi ve shader kurulabilir')
+        issues.push(t('OptiFine profilleri mod yüklemez; kaynak paketi ve shader kurulabilir'))
       } else {
         issues.push(
           profile.loader === 'vanilla'
             ? t('Bu profilde mod yükleyici yok (vanilla)')
-            : `${profile.loader} yükleyicisi desteklenmiyor`
+            : t('{loader} yükleyicisi desteklenmiyor', { loader: profile.loader })
         )
       }
     }
@@ -74,7 +74,7 @@ function describeSupport(supports: { gameVersions: string[]; loaders: string[] }
     // Modrinth returns them oldest first.
     const newest = gameVersions.slice(-SHOWN).reverse()
     const rest = gameVersions.length - newest.length
-    versions = newest.join(', ') + (rest > 0 ? ` ve ${rest} sürüm daha` : '')
+    versions = newest.join(', ') + (rest > 0 ? ' ' + t('ve {count} sürüm daha', { count: rest }) : '')
   }
 
   return loaders.length > 0 ? `${versions} · ${loaders.join(', ')}` : versions
@@ -184,19 +184,19 @@ export function InstallDialog({
         onClick={install}
       >
         {installing ? <div className="spinner" /> : <Icon name="download" size={16} />}
-        {compatibility?.ok === false ? 'Yine de kur' : 'Kur'}
+        {compatibility?.ok === false ? t('Yine de kur') : t('Kur')}
       </button>
     </>
   )
 
   return (
-    <Modal title={`${result.title} · kurulum`} onClose={onClose} footer={footer}>
+    <Modal title={t('{name} · kurulum', { name: result.title })} onClose={onClose} footer={footer}>
       <p className="faint" style={{ marginBottom: 4 }}>
-        {version ? `Sürüm: ${version.name}` : 'En son uyumlu sürüm kurulacak'}
-        {supports && ` · Destek: ${describeSupport(supports)}`}
+        {version ? t('Sürüm: {name}', { name: version.name }) : t('En son uyumlu sürüm kurulacak')}
+        {supports && ' · ' + t('Destek: {list}', { list: describeSupport(supports) })}
       </p>
 
-      <div className="section-title">{locked ? 'Kurulacak profil' : 'Hangi profile kurulsun?'}</div>
+      <div className="section-title">{locked ? t('Kurulacak profil') : t('Hangi profile kurulsun?')}</div>
 
       {locked && selected && !isModpack ? (
         <div className="list">
@@ -220,8 +220,8 @@ export function InstallDialog({
         </div>
       ) : profiles.length === 0 ? (
         <div className="empty" style={{ padding: 24 }}>
-          <div className="empty__title">Profil yok</div>
-          <p>Önce Kitaplık&apos;tan bir profil oluşturun.</p>
+          <div className="empty__title">{t('Profil yok')}</div>
+          <p>{t("Önce Kitaplık'tan bir profil oluşturun.")}</p>
         </div>
       ) : (
         <div className="list">
@@ -235,12 +235,10 @@ export function InstallDialog({
                 ✨
               </span>
               <div className="list__main">
-                <div className="list__title">Yeni profil oluştur</div>
-                <div className="list__sub">
-                  Paketin kendi sürümü ve yükleyicisiyle kurulur
-                </div>
+                <div className="list__title">{t('Yeni profil oluştur')}</div>
+                <div className="list__sub">{t('Paketin kendi sürümü ve yükleyicisiyle kurulur')}</div>
               </div>
-              <span className="badge badge--accent">önerilen</span>
+              <span className="badge badge--accent">{t('önerilen')}</span>
             </button>
           )}
 
@@ -264,9 +262,9 @@ export function InstallDialog({
                 </div>
                 {state &&
                   (state.ok ? (
-                    <span className="badge badge--success">uyumlu</span>
+                    <span className="badge badge--success">{t('uyumlu')}</span>
                   ) : (
-                    <span className="badge badge--warning">uyumsuz</span>
+                    <span className="badge badge--warning">{t('uyumsuz')}</span>
                   ))}
               </button>
             )
@@ -278,15 +276,13 @@ export function InstallDialog({
         <div className="notice notice--warning">
           <Icon name="close" size={15} />
           <div>
-            <strong>Bu içerik seçili profille uyumlu görünmüyor.</strong>
+            <strong>{t('Bu içerik seçili profille uyumlu görünmüyor.')}</strong>
             <ul className="notice__list">
               {compatibility.issues.map((issue) => (
                 <li key={issue}>{issue}</li>
               ))}
             </ul>
-            <span className="faint">
-              Yine de kurabilirsiniz; oyun açılmayabilir veya içerik yüklenmeyebilir.
-            </span>
+            <span className="faint">{t('Yine de kurabilirsiniz; oyun açılmayabilir veya içerik yüklenmeyebilir.')}</span>
           </div>
         </div>
       )}

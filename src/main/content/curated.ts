@@ -70,7 +70,10 @@ async function resolvePack(
 
     const versionId = await resolveOne(pack, projectId, gameVersion)
     if (!versionId) {
-      missing.push({ name: mod.name, reason: `${gameVersion} için sürümü yok` })
+      // A fixed sentence rather than one built around the version: the report's
+      // own header already names it, and a sentence assembled here could not be
+      // translated in the window that shows it.
+      missing.push({ name: mod.name, reason: 'Bu sürüme yayınlanmamış' })
       continue
     }
     ready.push({ mod, projectId, versionId })

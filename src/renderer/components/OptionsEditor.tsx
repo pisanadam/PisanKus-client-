@@ -104,7 +104,7 @@ export function OptionsEditor({
 
           <button className="btn btn--sm" aria-pressed={raw} onClick={() => setRaw(!raw)}>
             <Icon name="terminal" size={15} />
-            Ham dosya
+            {t('Ham dosya')}
           </button>
         </div>
 
@@ -117,14 +117,14 @@ export function OptionsEditor({
               onChange={(event) => setText(event.target.value)}
             />
             <p className="faint">
-              Doğrudan options.txt biçimi. Her satır <code>anahtar:değer</code>.
+              {t('Doğrudan options.txt biçimi. Her satır')} <code>{t('anahtar:değer')}</code>.
             </p>
           </>
         ) : (
           <div className="options__groups">
             {OPTION_GROUPS.map((group) => (
               <section key={group.title} className="settings-group">
-                <div className="section-title">{group.title}</div>
+                <div className="section-title">{t(group.title)}</div>
                 {group.options.map((option) => (
                   <OptionRow
                     key={option.key}
@@ -138,8 +138,10 @@ export function OptionsEditor({
 
             {extraCount > 0 && (
               <p className="faint">
-                Dosyada burada gösterilmeyen {extraCount} ayar daha var (tuş atamaları, kaynak
-                paketleri gibi). Bunlara dokunulmuyor, olduğu gibi korunuyor.
+                {t(
+                  'Dosyada burada gösterilmeyen {count} ayar daha var (tuş atamaları, kaynak paketleri gibi). Bunlara dokunulmuyor, olduğu gibi korunuyor.',
+                  { count: extraCount }
+                )}
               </p>
             )}
           </div>
@@ -163,8 +165,8 @@ function OptionRow({
   return (
     <div className="settings-row">
       <div>
-        <div className="settings-row__label">{spec.label}</div>
-        {spec.hint && <div className="faint">{spec.hint}</div>}
+        <div className="settings-row__label">{t(spec.label, spec.labelVars)}</div>
+        {spec.hint && <div className="faint">{t(spec.hint)}</div>}
       </div>
       <div className="options__control">
         {type.kind === 'bool' && (
@@ -223,7 +225,7 @@ function OptionRow({
           >
             {type.values.map((entry) => (
               <option key={entry.value} value={entry.value}>
-                {entry.label}
+                {t(entry.label)}
               </option>
             ))}
           </select>

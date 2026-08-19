@@ -69,7 +69,7 @@ export function PackDialog({
   if (result) {
     return (
       <Modal
-        title={`${name} hazır`}
+        title={t('{name} hazır', { name })}
         onClose={onClose}
         footer={
           <button className="btn btn--primary" onClick={() => onInstalled(result.profile.id)}>
@@ -80,7 +80,9 @@ export function PackDialog({
       >
         <p className="muted">
           Minecraft {result.profile.gameVersion} · {loaderLabel(result.profile.loader)} ·{' '}
-          {result.report.installed.length} mod kuruldu. Oyun ayarlarınıza dokunulmadı.
+          {t('{count} mod kuruldu. Oyun ayarlarınıza dokunulmadı.', {
+            count: result.report.installed.length
+          })}
         </p>
 
         <ul className="pack-list">
@@ -88,7 +90,7 @@ export function PackDialog({
             <li key={mod.name} className="pack-list__item">
               <Icon name="check" size={15} className="pack-list__ok" />
               <span className="pack-list__name">{mod.name}</span>
-              <span className="pack-list__role">{mod.role}</span>
+              <span className="pack-list__role">{t(mod.role)}</span>
             </li>
           ))}
         </ul>
@@ -96,15 +98,16 @@ export function PackDialog({
         {result.report.skipped.length > 0 && (
           <>
             <p className="faint" style={{ marginTop: 16 }}>
-              Bu sürüm için hazır olmayanlar atlandı — paket bunlarsız da çalışır, mod güncellenince
-              Keşfet’ten tek tek ekleyebilirsiniz.
+              {t(
+                'Bu sürüm için hazır olmayanlar atlandı — paket bunlarsız da çalışır, mod güncellenince Keşfet’ten tek tek ekleyebilirsiniz.'
+              )}
             </p>
             <ul className="pack-list">
               {result.report.skipped.map((mod) => (
                 <li key={mod.name} className="pack-list__item pack-list__item--skipped">
                   <Icon name="close" size={15} />
                   <span className="pack-list__name">{mod.name}</span>
-                  <span className="pack-list__role">{mod.reason}</span>
+                  <span className="pack-list__role">{t(mod.reason)}</span>
                 </li>
               ))}
             </ul>
@@ -125,17 +128,17 @@ export function PackDialog({
           </button>
           <button className="btn btn--primary" onClick={() => void install()} disabled={busy || !gameVersion}>
             {busy ? <div className="spinner" /> : <Icon name="download" size={16} />}
-            Kur
+            {t('Kur')}
           </button>
         </>
       }
     >
-      <p className="muted">{pack.summary}</p>
+      <p className="muted">{t(pack.summary)}</p>
 
       {pack.note && (
         <div className="notice notice--warning" style={{ marginTop: 12 }}>
           <Icon name="compass" size={15} />
-          <div>{pack.note}</div>
+          <div>{t(pack.note)}</div>
         </div>
       )}
 
@@ -146,7 +149,7 @@ export function PackDialog({
         {versions === null ? (
           <div className="row" style={{ gap: 8 }}>
             <div className="spinner" />
-            <span className="faint">Uyumlu sürümler alınıyor…</span>
+            <span className="faint">{t('Uyumlu sürümler alınıyor…')}</span>
           </div>
         ) : (
           <select
@@ -159,7 +162,7 @@ export function PackDialog({
               <optgroup label={t('Önerilen')}>
                 {recommended.map((entry) => (
                   <option key={entry.version} value={entry.version}>
-                    {entry.version} — {entry.why}
+                    {entry.version} — {t(entry.why)}
                   </option>
                 ))}
               </optgroup>
@@ -175,8 +178,8 @@ export function PackDialog({
         )}
         <span className="field__hint">
           {why
-            ? `${why} — paket bu sürümde tam kuruluyor.`
-            : 'Yalnızca paketin çekirdek modlarının yayınlandığı sürümler listelenir.'}
+            ? t('{why} — paket bu sürümde tam kuruluyor.', { why: t(why) })
+            : t('Yalnızca paketin çekirdek modlarının yayınlandığı sürümler listelenir.')}
         </span>
       </div>
 
@@ -199,12 +202,12 @@ export function PackDialog({
         {pack.mods.map((mod) => (
           <li key={mod.slug} className="pack-list__item">
             <span className="pack-list__name">{mod.name}</span>
-            <span className="pack-list__role">{mod.role}</span>
+            <span className="pack-list__role">{t(mod.role)}</span>
           </li>
         ))}
       </ul>
       <p className="faint" style={{ marginTop: 10 }}>
-        Seçtiğiniz sürüme uymayan modlar kurulum sırasında atlanır ve size listelenir.
+        {t('Seçtiğiniz sürüme uymayan modlar kurulum sırasında atlanır ve size listelenir.')}
       </p>
 
       {error && <p className="form-error">{error}</p>}

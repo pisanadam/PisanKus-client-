@@ -1,5 +1,6 @@
 import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
+import { t } from '../../shared/i18n'
 
 export function TaskTray(): JSX.Element | null {
   const { tasks, dismissTask, signIn, signingIn } = useApp()
@@ -39,7 +40,7 @@ export function TaskTray(): JSX.Element | null {
                 }}
               >
                 {signingIn ? <div className="spinner" /> : <Icon name="user" size={15} />}
-                Tekrar oturum aç
+                {t('Tekrar oturum aç')}
               </button>
             )}
 

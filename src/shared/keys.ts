@@ -9,6 +9,8 @@
  * knows as `w`.
  */
 
+import { t } from './i18n'
+
 /** Minecraft's name for "nothing bound". */
 export const UNBOUND = 'key.keyboard.unknown'
 
@@ -138,14 +140,14 @@ const DISPLAY: Record<string, string> = {
 
 /** A label for the binding, for the button face. */
 export function keyLabel(key: string | undefined): string {
-  if (!key) return 'Atanmadı'
+  if (!key) return t('Atanmadı')
 
   const mouse = /^key\.mouse\.(.+)$/.exec(key)
   if (mouse) {
-    if (mouse[1] === 'left') return 'Sol tık'
-    if (mouse[1] === 'right') return 'Sağ tık'
-    if (mouse[1] === 'middle') return 'Orta tık'
-    return `Fare ${mouse[1]}`
+    if (mouse[1] === 'left') return t('Sol tık')
+    if (mouse[1] === 'right') return t('Sağ tık')
+    if (mouse[1] === 'middle') return t('Orta tık')
+    return t('Fare {number}', { number: mouse[1] })
   }
 
   const keyboard = /^key\.keyboard\.(.+)$/.exec(key)
@@ -153,10 +155,10 @@ export function keyLabel(key: string | undefined): string {
 
   const name = keyboard[1]
   const known = DISPLAY[name]
-  if (known) return known
+  if (known) return t(known)
 
   const keypad = /^keypad\.(.+)$/.exec(name)
-  if (keypad) return `Num ${keypad[1]}`
+  if (keypad) return t('Num {key}', { key: keypad[1] })
 
   // Single characters and function keys read fine uppercased.
   return name.toUpperCase()
@@ -165,7 +167,17 @@ export function keyLabel(key: string | undefined): string {
 export interface KeyBindSpec {
   /** The options.txt key, e.g. `key_key.jump`. */
   key: string
+  /** Translation source text; `{name}` placeholders are filled from labelVars. */
   label: string
+  /**
+   * Values for the label's placeholders.
+   *
+   * The hotbar slots are generated rather than written out, so their label is
+   * one sentence with a number in it. Building the label by concatenation would
+   * fix the number's position in Turkish word order, which is not where every
+   * language puts it.
+   */
+  labelVars?: Record<string, string | number>
   /** The game's own default, used when building a fresh template. */
   default: string
 }
@@ -215,7 +227,8 @@ export const KEY_BINDS: { title: string; binds: KeyBindSpec[] }[] = [
     binds: [
       ...Array.from({ length: 9 }, (_, index) => ({
         key: `key_key.hotbar.${index + 1}`,
-        label: `Yuva ${index + 1}`,
+        label: 'Yuva {number}',
+        labelVars: { number: index + 1 },
         default: `key.keyboard.${index + 1}`
       })),
       { key: 'key_key.saveToolbarActivator', label: 'Çubuğu kaydet', default: 'key.keyboard.c' },

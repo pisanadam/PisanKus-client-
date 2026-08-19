@@ -52,7 +52,7 @@ export function ProfileDetail({
     return (
       <div className="page">
         <div className="empty">
-          <div className="empty__title">Profil bulunamadı</div>
+          <div className="empty__title">{t('Profil bulunamadı')}</div>
           <button className="btn" onClick={onBack}>
             {t('Kitaplığa dön')}
           </button>
@@ -85,7 +85,10 @@ export function ProfileDetail({
           <p className="page__subtitle">
             {profile.gameVersion} · {loaderLabel(profile.loader)}
             {profile.loaderVersion ? ` ${profile.loaderVersion}` : ''} ·{' '}
-            {formatPlaytime(profile.totalPlaytimeMs)} oynandı · son oynama {formatRelative(profile.lastPlayed)}
+            {t('{playtime} oynandı · son oynama {when}', {
+              playtime: formatPlaytime(profile.totalPlaytimeMs),
+              when: formatRelative(profile.lastPlayed)
+            })}
           </p>
         </div>
         <div className="topbar__spacer" />
@@ -107,7 +110,7 @@ export function ProfileDetail({
           <>
             <button
               className="btn"
-              title="Ağa bağlanmadan yalnızca önceden hazırlanmış dosyaları kullanır"
+              title={t('Ağa bağlanmadan yalnızca önceden hazırlanmış dosyaları kullanır')}
               onClick={async () => {
                 try {
                   await api.game.launch(profile.id, { offline: true })
@@ -179,10 +182,10 @@ export function ProfileDetail({
           danger
           confirmLabel={t('Profili ve dosyaları sil')}
           message={
-            <>
-              <strong>{profile.name}</strong> profili ve <code>{profile.directory}</code> klasöründeki tüm modlar,
-              dünyalar ve ayarlar kalıcı olarak silinecek. Bu işlem geri alınamaz.
-            </>
+            t(
+              '{name} profili ve {directory} klasöründeki tüm modlar, dünyalar ve ayarlar kalıcı olarak silinecek. Bu işlem geri alınamaz.',
+              { name: profile.name, directory: profile.directory }
+            )
           }
           onConfirm={async () => {
             await api.profiles.remove(profile.id, true)
@@ -288,7 +291,7 @@ function ContentTab({
           }}
         >
           {checking ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
-          Güncellemeleri denetle
+          {t('Güncellemeleri denetle')}
         </button>
 
         <div className="topbar__spacer" />
@@ -303,7 +306,7 @@ function ContentTab({
             }}
           >
             <Icon name="download" size={16} />
-            {updatable.length} güncellemeyi uygula
+            {t('{count} güncellemeyi uygula', { count: updatable.length })}
           </button>
         )}
       </div>
@@ -315,8 +318,9 @@ function ContentTab({
             {dropping ? t('Bırakın, kuralım') : t('Bu profilde içerik yok')}
           </div>
           <p>
-            Mağazadan kurabilir, dosya seçebilir ya da <strong>jar, dünya, doku paketi ve shader</strong>{' '}
-            dosyalarını doğrudan buraya sürükleyebilirsiniz.
+            {t(
+              'Mağazadan kurabilir, dosya seçebilir ya da jar, dünya, doku paketi ve shader dosyalarını doğrudan buraya sürükleyebilirsiniz.'
+            )}
           </p>
         </div>
       ) : (
@@ -451,8 +455,8 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
       ) : worlds.length === 0 ? (
         <div className="empty">
           <div className="empty__icon">🌍</div>
-          <div className="empty__title">Kayıtlı dünya yok</div>
-          <p>Oyunda yeni bir dünya oluşturun ya da elinizdeki bir dünya arşivini içe aktarın.</p>
+          <div className="empty__title">{t('Kayıtlı dünya yok')}</div>
+          <p>{t('Oyunda yeni bir dünya oluşturun ya da elinizdeki bir dünya arşivini içe aktarın.')}</p>
         </div>
       ) : (
         <div className="list">
@@ -464,7 +468,10 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
               <div className="list__main">
                 <div className="list__title">{world.displayName}</div>
                 <div className="list__sub">
-                  {world.sizeMb} MB · son değişiklik {formatRelative(world.lastPlayed)}
+                  {t('{size} MB · son değişiklik {when}', {
+                    size: world.sizeMb,
+                    when: formatRelative(world.lastPlayed)
+                  })}
                 </div>
               </div>
               <button
@@ -507,10 +514,9 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
           danger
           confirmLabel={t('Kalıcı olarak sil')}
           message={
-            <>
-              <strong>{pendingDelete.displayName}</strong> dünyası ve içindeki tüm ilerleme silinecek. Bu işlem
-              geri alınamaz.
-            </>
+            t('{name} dünyası ve içindeki tüm ilerleme silinecek. Bu işlem geri alınamaz.', {
+              name: pendingDelete.displayName
+            })
           }
           onConfirm={async () => {
             setWorlds(await api.worlds.remove(profileId, pendingDelete.folderName))
@@ -578,7 +584,7 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
           </ul>
           {latest.evidence.length > 0 && (
             <details>
-              <summary>Hata kanıtı ({latest.evidence.length} satır)</summary>
+              <summary>{t('Hata kanıtı ({count} satır)', { count: latest.evidence.length })}</summary>
               <pre className="crash-analysis__evidence">{latest.evidence.join('\n')}</pre>
             </details>
           )}
@@ -595,9 +601,11 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
               onClick={() => void navigator.clipboard.writeText(JSON.stringify(latest, null, 2))}
             >
               <Icon name="copy" size={14} />
-              Analizi kopyala
+              {t('Analizi kopyala')}
             </button>
-            {reports.length > 1 && <span className="faint">Toplam {reports.length} crash raporu</span>}
+            {reports.length > 1 && (
+              <span className="faint">{t('Toplam {count} crash raporu', { count: reports.length })}</span>
+            )}
           </div>
         </div>
       )}
@@ -607,7 +615,7 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
           {t('Otomatik kaydır')}
         </button>
         <button className="btn btn--sm" onClick={() => clearLogs(profileId)}>
-          Temizle
+          {t('Temizle')}
         </button>
         <button
           className="btn btn--sm"
@@ -615,15 +623,15 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
           disabled={lines.length === 0}
         >
           <Icon name="copy" size={15} />
-          Kopyala
+          {t('Kopyala')}
         </button>
         <div className="topbar__spacer" />
-        <span className="faint">{lines.length} satır</span>
+        <span className="faint">{t('{count} satır', { count: lines.length })}</span>
       </div>
 
       <div className="console" ref={consoleRef}>
         {lines.length === 0 ? (
-          <span className="muted">Oyun çalıştığında günlük çıktısı burada görünür.</span>
+          <span className="muted">{t('Oyun çalıştığında günlük çıktısı burada görünür.')}</span>
         ) : (
           lines.map((line, index) => (
             <div key={index} className={`console__line--${line.stream}`}>
@@ -748,8 +756,8 @@ function ProfileSettingsTab({
       <div className="settings-group">
         <div className="settings-row">
           <div>
-            <div className="settings-row__label">Profil adı</div>
-            <div className="faint">Kitaplıkta görünen ad</div>
+            <div className="settings-row__label">{t('Profil adı')}</div>
+            <div className="faint">{t('Kitaplıkta görünen ad')}</div>
           </div>
           <input className="input" value={name} onChange={(event) => setName(event.target.value)} />
         </div>
@@ -758,7 +766,7 @@ function ProfileSettingsTab({
           <div>
             <div className="settings-row__label">Simge</div>
             <div className="faint">
-              {profile.iconImage ? 'Kendi görseliniz kullanılıyor' : 'PNG veya JPG yükleyebilirsiniz'}
+              {profile.iconImage ? t('Kendi görseliniz kullanılıyor') : t('PNG veya JPG yükleyebilirsiniz')}
             </div>
           </div>
           <div className="row" style={{ gap: 8 }}>
@@ -792,13 +800,13 @@ function ProfileSettingsTab({
 
         <div className="settings-row">
           <div>
-            <div className="settings-row__label">Oyun ayarları</div>
+            <div className="settings-row__label">{t('Oyun ayarları')}</div>
             <div className="faint">
               {options === null
                 ? 'Okunuyor…'
                 : options.onDisk
-                  ? `Bu profilin options.txt dosyası · ${optionCount} ayar`
-                  : 'Bu profilde henüz options.txt yok — kaydedince oluşturulur'}
+                  ? t('Bu profilin options.txt dosyası · {count} ayar', { count: optionCount })
+                  : t('Bu profilde henüz options.txt yok — kaydedince oluşturulur')}
             </div>
           </div>
           <button className="btn btn--sm" disabled={options === null} onClick={() => setEditingOptions(true)}>
@@ -809,8 +817,10 @@ function ProfileSettingsTab({
 
         <div className="settings-row">
           <div>
-            <div className="settings-row__label">Ayrılan bellek</div>
-            <div className="faint">{(memory / 1024).toFixed(1)} GB — büyük mod paketleri için 6 GB+ önerilir</div>
+            <div className="settings-row__label">{t('Ayrılan bellek')}</div>
+            <div className="faint">
+              {t('{size} GB — büyük mod paketleri için 6 GB+ önerilir', { size: (memory / 1024).toFixed(1) })}
+            </div>
           </div>
           <input
             type="range"
@@ -825,19 +835,19 @@ function ProfileSettingsTab({
         {profile.loader !== 'vanilla' && loaderVersions.length > 0 && (
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">{loaderLabel(profile.loader)} sürümü</div>
-              <div className="faint">Değiştirildiğinde bir sonraki başlatmada kurulur</div>
+              <div className="settings-row__label">{t('{loader} sürümü', { loader: loaderLabel(profile.loader) })}</div>
+              <div className="faint">{t('Değiştirildiğinde bir sonraki başlatmada kurulur')}</div>
             </div>
             <select
               className="select"
               value={loaderVersion}
               onChange={(event) => setLoaderVersion(event.target.value)}
             >
-              <option value="">En son kararlı</option>
+              <option value="">{t('En son kararlı')}</option>
               {loaderVersions.map((entry) => (
                 <option key={entry.version} value={entry.version}>
                   {entry.version}
-                  {entry.stable ? '' : ' (kararsız)'}
+                  {entry.stable ? '' : ' ' + t('(kararsız)')}
                 </option>
               ))}
             </select>
@@ -853,7 +863,11 @@ function ProfileSettingsTab({
             className="input"
             list="profile-java-options"
             value={javaPath}
-            placeholder={settings?.javaPath ? `Genel: ${settings.javaPath}` : 'Boş bırakılırsa uygun Java otomatik seçilir'}
+            placeholder={
+              settings?.javaPath
+                ? t('Genel: {path}', { path: settings.javaPath })
+                : t('Boş bırakılırsa uygun Java otomatik seçilir')
+            }
             onChange={(event) => setJavaPath(event.target.value)}
           />
           <datalist id="profile-java-options">
@@ -864,14 +878,16 @@ function ProfileSettingsTab({
             ))}
           </datalist>
           <div className="field__hint">
-            {javaPath ? 'Bu yol yalnızca bu profil için kullanılır.' : 'Genel Java ayarı veya launcher tarafından yönetilen Java kullanılır.'}
+            {javaPath
+              ? t('Bu yol yalnızca bu profil için kullanılır.')
+              : t('Genel Java ayarı veya launcher tarafından yönetilen Java kullanılır.')}
           </div>
         </div>
 
         <div className="settings-row">
           <div>
-            <div className="settings-row__label">Özel çözünürlük</div>
-            <div className="faint">Kapalıysa Minecraft kendi pencere boyutunu kullanır</div>
+            <div className="settings-row__label">{t('Özel çözünürlük')}</div>
+            <div className="faint">{t('Kapalıysa Minecraft kendi pencere boyutunu kullanır')}</div>
           </div>
           <div className="row profile-resolution">
             {customResolution && (
@@ -906,7 +922,7 @@ function ProfileSettingsTab({
             />
           </div>
         </div>
-        {!resolutionValid && <div className="field__hint field__hint--danger">Geçerli bir genişlik ve yükseklik girin.</div>}
+        {!resolutionValid && <div className="field__hint field__hint--danger">{t('Geçerli bir genişlik ve yükseklik girin.')}</div>}
 
         <div className="field">
           <label className="field__label" htmlFor="jvm-args">
@@ -916,7 +932,7 @@ function ProfileSettingsTab({
             id="jvm-args"
             className="textarea"
             value={jvmArgs}
-            placeholder="Boş bırakılırsa genel ayarlardaki değerler kullanılır"
+            placeholder={t('Boş bırakılırsa genel ayarlardaki değerler kullanılır')}
             onChange={(event) => setJvmArgs(event.target.value)}
           />
         </div>
@@ -929,7 +945,7 @@ function ProfileSettingsTab({
       </div>
 
       <div className="settings-group">
-        <div className="section-title">Bakım</div>
+        <div className="section-title">{t('Bakım')}</div>
         <div className="row" style={{ flexWrap: 'wrap' }}>
           <button
             className="btn"

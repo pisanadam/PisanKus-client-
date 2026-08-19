@@ -18,13 +18,15 @@ export function Accounts(): JSX.Element {
     <div className="page">
       <header className="page__header">
         <div>
-          <h1 className="page__title">Hesaplar</h1>
-          <p className="page__subtitle">Birden fazla Microsoft hesabı ekleyip aralarında geçiş yapabilirsiniz</p>
+          <h1 className="page__title">{t('Hesaplar')}</h1>
+          <p className="page__subtitle">
+            {t('Birden fazla Microsoft hesabı ekleyip aralarında geçiş yapabilirsiniz')}
+          </p>
         </div>
         <div className="topbar__spacer" />
         <button className="btn btn--primary" onClick={() => void signIn()} disabled={signingIn}>
           {signingIn ? <div className="spinner" /> : <Icon name="plus" size={17} />}
-          Hesap ekle
+          {t('Hesap ekle')}
         </button>
       </header>
 
@@ -42,16 +44,16 @@ export function Accounts(): JSX.Element {
                   {account.name}
                   {active && (
                     <span className="badge badge--accent" style={{ marginLeft: 8 }}>
-                      etkin
+                      {t('etkin')}
                     </span>
                   )}
                   {account.expired && (
                     <span className="badge badge--warning" style={{ marginLeft: 8 }}>
-                      oturum yenilenmeli
+                      {t('oturum yenilenmeli')}
                     </span>
                   )}
                 </div>
-                <div className="list__sub">Eklenme {formatRelative(account.addedAt)}</div>
+                <div className="list__sub">{t('Eklenme {when}', { when: formatRelative(account.addedAt) })}</div>
               </div>
 
               {!active && (
@@ -74,7 +76,7 @@ export function Accounts(): JSX.Element {
                   try {
                     await api.auth.refresh(account.id)
                     await refreshAccounts()
-                    notify('Oturum yenilendi.')
+                    notify(t('Oturum yenilendi.'))
                   } catch (error) {
                     notify(error, 'error')
                   } finally {
@@ -83,7 +85,7 @@ export function Accounts(): JSX.Element {
                 }}
               >
                 {busyId === account.id ? <div className="spinner" /> : <Icon name="refresh" size={14} />}
-                Yenile
+                {t('Yenile')}
               </button>
 
               <button
@@ -104,10 +106,9 @@ export function Accounts(): JSX.Element {
           danger
           confirmLabel={t('Kaldır')}
           message={
-            <>
-              <strong>{removing.name}</strong> hesabının oturumu bu cihazdan silinecek. Profilleriniz ve dosyalarınız
-              etkilenmez.
-            </>
+            t('{name} hesabının oturumu bu cihazdan silinecek. Profilleriniz ve dosyalarınız etkilenmez.', {
+              name: removing.name
+            })
           }
           onConfirm={async () => {
             await api.auth.remove(removing.id)

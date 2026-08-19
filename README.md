@@ -32,8 +32,10 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 - **Crash analizi** — Oyun çıktısı launcher içinde akar, diske kaydedilir ve bilinen bellek, Java, mod
   bağımlılığı, Mixin, grafik, native, oturum ve ağ hataları için çözüm önerili rapor üretir.
 - **On yedi dil** — Türkçe, İngilizce, Rusça, İspanyolca, Fransızca, Almanca, Çince, Japonca, Korece,
-  İtalyanca, Arapça, Farsça, Azerbaycanca, Türkmence, Kazakça, Kırgızca, Özbekçe. Varsayılan seçenek
-  işletim sisteminin dilini izler; Arapça ve Farsça arayüzü sağdan sola çevirir.
+  İtalyanca, Arapça, Farsça, Azerbaycanca, Türkmence, Kazakça, Kırgızca, Özbekçe. Arayüzün tamamı —
+  options.txt düzenleyicisinin ayar adları, tuş adları ve paketlerdeki mod açıklamaları dahil —
+  çevrilidir. Varsayılan seçenek işletim sisteminin dilini izler; Arapça ve Farsça arayüzü sağdan
+  sola çevirir.
 
 ## Platformlar
 

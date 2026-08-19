@@ -47,9 +47,11 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
     <div className="page">
       <header className="page__header">
         <div>
-          <h1 className="page__title">Kitaplık</h1>
+          <h1 className="page__title">{t('Kitaplık')}</h1>
           <p className="page__subtitle">
-            {profiles.length} profil · her biri kendi mod, dünya ve ayar klasörüne sahip
+            {t('{count} profil · her biri kendi mod, dünya ve ayar klasörüne sahip', {
+              count: profiles.length
+            })}
           </p>
         </div>
         <div className="topbar__spacer" />
@@ -71,7 +73,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
               const imported = await api.profiles.importBackup()
               if (!imported) return
               await refreshProfiles()
-              notify(`${imported.name} yedeği içe aktarıldı.`)
+              notify(t('{name} yedeği içe aktarıldı.', { name: imported.name }))
               onOpenProfile(imported.id)
             } catch (error) {
               notify(error, 'error')
@@ -93,7 +95,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
           <div className="empty__title">{profiles.length === 0 ? t('Henüz profil yok') : t('Eşleşen profil yok')}</div>
           <p>
             {profiles.length === 0
-              ? 'Bir profil oluşturun; mod yükleyicisi, sürüm ve bellek ayarları profile özel tutulur.'
+              ? t('Bir profil oluşturun; mod yükleyicisi, sürüm ve bellek ayarları profile özel tutulur.')
               : t('Arama terimini değiştirmeyi deneyin.')}
           </p>
           {profiles.length === 0 && (
@@ -113,7 +115,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                 <button
                   className="profile-card__art"
                   onClick={() => onOpenProfile(profile.id)}
-                  aria-label={`${profile.name} profilini aç`}
+                  aria-label={t('{name} profilini aç', { name: profile.name })}
                 >
                   <ProfileIcon profile={profile} size={46} />
                   {running && (
@@ -130,7 +132,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                     {profile.preparing ? (
                       <>
                         <div className="spinner" style={{ width: 12, height: 12 }} />
-                        <span>Hazırlanıyor…</span>
+                        <span>{t('Hazırlanıyor…')}</span>
                       </>
                     ) : (
                       <>
@@ -142,13 +144,16 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                     {profile.content.length > 0 && (
                       <>
                         <span>·</span>
-                        <span>{profile.content.length} içerik</span>
+                        <span>{t('{count} içerik', { count: profile.content.length })}</span>
                       </>
                     )}
                   </div>
                   <div className="faint">
                     {profile.lastPlayed
-                      ? `Son oynama ${formatRelative(profile.lastPlayed)} · ${formatPlaytime(profile.totalPlaytimeMs)}`
+                      ? t('Son oynama {when} · {playtime}', {
+                          when: formatRelative(profile.lastPlayed),
+                          playtime: formatPlaytime(profile.totalPlaytimeMs)
+                        })
                       : t('Hiç oynanmadı')}
                   </div>
                 </div>
@@ -312,7 +317,7 @@ function CreateProfileModal({
           className="input"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Örn. Hayatta Kalma 1.21"
+          placeholder={t('Örn. Hayatta Kalma 1.21')}
           autoFocus
         />
       </div>
@@ -334,7 +339,7 @@ function CreateProfileModal({
       </div>
 
       <div className="field">
-        <span className="field__label">Mod yükleyicisi</span>
+        <span className="field__label">{t('Mod yükleyicisi')}</span>
         <div className="chips">
           {LOADERS.map((candidate) => (
             <button
@@ -376,11 +381,13 @@ function CreateProfileModal({
       {loader !== 'vanilla' && (
         <div className="field">
           <label className="field__label" htmlFor="loader-version">
-            {loaderLabel(loader)} sürümü
+            {t('{loader} sürümü', { loader: loaderLabel(loader) })}
           </label>
           {loaderVersions.length === 0 ? (
             <p className="field__hint">
-              Bu Minecraft sürümü için {loaderLabel(loader)} bulunamadı. Farklı bir sürüm veya yükleyici seçin.
+              {t('Bu Minecraft sürümü için {loader} bulunamadı. Farklı bir sürüm veya yükleyici seçin.', {
+                loader: loaderLabel(loader)
+              })}
             </p>
           ) : (
             <select
@@ -392,7 +399,7 @@ function CreateProfileModal({
               {loaderVersions.map((entry) => (
                 <option key={entry.version} value={entry.version}>
                   {entry.version}
-                  {entry.stable ? '' : ' (kararsız)'}
+                  {entry.stable ? '' : ' ' + t('(kararsız)')}
                 </option>
               ))}
             </select>

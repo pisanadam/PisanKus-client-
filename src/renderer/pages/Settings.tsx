@@ -85,14 +85,14 @@ export function Settings(): JSX.Element {
 
       <header className="page__header">
         <div>
-          <h1 className="page__title">Ayarlar</h1>
-          <p className="page__subtitle">Görünüm, oyun dizini, Java ve hesap ayarları</p>
+          <h1 className="page__title">{t('Ayarlar')}</h1>
+          <p className="page__subtitle">{t('Görünüm, oyun dizini, Java ve hesap ayarları')}</p>
         </div>
       </header>
 
       <div className="stack-lg" style={{ maxWidth: 820 }}>
         <section className="settings-group">
-          <div className="section-title">Görünüm</div>
+          <div className="section-title">{t('Görünüm')}</div>
 
           <div className="settings-row">
             <div>
@@ -116,23 +116,23 @@ export function Settings(): JSX.Element {
           <div className="settings-row">
             <div>
               <div className="settings-row__label">Tema</div>
-              <div className="faint">Sistem seçeneği işletim sistemi ayarını izler</div>
+              <div className="faint">{t('Sistem seçeneği işletim sistemi ayarını izler')}</div>
             </div>
             <select
               className="select"
               value={settings.theme}
               onChange={(event) => void saveSettings({ theme: event.target.value as typeof settings.theme })}
             >
-              <option value="dark">Koyu</option>
-              <option value="light">Açık</option>
-              <option value="system">Sistem</option>
+              <option value="dark">{t('Koyu')}</option>
+              <option value="light">{t('Açık')}</option>
+              <option value="system">{t('Sistem')}</option>
             </select>
           </div>
 
           <div className="settings-row">
             <div>
               <div className="settings-row__label">Vurgu rengi</div>
-              <div className="faint">Düğmeler ve seçili öğelerde kullanılır</div>
+              <div className="faint">{t('Düğmeler ve seçili öğelerde kullanılır')}</div>
             </div>
             <div className="chips">
               {ACCENTS.map((color) => (
@@ -140,7 +140,7 @@ export function Settings(): JSX.Element {
                   key={color}
                   className="chip"
                   aria-pressed={settings.accentColor === color}
-                  aria-label={`Vurgu rengi ${color}`}
+                  aria-label={t('Vurgu rengi {color}', { color })}
                   style={{ background: color, width: 30, height: 30, padding: 0, borderRadius: 8 }}
                   onClick={() => void saveSettings({ accentColor: color })}
                 />
@@ -150,8 +150,8 @@ export function Settings(): JSX.Element {
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Karşılama sesi</div>
-              <div className="faint">Launcher ilk açılışta kısa bir jenerik çalar</div>
+              <div className="settings-row__label">{t('Karşılama sesi')}</div>
+              <div className="faint">{t('Launcher ilk açılışta kısa bir jenerik çalar')}</div>
             </div>
             <div className="chips">
               <button
@@ -173,15 +173,15 @@ export function Settings(): JSX.Element {
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Karşılama ekranı</div>
-              <div className="faint">Tanıtım ekranını bir sonraki açılışta yeniden göster</div>
+              <div className="settings-row__label">{t('Karşılama ekranı')}</div>
+              <div className="faint">{t('Tanıtım ekranını bir sonraki açılışta yeniden göster')}</div>
             </div>
             <button
               className="btn"
               disabled={!settings.welcomeSeen}
               onClick={async () => {
                 await saveSettings({ welcomeSeen: false })
-                notify('Karşılama ekranı bir sonraki açılışta gösterilecek.')
+                notify(t('Karşılama ekranı bir sonraki açılışta gösterilecek.'))
               }}
             >
               <Icon name="refresh" size={16} />
@@ -191,11 +191,11 @@ export function Settings(): JSX.Element {
         </section>
 
         <section className="settings-group">
-          <div className="section-title">Güncelleme</div>
+          <div className="section-title">{t('Güncelleme')}</div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Sürüm {appVersion ?? '…'}</div>
+              <div className="settings-row__label">{t('Sürüm {version}', { version: appVersion ?? '…' })}</div>
               <div className="faint">{updateHint(updateStatus)}</div>
             </div>
             <div className="row" style={{ gap: 8 }}>
@@ -220,7 +220,7 @@ export function Settings(): JSX.Element {
                     const result = await api.updates.check()
                     // A packaged build with no update reports idle; an unpackaged
                     // one never checks at all, which is worth saying out loud.
-                    if (result.state === 'available') notify(`Yeni sürüm hazır: ${result.version}`)
+                    if (result.state === 'available') notify(t('Yeni sürüm hazır: {version}', { version: result.version }))
                     else if (result.state === 'error') notify(result.message, 'error')
                     else if (result.state === 'idle') notify(t('En güncel sürümü kullanıyorsunuz.'))
                   } catch (error) {
@@ -231,49 +231,51 @@ export function Settings(): JSX.Element {
                 }}
               >
                 {checkingUpdate ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
-                Güncellemeyi kontrol et
+                {t('Güncellemeyi kontrol et')}
               </button>
             </div>
           </div>
 
           <p className="faint" style={{ lineHeight: 1.5 }}>
-            Kontrol yalnızca launcher açılırken bir kez ve bu düğmeye bastığınızda yapılır. Arka planda açık
-            kalan bir bağlantı ya da yinelenen bir yoklama yok. Yeni sürüm bulunursa launcher başka bir
-            pencerenin arkasındayken de görebilesiniz diye masaüstü bildirimi gönderilir.
+            {t(
+              'Kontrol yalnızca launcher açılırken bir kez ve bu düğmeye bastığınızda yapılır. Arka planda açık kalan bir bağlantı ya da yinelenen bir yoklama yok. Yeni sürüm bulunursa launcher başka bir pencerenin arkasındayken de görebilesiniz diye masaüstü bildirimi gönderilir.'
+            )}
           </p>
         </section>
 
         <section className="settings-group">
-          <div className="section-title">Güvenlik</div>
+          <div className="section-title">{t('Güvenlik')}</div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Oturum jetonları</div>
+              <div className="settings-row__label">{t('Oturum jetonları')}</div>
               <div className="faint">
                 {tokenStorage === null
                   ? 'Denetleniyor…'
                   : tokenStorage.available
-                  ? `İşletim sisteminin kasasıyla şifreleniyor (${backendName(tokenStorage.backend)}). ` +
-                    'Anahtar bu kullanıcı hesabına bağlı; dosya kopyalansa bile başka bir makinede açılmaz.'
-                  : 'Bu sistemde şifreleme kasası bulunamadı, jetonlar düz metin olarak saklanıyor. ' +
-                    'Linux\u2019ta gnome-keyring veya kwallet kurmak bunu çözer.'}
+                  ? t(
+                      'İşletim sisteminin kasasıyla şifreleniyor ({backend}). Anahtar bu kullanıcı hesabına bağlı; dosya kopyalansa bile başka bir makinede açılmaz.',
+                      { backend: backendName(tokenStorage.backend) }
+                    )
+                  : t(
+                      'Bu sistemde şifreleme kasası bulunamadı, jetonlar düz metin olarak saklanıyor. Linux\u2019ta gnome-keyring veya kwallet kurmak bunu çözer.'
+                    )}
               </div>
             </div>
             <span className={tokenStorage?.available ? 'badge badge--success' : 'badge badge--warning'}>
-              {tokenStorage === null ? '…' : tokenStorage.available ? 'şifreli' : 'düz metin'}
+              {tokenStorage === null ? '…' : tokenStorage.available ? t('şifreli') : t('düz metin')}
             </span>
           </div>
         </section>
 
         <section className="settings-group">
-          <div className="section-title">Keşfet</div>
+          <div className="section-title">{t('Keşfet')}</div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Arama sonucu sayısı</div>
+              <div className="settings-row__label">{t('Arama sonucu sayısı')}</div>
               <div className="faint">
-                Her sayfada kaç sonuç getirileceği. Liste sonuna gelindiğinde bir sonraki sayfa
-                kendiliğinden yükleniyor.
+                {t('Her sayfada kaç sonuç getirileceği. Liste sonuna gelindiğinde bir sonraki sayfa kendiliğinden yükleniyor.')}
               </div>
             </div>
             <select
@@ -284,7 +286,7 @@ export function Settings(): JSX.Element {
             >
               {[20, 30, 50, 100].map((size) => (
                 <option key={size} value={size}>
-                  {size} sonuç
+                  {t('{count} sonuç', { count: size })}
                 </option>
               ))}
             </select>
@@ -292,32 +294,34 @@ export function Settings(): JSX.Element {
         </section>
 
         <section className="settings-group">
-          <div className="section-title">Minecraft ayarları</div>
+          <div className="section-title">{t('Minecraft ayarları')}</div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">options.txt şablonu</div>
+              <div className="settings-row__label">{t('options.txt şablonu')}</div>
               <div className="faint">
                 {optionCount > 0
-                  ? `${optionCount} ayar tanımlı · yeni profillere otomatik kurulur`
-                  : 'Henüz kendi ayarlarınızı belirlemediniz — yeni profiller Minecraft’ın ' +
-                    'varsayılanlarıyla başlıyor. Ayarlayıp kaydedin, bundan sonraki profiller ' +
-                    'sizin ayarlarınızla açılsın.'}
+                  ? t('{count} ayar tanımlı · yeni profillere otomatik kurulur', { count: optionCount })
+                  : t(
+                      'Henüz kendi ayarlarınızı belirlemediniz — yeni profiller Minecraft’ın varsayılanlarıyla başlıyor. Ayarlayıp kaydedin, bundan sonraki profiller sizin ayarlarınızla açılsın.'
+                    )}
               </div>
             </div>
             <button className="btn" onClick={() => setEditingOptions(true)}>
               <Icon name="settings" size={16} />
-              Ayarla
+              {t('Ayarla')}
             </button>
           </div>
 
           {optionCount > 0 && (
             <div className="settings-row">
               <div>
-                <div className="settings-row__label">Mevcut profillere uygula</div>
+                <div className="settings-row__label">{t('Mevcut profillere uygula')}</div>
                 <div className="faint">
-                  {profiles.length} profilin options.txt dosyası bu şablonla güncellenir. Şablonda
-                  olmayan ayarlar (tuş atamaları, kaynak paketleri) korunur.
+                  {t(
+                    '{count} profilin options.txt dosyası bu şablonla güncellenir. Şablonda olmayan ayarlar (tuş atamaları, kaynak paketleri) korunur.',
+                    { count: profiles.length }
+                  )}
                 </div>
               </div>
               <button
@@ -327,7 +331,7 @@ export function Settings(): JSX.Element {
                   setApplying(true)
                   try {
                     const count = await api.options.applyToProfiles(profiles.map((p) => p.id))
-                    notify(`${count} profile uygulandı.`)
+                    notify(t('{count} profile uygulandı.', { count }))
                   } catch (error) {
                     notify(error, 'error')
                   } finally {
@@ -343,11 +347,11 @@ export function Settings(): JSX.Element {
         </section>
 
         <section className="settings-group">
-          <div className="section-title">Oyun</div>
+          <div className="section-title">{t('Oyun')}</div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Veri dizini</div>
+              <div className="settings-row__label">{t('Veri dizini')}</div>
               <div className="faint" style={{ wordBreak: 'break-all' }}>
                 {settings.dataDir}
               </div>
@@ -358,7 +362,7 @@ export function Settings(): JSX.Element {
                 const picked = await api.settings.pickDirectory()
                 if (picked) {
                   await saveSettings({ dataDir: picked })
-                  notify('Veri dizini değiştirildi. Mevcut profil dosyaları taşınmadı.')
+                  notify(t('Veri dizini değiştirildi. Mevcut profil dosyaları taşınmadı.'))
                 }
               }}
             >
@@ -369,8 +373,10 @@ export function Settings(): JSX.Element {
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Varsayılan bellek</div>
-              <div className="faint">{(settings.defaultMemoryMb / 1024).toFixed(1)} GB — yeni profiller için</div>
+              <div className="settings-row__label">{t('Varsayılan bellek')}</div>
+              <div className="faint">
+                {t('{size} GB — yeni profiller için', { size: (settings.defaultMemoryMb / 1024).toFixed(1) })}
+              </div>
             </div>
             <input
               type="range"
@@ -384,8 +390,8 @@ export function Settings(): JSX.Element {
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Eşzamanlı indirme</div>
-              <div className="faint">Yavaş bağlantılarda düşürün</div>
+              <div className="settings-row__label">{t('Eşzamanlı indirme')}</div>
+              <div className="faint">{t('Yavaş bağlantılarda düşürün')}</div>
             </div>
             <input
               className="input"
@@ -408,7 +414,7 @@ export function Settings(): JSX.Element {
               onChange={(event) => setJvmDraft(event.target.value)}
               onBlur={() => void saveSettings({ jvmArgs: jvmDraft })}
             />
-            <span className="field__hint">Profil bazında geçersiz kılınabilir.</span>
+            <span className="field__hint">{t('Profil bazında geçersiz kılınabilir.')}</span>
           </div>
         </section>
 
@@ -419,23 +425,21 @@ export function Settings(): JSX.Element {
             </div>
             <button className="btn btn--sm" onClick={() => void scanJava()} disabled={scanningJava}>
               {scanningJava ? <div className="spinner" /> : <Icon name="refresh" size={15} />}
-              Yeniden tara
+              {t('Yeniden tara')}
             </button>
           </div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Java çalıştırılabiliri</div>
-              <div className="faint">
-                Otomatik seçildiğinde sürümün gerektirdiği Java indirilir ve kullanılır
-              </div>
+              <div className="settings-row__label">{t('Java çalıştırılabiliri')}</div>
+              <div className="faint">{t('Otomatik seçildiğinde sürümün gerektirdiği Java indirilir ve kullanılır')}</div>
             </div>
             <select
               className="select"
               value={settings.javaPath ?? ''}
               onChange={(event) => void saveSettings({ javaPath: event.target.value || undefined })}
             >
-              <option value="">Otomatik</option>
+              <option value="">{t('Otomatik')}</option>
               {javaRuntimes.map((runtime) => (
                 <option key={runtime.path} value={runtime.path}>
                   Java {runtime.majorVersion} — {runtime.path}
@@ -446,21 +450,19 @@ export function Settings(): JSX.Element {
 
           {javaRuntimes.length === 0 && !scanningJava && (
             <p className="faint">
-              Sistemde Java bulunamadı. Sorun değil — bir profil ilk kez başlatıldığında uygun Temurin sürümü
-              otomatik indirilir.
+              {t('Sistemde Java bulunamadı. Sorun değil — bir profil ilk kez başlatıldığında uygun Temurin sürümü otomatik indirilir.')}
             </p>
           )}
         </section>
 
         <section className="settings-group">
-          <div className="section-title">Hesap</div>
+          <div className="section-title">{t('Hesap')}</div>
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Oturum açma yöntemi</div>
+              <div className="settings-row__label">{t('Oturum açma yöntemi')}</div>
               <div className="faint">
-                Varsayılan yöntem hazır çalışır. Azure seçeneği yalnızca kendi uygulamanızı kaydettiyseniz
-                işe yarar.
+                {t('Varsayılan yöntem hazır çalışır. Azure seçeneği yalnızca kendi uygulamanızı kaydettiyseniz işe yarar.')}
               </div>
             </div>
             <select
@@ -476,8 +478,8 @@ export function Settings(): JSX.Element {
                 })
               }
             >
-              <option value="legacy">Minecraft (varsayılan)</option>
-              <option value="azure">Azure uygulaması</option>
+              <option value="legacy">{t('Minecraft (varsayılan)')}</option>
+              <option value="azure">{t('Azure uygulaması')}</option>
             </select>
           </div>
 
@@ -493,8 +495,9 @@ export function Settings(): JSX.Element {
                 onChange={(event) => void saveSettings({ msClientId: event.target.value })}
               />
               <span className="field__hint">
-                Uygulamanızda “genel istemci akışları” etkin olmalı ve yönlendirme adresi{' '}
-                <code>https://login.microsoftonline.com/common/oauth2/nativeclient</code> olarak kayıtlı olmalıdır.
+                {t('Uygulamanızda “genel istemci akışları” etkin olmalı ve yönlendirme adresi')}{' '}
+                <code>https://login.microsoftonline.com/common/oauth2/nativeclient</code>{' '}
+                {t('olarak kayıtlı olmalıdır.')}
               </span>
             </div>
           )}
@@ -509,17 +512,17 @@ export function Settings(): JSX.Element {
 function updateHint(status: UpdateStatus): string {
   switch (status.state) {
     case 'checking':
-      return 'Kontrol ediliyor…'
+      return t('Kontrol ediliyor…')
     case 'available':
-      return `Yeni sürüm var: ${status.version}`
+      return t('Yeni sürüm var: {version}', { version: status.version })
     case 'downloading':
-      return `İndiriliyor… %${status.percent}`
+      return t('İndiriliyor… %{percent}', { percent: status.percent })
     case 'ready':
-      return `${status.version} kurulmaya hazır`
+      return t('{version} kurulmaya hazır', { version: status.version })
     case 'error':
       return status.message
     default:
-      return 'Her açılışta kendiliğinden kontrol edilir'
+      return t('Her açılışta kendiliğinden kontrol edilir')
   }
 }
 

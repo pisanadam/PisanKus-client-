@@ -28,7 +28,9 @@ export type OptionKind =
 
 export interface OptionSpec {
   key: string
+  /** Translation source text; `{name}` placeholders come from labelVars. */
   label: string
+  labelVars?: Record<string, string | number>
   hint?: string
   type: OptionKind
 }
@@ -179,6 +181,7 @@ export const OPTION_GROUPS: OptionGroup[] = [
     options: group.binds.map((bind) => ({
       key: bind.key,
       label: bind.label,
+      labelVars: bind.labelVars,
       type: { kind: 'keybind' } as OptionKind
     }))
   })),

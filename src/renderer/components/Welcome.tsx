@@ -53,9 +53,9 @@ export function Welcome({
       <div className="welcome__panel">
         <div className="welcome__mark">PK</div>
 
-        <h1 className="welcome__title">PisanKus Client&apos;e hoş geldiniz</h1>
+        <h1 className="welcome__title">{t("PisanKus Client'e hoş geldiniz")}</h1>
         <p className="welcome__text">
-          Modern, hızlı ve sade bir Minecraft launcher&apos;ı. Başlamadan önce kısa bir tanıtım:
+          {t("Modern, hızlı ve sade bir Minecraft launcher'ı. Başlamadan önce kısa bir tanıtım:")}
         </p>
 
         <ul className="welcome__list">
@@ -65,8 +65,8 @@ export function Welcome({
                 <Icon name={item.icon} size={17} />
               </span>
               <span>
-                <strong>{item.title}</strong>
-                <span className="faint"> · {item.text}</span>
+                <strong>{t(item.title)}</strong>
+                <span className="faint"> · {t(item.text)}</span>
               </span>
             </li>
           ))}

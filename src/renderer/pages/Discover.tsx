@@ -198,9 +198,9 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
     <div className="page">
       <header className="page__header">
         <div>
-          <h1 className="page__title">Keşfet</h1>
+          <h1 className="page__title">{t('Keşfet')}</h1>
           <p className="page__subtitle">
-            Gezinti modunda her şey listelenir; bir profil seçerseniz yalnızca ona uyanlar gösterilir
+            {t('Gezinti modunda her şey listelenir; bir profil seçerseniz yalnızca ona uyanlar gösterilir')}
           </p>
         </div>
       </header>
@@ -270,7 +270,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
               aria-pressed={tab === 'author'}
               onClick={() => setTab('author')}
             >
-              <span aria-hidden="true">⭐</span> PisankusGaming modları
+              <span aria-hidden="true">⭐</span> {t('PisankusGaming modları')}
             </button>
           </div>
 
@@ -295,7 +295,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       {error && (
         <div className="empty" style={{ padding: '30px 24px', marginBottom: 18 }}>
           <div className="empty__icon">⚠️</div>
-          <div className="empty__title">Arama başarısız</div>
+          <div className="empty__title">{t('Arama başarısız')}</div>
           <p>{error}</p>
           <button className="btn" onClick={() => void runSearch(0, false)}>
             <Icon name="refresh" size={16} />
@@ -312,11 +312,19 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           <Icon name="compass" size={15} />
           <div>
             <strong>
-              Profil süzgeci açık: {profile.gameVersion} · {profile.loader}
+              {t('Profil süzgeci açık: {version} · {loader}', {
+                version: profile.gameVersion,
+                loader: profile.loader
+              })}
             </strong>
-            Yalnızca bu sürüm ve yükleyici için yayımlanmış içerikler listeleniyor, bu yüzden
-            {total === 0 ? ' hiç sonuç çıkmadı' : ` yalnızca ${total} sonuç var`}. Süzgeci
-            kapatırsanız tümünü görebilirsiniz.
+            {total === 0
+              ? t(
+                  'Yalnızca bu sürüm ve yükleyici için yayımlanmış içerikler listeleniyor, bu yüzden hiç sonuç çıkmadı. Süzgeci kapatırsanız tümünü görebilirsiniz.'
+                )
+              : t(
+                  'Yalnızca bu sürüm ve yükleyici için yayımlanmış içerikler listeleniyor, bu yüzden yalnızca {count} sonuç var. Süzgeci kapatırsanız tümünü görebilirsiniz.',
+                  { count: total }
+                )}
             <div style={{ marginTop: 8 }}>
               <button className="btn btn--sm" onClick={() => setProfileId(BROWSE)}>
                 {t('Gezinti moduna dön')}
@@ -329,14 +337,14 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       {shown.length === 0 && !loading && !error && (
         <div className="empty">
           <div className="empty__icon">🔍</div>
-          <div className="empty__title">Sonuç yok</div>
-          <p>Farklı bir arama terimi deneyin veya profil filtresini kapatın.</p>
+          <div className="empty__title">{t('Sonuç yok')}</div>
+          <p>{t('Farklı bir arama terimi deneyin veya profil filtresini kapatın.')}</p>
         </div>
       )}
 
       {tab === 'author' && !loading && !error && (
         <p className="faint" style={{ marginBottom: 14 }}>
-          {authorProjects?.length ?? 0} proje · Modrinth&apos;teki{' '}
+          {t('{count} proje · Modrinth’teki', { count: authorProjects?.length ?? 0 })}{' '}
           <a
             href="#"
             onClick={(event) => {
@@ -346,7 +354,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           >
             {FEATURED_AUTHOR}
           </a>{' '}
-          sayfasından doğrudan alınıyor.
+          {t('sayfasından doğrudan alınıyor.')}
         </p>
       )}
 
@@ -361,7 +369,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             <div className="featured__text">
               <div className="featured__title">
                 {pack.name}
-                <span className="badge badge--success">Önerilen</span>
+                <span className="badge badge--success">{t('Önerilen')}</span>
               </div>
               <p className="featured__desc">{pack.summary}</p>
               <div className="featured__meta">
@@ -402,7 +410,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             <div className="spinner" />
           ) : (
             <button className="btn" onClick={() => void runSearch(offset + pageSize, true)}>
-              Daha fazla yükle · {results.length}/{total}
+              {t('Daha fazla yükle · {shown}/{total}', { shown: results.length, total })}
             </button>
           )}
         </div>
@@ -410,7 +418,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
 
       {tab === 'search' && results.length > 0 && results.length >= total && (
         <p className="faint" style={{ textAlign: 'center', padding: 18 }}>
-          {total} sonucun tamamı gösteriliyor.
+          {t('{total} sonucun tamamı gösteriliyor.', { total })}
         </p>
       )}
 
@@ -422,7 +430,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             const name = openPack.name
             setOpenPack(null)
             void refreshProfiles()
-            notify(`${name} profili oluşturuldu.`)
+            notify(t('{name} profili oluşturuldu.', { name }))
           }}
         />
       )}
@@ -587,10 +595,13 @@ function ProjectModal({
         </div>
       ) : versions.length === 0 ? (
         <div className="empty" style={{ padding: 30 }}>
-          <div className="empty__title">Uyumlu sürüm yok</div>
+          <div className="empty__title">{t('Uyumlu sürüm yok')}</div>
           <p>
             {profile
-              ? `${profile.gameVersion} · ${profile.loader} için yayınlanmış bir sürüm bulunamadı.`
+              ? t('{version} · {loader} için yayınlanmış bir sürüm bulunamadı.', {
+                  version: profile.gameVersion,
+                  loader: profile.loader
+                })
               : t('Bir profil seçin.')}
           </p>
         </div>

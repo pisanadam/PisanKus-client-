@@ -16,7 +16,7 @@ export function LoginGate(): JSX.Element {
         <div>
           <h1 className="gate__title">PisanKus Client</h1>
           <p className="gate__text">
-            Devam etmek için Minecraft: Java Edition sahibi olduğunuz Microsoft hesabıyla oturum açın.
+            {t('Devam etmek için Minecraft: Java Edition sahibi olduğunuz Microsoft hesabıyla oturum açın.')}
           </p>
         </div>
 
@@ -42,8 +42,7 @@ export function LoginGate(): JSX.Element {
         </button>
 
         <p className="faint">
-          Oturum bilgileriniz yalnızca cihazınızda saklanır. PisanKus Client hiçbir veriyi kendi sunucularına
-          göndermez.
+          {t('Oturum bilgileriniz yalnızca cihazınızda saklanır. PisanKus Client hiçbir veriyi kendi sunucularına göndermez.')}
         </p>
       </div>
     </div>

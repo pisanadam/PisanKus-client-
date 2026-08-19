@@ -133,7 +133,7 @@ a {
   flex-direction: column;
   gap: 4px;
   padding: 16px 12px;
-  border-right: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
   backdrop-filter: blur(12px);
   overflow-y: auto;
@@ -176,7 +176,7 @@ a {
 
 .list__row--pick {
   width: 100%;
-  text-align: left;
+  text-align: start;
   border: 1px solid transparent;
   transition: border-color 0.14s, background 0.14s;
 }
@@ -215,7 +215,7 @@ a {
 
 .notice__list {
   margin: 0 0 6px;
-  padding-left: 17px;
+  padding-inline-start: 17px;
   color: var(--text);
 }
 
@@ -289,7 +289,7 @@ a {
 .slider__value {
   flex: 0 0 auto;
   min-width: 68px;
-  text-align: right;
+  text-align: end;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
@@ -502,7 +502,7 @@ a {
 .cape-card__tick {
   position: absolute;
   top: 6px;
-  right: 6px;
+  inset-inline-end: 6px;
   display: grid;
   place-items: center;
   width: 20px;
@@ -528,7 +528,7 @@ a {
   color: var(--accent);
   font-size: 12px;
   font-weight: 600;
-  text-align: left;
+  text-align: start;
   overflow: hidden;
   animation: rise 320ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
 }
@@ -635,7 +635,7 @@ button.update--ready:hover {
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-weight: 500;
-  text-align: left;
+  text-align: start;
   transition: background 0.14s, color 0.14s;
 }
 
@@ -651,7 +651,7 @@ button.update--ready:hover {
 }
 
 .nav-item__badge {
-  margin-left: auto;
+  margin-inline-start: auto;
   padding: 1px 7px;
   border-radius: 99px;
   background: var(--surface-active);
@@ -663,7 +663,7 @@ button.update--ready:hover {
 .nav-item--running .nav-item__dot {
   width: 7px;
   height: 7px;
-  margin-left: auto;
+  margin-inline-start: auto;
   border-radius: 99px;
   background: var(--success);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 25%, transparent);
@@ -857,13 +857,13 @@ button.update--ready:hover {
 }
 
 .search .input {
-  padding-left: 36px;
+  padding-inline-start: 36px;
 }
 
 .search__icon {
   position: absolute;
   top: 50%;
-  left: 12px;
+  inset-inline-start: 12px;
   transform: translateY(-50%);
   color: var(--text-faint);
   pointer-events: none;
@@ -959,7 +959,7 @@ button.update--ready:hover {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface);
-  text-align: left;
+  text-align: start;
   transition: transform 0.16s, border-color 0.16s, box-shadow 0.16s;
 }
 
@@ -987,7 +987,7 @@ button.update--ready:hover {
 .profile-card__running {
   position: absolute;
   top: 10px;
-  right: 10px;
+  inset-inline-end: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1327,7 +1327,7 @@ button.update--ready:hover {
 
 .tasks {
   position: fixed;
-  right: 20px;
+  inset-inline-end: 20px;
   bottom: 20px;
   z-index: 60;
   display: flex;
@@ -1456,7 +1456,7 @@ button.update--ready:hover {
   background: color-mix(in srgb, var(--danger) 12%, transparent);
   color: var(--danger);
   font-size: 12.5px;
-  text-align: left;
+  text-align: start;
 }
 
 /* ------------------------------------------------------------ welcome */
@@ -1556,7 +1556,7 @@ button.update--ready:hover {
   border: 1px solid var(--border);
   background: var(--bg-elevated);
   font-size: 12.5px;
-  text-align: left;
+  text-align: start;
   /* The per-item delay is set inline so the rows cascade in. */
   animation: rise 460ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
 }
@@ -1770,7 +1770,7 @@ button.update--ready:hover {
   display: grid;
   gap: 6px;
   margin: 0;
-  padding-left: 20px;
+  padding-inline-start: 20px;
   color: var(--text-muted);
 }
 
@@ -1890,7 +1890,7 @@ button.update--ready:hover {
   width: 100%;
   margin-bottom: 18px;
   padding: 16px 18px;
-  text-align: left;
+  text-align: start;
   border-radius: var(--radius);
   border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
   background: linear-gradient(
@@ -2043,4 +2043,34 @@ button.update--ready:hover {
 
 .field__hint--danger {
   color: var(--danger);
+}
+
+/* Right-to-left
+   ------------------------------------------------------------------ */
+
+/*
+ * Almost everything flips on its own: the layout is built from flexbox, grid
+ * and logical properties, all of which follow the document direction. What is
+ * left are the few places where a physical offset is paired with a physical
+ * `transform` — a knob that slides, a badge pinned past a corner. Those cannot
+ * be expressed logically, because `transform` has no logical form, so the pair
+ * is mirrored here rather than half of it flipping on its own.
+ *
+ * The skin model is deliberately not in this list: it is a picture of a
+ * character, and mirroring it would put the cape on the wrong shoulder.
+ */
+
+[dir='rtl'] .switch::after {
+  left: auto;
+  right: 2px;
+}
+
+[dir='rtl'] .switch[aria-checked='true']::after {
+  transform: translateX(-16px);
+}
+
+[dir='rtl'] .skin-shelf__remove {
+  right: auto;
+  left: 50%;
+  transform: translateX(-34px);
 }

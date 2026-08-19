@@ -63,7 +63,7 @@ export function Skins(): JSX.Element {
     return (
       <div className="page">
         <div className="empty">
-          <div className="empty__title">Hesap seçili değil</div>
+          <div className="empty__title">{t('Hesap seçili değil')}</div>
         </div>
       </div>
     )
@@ -84,9 +84,9 @@ export function Skins(): JSX.Element {
     <div className="page">
       <header className="page__header">
         <div>
-          <h1 className="page__title">Skin</h1>
+          <h1 className="page__title">{t('Skin')}</h1>
           <p className="page__subtitle">
-            {activeAccount.name} · seçtiğiniz skini önce burada görün, sonra uygulayın
+            {t('{name} · seçtiğiniz skini önce burada görün, sonra uygulayın', { name: activeAccount.name })}
           </p>
         </div>
       </header>
@@ -105,8 +105,9 @@ export function Skins(): JSX.Element {
             <div className="preview-bar">
               <Icon name="image" size={15} />
               <span className="preview-bar__text">
-                {pending.kind === 'file' ? pending.file.name : t('Bağlantıdaki skin')} · önizleme,
-                henüz uygulanmadı
+                {t('{source} · önizleme, henüz uygulanmadı', {
+                  source: pending.kind === 'file' ? pending.file.name : t('Bağlantıdaki skin')
+                })}
               </span>
               <button className="btn btn--sm btn--ghost" onClick={() => setPending(null)} disabled={busy}>
                 {t('Vazgeç')}
@@ -145,12 +146,12 @@ export function Skins(): JSX.Element {
               </button>
             </div>
             <p className="faint">
-              Model seçimi skini uygularken gönderilir. Önizlemeyi sürükleyerek modeli döndürebilirsiniz.
+              {t('Model seçimi skini uygularken gönderilir. Önizlemeyi sürükleyerek modeli döndürebilirsiniz.')}
             </p>
           </div>
 
           <div className="settings-group">
-            <div className="section-title">Skin değiştir</div>
+            <div className="section-title">{t('Skin değiştir')}</div>
 
             <button
               className="btn"
@@ -167,7 +168,7 @@ export function Skins(): JSX.Element {
               <Icon name="image" size={16} />
               {t('PNG dosyası seç')}
             </button>
-            <p className="faint">64×64 (veya eski biçim 64×32) boyutunda, en fazla 24 KB bir PNG seçin.</p>
+            <p className="faint">{t('64×64 (veya eski biçim 64×32) boyutunda, en fazla 24 KB bir PNG seçin.')}</p>
 
             <div className="field">
               <label className="field__label" htmlFor="skin-url">
@@ -193,8 +194,7 @@ export function Skins(): JSX.Element {
                 </button>
               </div>
               <p className="faint">
-                Bağlantıdaki skin önizlenemez; Mojang dosyayı kendisi indirir. Uygula&apos;ya bastıktan
-                sonra modelde görünür.
+                {t('Bağlantıdaki skin önizlenemez; Mojang dosyayı kendisi indirir. Uygula’ya bastıktan sonra modelde görünür.')}
               </p>
             </div>
 
@@ -207,14 +207,14 @@ export function Skins(): JSX.Element {
               onClick={apply}
             >
               {busy ? <div className="spinner" /> : <Icon name="check" size={16} />}
-              Uygula
+              {t('Uygula')}
             </button>
             <p className="faint">
               {pending
                 ? pending.kind === 'file'
-                  ? `Seçilen: ${pending.file.name} — modelde önizliyorsunuz.`
-                  : 'Bağlantı seçildi. Uygula\u2019ya basınca Mojang dosyayı indirip uygulayacak.'
-                : 'Önce yukarıdan bir PNG dosyası ya da bağlantı seçin.'}
+                  ? t('Seçilen: {name} — modelde önizliyorsunuz.', { name: pending.file.name })
+                  : t('Bağlantı seçildi. Uygula\u2019ya basınca Mojang dosyayı indirip uygulayacak.')
+                  : t('Önce yukarıdan bir PNG dosyası ya da bağlantı seçin.')}
             </p>
 
             <button
@@ -228,7 +228,7 @@ export function Skins(): JSX.Element {
           </div>
 
           <div className="settings-group">
-            <div className="section-title">Pelerinler</div>
+            <div className="section-title">{t('Pelerinler')}</div>
             {loading ? (
               <div className="spinner" />
             ) : info && info.capes.length > 0 ? (
@@ -243,7 +243,7 @@ export function Skins(): JSX.Element {
                     <span className="cape-card__art cape-card__art--none">
                       <Icon name="close" size={18} />
                     </span>
-                    <span className="cape-card__name">Pelerinsiz</span>
+                    <span className="cape-card__name">{t('Pelerinsiz')}</span>
                   </button>
 
                   {info.capes.map((cape) => (
@@ -257,10 +257,10 @@ export function Skins(): JSX.Element {
                     />
                   ))}
                 </div>
-                <p className="faint">Seçtiğiniz pelerin hem modelde hem oyunda anında görünür.</p>
+                <p className="faint">{t('Seçtiğiniz pelerin hem modelde hem oyunda anında görünür.')}</p>
               </>
             ) : (
-              <p className="faint">Bu hesaba tanımlı pelerin bulunmuyor.</p>
+              <p className="faint">{t('Bu hesaba tanımlı pelerin bulunmuyor.')}</p>
             )}
           </div>
         </div>

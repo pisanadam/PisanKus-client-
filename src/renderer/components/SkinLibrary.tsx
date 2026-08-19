@@ -62,7 +62,7 @@ export function SkinLibrary({
             }
           >
             <Icon name="plus" size={14} />
-            Dosyadan
+            {t('Dosyadan')}
           </button>
           <button
             className="btn btn--sm btn--primary"
@@ -75,14 +75,14 @@ export function SkinLibrary({
             }
           >
             {saving ? <div className="spinner" /> : <Icon name="plus" size={14} />}
-            Şu anki skini ekle
+            {t('Şu anki skini ekle')}
           </button>
         </div>
       </div>
 
       {skins.length === 0 ? (
         <p className="faint">
-          Kitaplık boş. Kullandığınız bir skini buraya ekleyip sonra tek tıkla geri dönebilirsiniz.
+          {t('Kitaplık boş. Kullandığınız bir skini buraya ekleyip sonra tek tıkla geri dönebilirsiniz.')}
         </p>
       ) : (
         <div className="skin-shelf">
@@ -145,7 +145,7 @@ function SavedSkinCard({
         className="skin-shelf__art"
         style={texture ? headStyle(texture) : undefined}
         disabled={busy}
-        title={`${skin.name} · uygulamak için tıklayın`}
+        title={t('{name} · uygulamak için tıklayın', { name: skin.name })}
         onClick={onApply}
       >
         {!texture && <div className="spinner" />}
@@ -178,7 +178,7 @@ function SavedSkinCard({
            tripped its rate limit. Applying happens on the tile only. */
         <span
           className="skin-shelf__name"
-          title="Yeniden adlandırmak için çift tıklayın"
+          title={t('Yeniden adlandırmak için çift tıklayın')}
           onDoubleClick={() => setEditing(true)}
         >
           {skin.name}
@@ -188,7 +188,7 @@ function SavedSkinCard({
       {confirming ? (
         <div className="skin-shelf__confirm">
           <button className="btn btn--sm btn--danger" onClick={onRemove}>
-            Sil
+            {t('Sil')}
           </button>
           <button className="btn btn--sm btn--ghost" onClick={onCancelRemove}>
             {t('Vazgeç')}
@@ -197,7 +197,7 @@ function SavedSkinCard({
       ) : (
         <button
           className="skin-shelf__remove"
-          aria-label={`${skin.name} skinini kaldır`}
+          aria-label={t('{name} skinini kaldır', { name: skin.name })}
           disabled={busy}
           onClick={onAskRemove}
         >

@@ -81,34 +81,34 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
           onClick={() => setEditing({ index: null, name: '', address: '' })}
         >
           <Icon name="plus" size={16} />
-          Sunucu ekle
+          {t('Sunucu ekle')}
         </button>
         <button className="btn" disabled={checking || servers.length === 0} onClick={() => void refreshStatus(servers)}>
           {checking ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
-          Durumları yenile
+          {t('Durumları yenile')}
         </button>
         <div className="topbar__spacer" />
-        <span className="faint">Bu liste oyunda “Çok Oyunculu” ekranında görünür</span>
+        <span className="faint">{t('Bu liste oyunda “Çok Oyunculu” ekranında görünür')}</span>
       </div>
 
       {editing && (
         <div className="settings-group">
-          <div className="section-title">{editing.index === null ? 'Yeni sunucu' : t('Sunucuyu düzenle')}</div>
+          <div className="section-title">{editing.index === null ? t('Yeni sunucu') : t('Sunucuyu düzenle')}</div>
           <div className="field">
             <label className="field__label" htmlFor="server-name">
-              Ad
+              {t('Ad')}
             </label>
             <input
               id="server-name"
               className="input"
               value={editing.name}
-              placeholder="Sunucunun listede görünecek adı"
+              placeholder={t('Sunucunun listede görünecek adı')}
               onChange={(event) => setEditing({ ...editing, name: event.target.value })}
             />
           </div>
           <div className="field">
             <label className="field__label" htmlFor="server-address">
-              Adres
+              {t('Adres')}
             </label>
             <input
               id="server-address"
@@ -137,7 +137,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
                 })
               }
             >
-              Kaydet
+              {t('Kaydet')}
             </button>
           </div>
         </div>
@@ -146,8 +146,8 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
       {servers.length === 0 ? (
         <div className="empty">
           <div className="empty__icon">🛰️</div>
-          <div className="empty__title">Bu profilde kayıtlı sunucu yok</div>
-          <p>Eklediğiniz sunucular oyunu açtığınızda listede hazır olur.</p>
+          <div className="empty__title">{t('Bu profilde kayıtlı sunucu yok')}</div>
+          <p>{t('Eklediğiniz sunucular oyunu açtığınızda listede hazır olur.')}</p>
         </div>
       ) : (
         <div className="list">
@@ -178,7 +178,10 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
                         style={{ marginLeft: 8 }}
                       >
                         {state.online
-                          ? `${state.players?.online ?? 0}/${state.players?.max ?? 0} oyuncu`
+                          ? t('{online}/{max} oyuncu', {
+                              online: state.players?.online ?? 0,
+                              max: state.players?.max ?? 0
+                            })
                           : (state.error ?? t('çevrimdışı'))}
                       </span>
                     )}
@@ -228,7 +231,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
       )}
 
       <p className="faint">
-        Durum bilgisi mcstatus.io üzerinden, yalnızca bu sekme açıkken ve yenilediğinizde sorgulanır.
+        {t('Durum bilgisi mcstatus.io üzerinden, yalnızca bu sekme açıkken ve yenilediğinizde sorgulanır.')}
       </p>
     </div>
   )

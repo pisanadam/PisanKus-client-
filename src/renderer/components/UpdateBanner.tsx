@@ -33,7 +33,7 @@ export function UpdateBanner(): JSX.Element | null {
     return (
       <div className="update update--busy" role="status">
         <div className="update__fill" style={{ width: `${status.percent}%` }} />
-        <span className="update__label">İndiriliyor… %{status.percent}</span>
+        <span className="update__label">{t('İndiriliyor… %{percent}', { percent: status.percent })}</span>
       </div>
     )
   }
@@ -42,7 +42,7 @@ export function UpdateBanner(): JSX.Element | null {
     return (
       <button className="update update--ready" onClick={() => void api.updates.install()}>
         <Icon name="refresh" size={14} />
-        <span className="update__label">Yeniden başlat ve kur</span>
+        <span className="update__label">{t('Yeniden başlat ve kur')}</span>
       </button>
     )
   }

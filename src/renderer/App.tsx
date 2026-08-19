@@ -51,9 +51,9 @@ export function App(): JSX.Element {
         <div className="gate__panel">
           <div className="gate__mark">PK</div>
           <div>
-            <h1 className="gate__title">Başlatma tamamlanamadı</h1>
+            <h1 className="gate__title">{t('Başlatma tamamlanamadı')}</h1>
             <p className="gate__text">
-              Launcher verileri okunamadı. Uygulamayı yeniden başlatın; sorun sürerse aşağıdaki hatayı paylaşın.
+              {t('Launcher verileri okunamadı. Uygulamayı yeniden başlatın; sorun sürerse aşağıdaki hatayı paylaşın.')}
             </p>
           </div>
           <div className="gate__error">{startupError ?? t('Ayarlar yüklenemedi.')}</div>
@@ -110,7 +110,7 @@ export function App(): JSX.Element {
 
         {profiles.length > 0 && (
           <>
-            <div className="nav-section">Profiller</div>
+            <div className="nav-section">{t('Profiller')}</div>
             {profiles.slice(0, 8).map((profile) => {
               const running = gameStates[profile.id] === 'running' || gameStates[profile.id] === 'preparing'
               return (
