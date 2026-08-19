@@ -10,6 +10,7 @@ import type { JavaInfo, WorldSummary } from '../../preload'
 import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
+import { t } from '../../shared/i18n'
 
 type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'servers' | 'logs' | 'settings'
 
@@ -53,7 +54,7 @@ export function ProfileDetail({
         <div className="empty">
           <div className="empty__title">Profil bulunamadı</div>
           <button className="btn" onClick={onBack}>
-            Kitaplığa dön
+            {t('Kitaplığa dön')}
           </button>
         </div>
       </div>
@@ -76,7 +77,7 @@ export function ProfileDetail({
             <ProfileIcon profile={profile} size={30} />{' '}
             {profile.preparing && (
               <span className="badge badge--accent" style={{ marginRight: 8 }}>
-                Hazırlanıyor
+                {t('Hazırlanıyor')}
               </span>
             )}
             {profile.name}
@@ -91,11 +92,11 @@ export function ProfileDetail({
 
         <button className="btn" onClick={() => void api.profiles.openFolder(profile.id)}>
           <Icon name="folder" size={16} />
-          Klasör
+          {t('Klasör')}
         </button>
         <button className="btn" onClick={() => onBrowse(profile.id)}>
           <Icon name="compass" size={16} />
-          İçerik ekle
+          {t('İçerik ekle')}
         </button>
         {running ? (
           <button className="btn btn--danger" onClick={() => void api.game.kill(profile.id)}>
@@ -115,7 +116,7 @@ export function ProfileDetail({
                 }
               }}
             >
-              Çevrimdışı
+              {t('Çevrimdışı')}
             </button>
             <button
               className="btn btn--primary"
@@ -142,7 +143,7 @@ export function ProfileDetail({
             aria-selected={tab === entry.id}
             onClick={() => setTab(entry.id)}
           >
-            {entry.label}
+            {t(entry.label)}
             {entry.kind && entry.kind !== 'world' && (
               <span className="nav-item__badge" style={{ marginLeft: 8 }}>
                 {profile.content.filter((item) => item.kind === entry.kind).length}
@@ -176,7 +177,7 @@ export function ProfileDetail({
         <Confirm
           title="Profili sil"
           danger
-          confirmLabel="Profili ve dosyaları sil"
+          confirmLabel={t('Profili ve dosyaları sil')}
           message={
             <>
               <strong>{profile.name}</strong> profili ve <code>{profile.directory}</code> klasöründeki tüm modlar,
@@ -261,7 +262,7 @@ function ContentTab({
       <div className="row" style={{ flexWrap: 'wrap' }}>
         <button className="btn btn--primary" onClick={onBrowse}>
           <Icon name="compass" size={16} />
-          Mağazadan ekle
+          {t('Mağazadan ekle')}
         </button>
         <button
           className="btn"
@@ -311,7 +312,7 @@ function ContentTab({
         <div className="empty empty--droppable">
           <div className="empty__icon">{dropping ? '📥' : '📭'}</div>
           <div className="empty__title">
-            {dropping ? 'Bırakın, kuralım' : 'Bu profilde içerik yok'}
+            {dropping ? t('Bırakın, kuralım') : t('Bu profilde içerik yok')}
           </div>
           <p>
             Mağazadan kurabilir, dosya seçebilir ya da <strong>jar, dünya, doku paketi ve shader</strong>{' '}
@@ -333,7 +334,7 @@ function ContentTab({
                   {item.name}
                   {item.updateAvailable && (
                     <span className="badge badge--accent" style={{ marginLeft: 8 }}>
-                      güncelleme var
+                      {t('güncelleme var')}
                     </span>
                   )}
                   {item.source === 'local' && (
@@ -352,7 +353,7 @@ function ContentTab({
                   onClick={() => void run(item.id, () => api.content.update(profileId, item.id))}
                 >
                   <Icon name="download" size={14} />
-                  Güncelle
+                  {t('Güncelle')}
                 </button>
               )}
 
@@ -360,14 +361,14 @@ function ContentTab({
                 className="switch"
                 role="switch"
                 aria-checked={item.enabled}
-                aria-label={item.enabled ? 'Devre dışı bırak' : 'Etkinleştir'}
+                aria-label={item.enabled ? t('Devre dışı bırak') : t('Etkinleştir')}
                 disabled={busyId === item.id}
                 onClick={() => void run(item.id, () => api.content.toggle(profileId, item.id, !item.enabled))}
               />
 
               <button
                 className="btn btn--ghost btn--icon"
-                aria-label="Kaldır"
+                aria-label={t('Kaldır')}
                 disabled={busyId === item.id}
                 onClick={() => void run(item.id, () => api.content.remove(profileId, item.id))}
               >
@@ -419,7 +420,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
           }}
         >
           <Icon name="download" size={16} />
-          Dünya içe aktar (.zip)
+          {t('Dünya içe aktar (.zip)')}
         </button>
         <button
           className="btn"
@@ -428,14 +429,14 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
               const folder = await api.worlds.importBackup(profileId)
               if (!folder) return
               await reload()
-              notify('Dünya yedeği içe aktarıldı.')
+              notify(t('Dünya yedeği içe aktarıldı.'))
             } catch (error) {
               notify(error, 'error')
             }
           }}
         >
           <Icon name="download" size={16} />
-          PisanKus yedeğini içe aktar
+          {t('PisanKus yedeğini içe aktar')}
         </button>
         <button className="btn" onClick={() => void reload()}>
           <Icon name="refresh" size={16} />
@@ -477,7 +478,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
                       world.folderName,
                       world.displayName
                     )
-                    if (saved) notify('Dünya yedeği dışa aktarıldı.')
+                    if (saved) notify(t('Dünya yedeği dışa aktarıldı.'))
                   } catch (error) {
                     notify(error, 'error')
                   } finally {
@@ -490,7 +491,7 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
               </button>
               <button
                 className="btn btn--ghost btn--icon"
-                aria-label="Dünyayı sil"
+                aria-label={t('Dünyayı sil')}
                 onClick={() => setPendingDelete(world)}
               >
                 <Icon name="trash" size={16} />
@@ -502,9 +503,9 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
 
       {pendingDelete && (
         <Confirm
-          title="Dünyayı sil"
+          title={t('Dünyayı sil')}
           danger
-          confirmLabel="Kalıcı olarak sil"
+          confirmLabel={t('Kalıcı olarak sil')}
           message={
             <>
               <strong>{pendingDelete.displayName}</strong> dünyası ve içindeki tüm ilerleme silinecek. Bu işlem
@@ -587,7 +588,7 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
               onClick={() => void api.crashes.openFolder(profileId).catch((error) => notify(error, 'error'))}
             >
               <Icon name="folder" size={14} />
-              Rapor klasörü
+              {t('Rapor klasörü')}
             </button>
             <button
               className="btn btn--sm"
@@ -603,7 +604,7 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
 
       <div className="row">
         <button className="chip" aria-pressed={follow} onClick={() => setFollow((value) => !value)}>
-          Otomatik kaydır
+          {t('Otomatik kaydır')}
         </button>
         <button className="btn btn--sm" onClick={() => clearLogs(profileId)}>
           Temizle
@@ -739,7 +740,7 @@ function ProfileSettingsTab({
             await api.profiles.writeOptions(profileId, text)
             setOptions({ text, onDisk: true })
             setEditingOptions(false)
-            notify('Bu profilin oyun ayarları kaydedildi.')
+            notify(t('Bu profilin oyun ayarları kaydedildi.'))
           }}
         />
       )}
@@ -773,7 +774,7 @@ function ProfileSettingsTab({
               }}
             >
               <Icon name="image" size={15} />
-              Görsel seç
+              {t('Görsel seç')}
             </button>
             {profile.iconImage && (
               <button
@@ -783,7 +784,7 @@ function ProfileSettingsTab({
                   await refreshProfiles()
                 }}
               >
-                Kaldır
+                {t('Kaldır')}
               </button>
             )}
           </div>
@@ -802,7 +803,7 @@ function ProfileSettingsTab({
           </div>
           <button className="btn btn--sm" disabled={options === null} onClick={() => setEditingOptions(true)}>
             <Icon name="settings" size={15} />
-            Düzenle
+            {t('Düzenle')}
           </button>
         </div>
 
@@ -845,7 +846,7 @@ function ProfileSettingsTab({
 
         <div className="field">
           <label className="field__label" htmlFor="profile-java-path">
-            Bu profilin Java'sı
+            {t("Bu profilin Java'sı")}
           </label>
           <input
             id="profile-java-path"
@@ -880,7 +881,7 @@ function ProfileSettingsTab({
                   type="number"
                   min={320}
                   max={16_384}
-                  aria-label="Çözünürlük genişliği"
+                  aria-label={t('Çözünürlük genişliği')}
                   value={resolutionWidth}
                   onChange={(event) => setResolutionWidth(event.target.value)}
                 />
@@ -890,7 +891,7 @@ function ProfileSettingsTab({
                   type="number"
                   min={240}
                   max={8_640}
-                  aria-label="Çözünürlük yüksekliği"
+                  aria-label={t('Çözünürlük yüksekliği')}
                   value={resolutionHeight}
                   onChange={(event) => setResolutionHeight(event.target.value)}
                 />
@@ -900,7 +901,7 @@ function ProfileSettingsTab({
               className="switch"
               role="switch"
               aria-checked={customResolution}
-              aria-label="Özel çözünürlüğü aç veya kapat"
+              aria-label={t('Özel çözünürlüğü aç veya kapat')}
               onClick={() => setCustomResolution((enabled) => !enabled)}
             />
           </div>
@@ -909,7 +910,7 @@ function ProfileSettingsTab({
 
         <div className="field">
           <label className="field__label" htmlFor="jvm-args">
-            JVM argümanları
+            {t('JVM argümanları')}
           </label>
           <textarea
             id="jvm-args"
@@ -941,7 +942,7 @@ function ProfileSettingsTab({
             }}
           >
             <Icon name="download" size={16} />
-            Dosyaları önceden indir
+            {t('Dosyaları önceden indir')}
           </button>
           <button
             className="btn"
@@ -960,7 +961,7 @@ function ProfileSettingsTab({
               setExportingProfile(true)
               try {
                 const saved = await api.profiles.exportBackup(profileId)
-                if (saved) notify('Profil yedeği dışa aktarıldı.')
+                if (saved) notify(t('Profil yedeği dışa aktarıldı.'))
               } catch (error) {
                 notify(error, 'error')
               } finally {
@@ -969,7 +970,7 @@ function ProfileSettingsTab({
             }}
           >
             <Icon name="download" size={16} />
-            Profil yedeği
+            {t('Profil yedeği')}
           </button>
           <div className="topbar__spacer" />
           <button className="btn btn--danger" onClick={onDeleteRequested}>

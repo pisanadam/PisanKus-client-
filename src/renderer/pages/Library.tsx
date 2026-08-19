@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal'
 import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
+import { t } from '../../shared/i18n'
 
 const LOADERS: LoaderId[] = ['vanilla', 'fabric', 'quilt', 'neoforge', 'forge', 'optifine']
 const ICONS = ['🎮', '⛏️', '🌲', '🔥', '🧪', '🏰', '🚀', '🐉', '💎', '🌌', '🍄', '⚙️']
@@ -78,7 +79,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
           }}
         >
           <Icon name="download" size={17} />
-          Yedek içe aktar
+          {t('Yedek içe aktar')}
         </button>
         <button className="btn btn--primary" onClick={() => setCreating(true)}>
           <Icon name="plus" size={17} />
@@ -89,16 +90,16 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
       {filtered.length === 0 ? (
         <div className="empty">
           <div className="empty__icon">🎮</div>
-          <div className="empty__title">{profiles.length === 0 ? 'Henüz profil yok' : 'Eşleşen profil yok'}</div>
+          <div className="empty__title">{profiles.length === 0 ? t('Henüz profil yok') : t('Eşleşen profil yok')}</div>
           <p>
             {profiles.length === 0
               ? 'Bir profil oluşturun; mod yükleyicisi, sürüm ve bellek ayarları profile özel tutulur.'
-              : 'Arama terimini değiştirmeyi deneyin.'}
+              : t('Arama terimini değiştirmeyi deneyin.')}
           </p>
           {profiles.length === 0 && (
             <button className="btn btn--primary" onClick={() => setCreating(true)}>
               <Icon name="plus" size={17} />
-              İlk profili oluştur
+              {t('İlk profili oluştur')}
             </button>
           )}
         </div>
@@ -118,7 +119,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                   {running && (
                     <span className="profile-card__running">
                       <span className="nav-item__dot" style={{ width: 6, height: 6, background: 'currentColor' }} />
-                      {state === 'preparing' ? 'Hazırlanıyor' : 'Çalışıyor'}
+                      {state === 'preparing' ? t('Hazırlanıyor') : t('Çalışıyor')}
                     </span>
                   )}
                 </button>
@@ -148,7 +149,7 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                   <div className="faint">
                     {profile.lastPlayed
                       ? `Son oynama ${formatRelative(profile.lastPlayed)} · ${formatPlaytime(profile.totalPlaytimeMs)}`
-                      : 'Hiç oynanmadı'}
+                      : t('Hiç oynanmadı')}
                   </div>
                 </div>
 
@@ -175,14 +176,14 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                         className="btn btn--sm"
                         onClick={() => void launch(profile, true)}
                         disabled={busyId === profile.id || profile.preparing}
-                        title="Yalnızca önceden indirilmiş dosyalarla başlat"
+                        title={t('Yalnızca önceden indirilmiş dosyalarla başlat')}
                       >
-                        Çevrimdışı
+                        {t('Çevrimdışı')}
                       </button>
                     </>
                   )}
                   <button className="btn btn--sm" onClick={() => onOpenProfile(profile.id)}>
-                    Yönet
+                    {t('Yönet')}
                   </button>
                 </div>
               </div>
@@ -290,21 +291,21 @@ function CreateProfileModal({
       footer={
         <>
           <button className="btn" onClick={onClose}>
-            Vazgeç
+            {t('Vazgeç')}
           </button>
           <button
             className="btn btn--primary"
             onClick={() => void submit()}
             disabled={saving || !name.trim() || !gameVersion}
           >
-            {saving ? 'Oluşturuluyor…' : 'Oluştur'}
+            {saving ? t('Oluşturuluyor…') : t('Oluştur')}
           </button>
         </>
       }
     >
       <div className="field">
         <label className="field__label" htmlFor="profile-name">
-          Profil adı
+          {t('Profil adı')}
         </label>
         <input
           id="profile-name"
@@ -351,10 +352,10 @@ function CreateProfileModal({
       <div className="field">
         <div className="row row--between">
           <label className="field__label" htmlFor="game-version">
-            Minecraft sürümü
+            {t('Minecraft sürümü')}
           </label>
           <button className="btn btn--ghost btn--sm" onClick={() => setShowSnapshots((value) => !value)}>
-            {showSnapshots ? 'Anlık görüntüleri gizle' : 'Anlık görüntüleri göster'}
+            {showSnapshots ? t('Anlık görüntüleri gizle') : t('Anlık görüntüleri göster')}
           </button>
         </div>
         <select

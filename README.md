@@ -31,6 +31,9 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
   açılışta kurtarılır.
 - **Crash analizi** — Oyun çıktısı launcher içinde akar, diske kaydedilir ve bilinen bellek, Java, mod
   bağımlılığı, Mixin, grafik, native, oturum ve ağ hataları için çözüm önerili rapor üretir.
+- **On yedi dil** — Türkçe, İngilizce, Rusça, İspanyolca, Fransızca, Almanca, Çince, Japonca, Korece,
+  İtalyanca, Arapça, Farsça, Azerbaycanca, Türkmence, Kazakça, Kırgızca, Özbekçe. Varsayılan seçenek
+  işletim sisteminin dilini izler; Arapça ve Farsça arayüzü sağdan sola çevirir.
 
 ## Platformlar
 
@@ -77,10 +80,16 @@ src/
 │   └── ipc.ts               Renderer'a açılan tek yüzey
 ├── preload/                 contextBridge ile tip güvenli API
 ├── renderer/                React arayüzü
+├── shared/i18n/             Çeviri tabloları — anahtar, Türkçe metnin kendisi
 └── shared/types.ts          İki tarafın paylaştığı tipler
 ```
 
 Erişim jetonları hiçbir zaman renderer'a geçmez; `ipc.ts` hesapları `PublicAccount` biçimine indirger.
+
+Çeviri anahtarı, ekranda yazan Türkçe cümlenin kendisidir: launcher Türkçe yazıldı ve metin hâlâ kodun
+içinde duruyor. Uydurulmuş bir anahtar yerine cümlenin kendisi kullanılınca, karşılığı olmayan bir satır
+yazıldığı gibi kalıyor — yanlış yazılmış bir anahtar yüzünden ekranın boş çıkması mümkün değil, ve yeni bir
+dil eklemek bir tabloyu doldurmaktan ibaret.
 
 ## Yapılandırma
 

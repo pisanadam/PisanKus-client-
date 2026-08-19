@@ -3,6 +3,7 @@ import type { Texture } from '../../preload'
 import type { SavedSkin } from '../../shared/types'
 import { api } from '../lib/api'
 import { Icon } from './Icon'
+import { t } from '../../shared/i18n'
 
 /**
  * The player's own skin shelf. Entries are copies of the PNG kept beside the
@@ -46,7 +47,7 @@ export function SkinLibrary({
     <div className="settings-group">
       <div className="row row--between">
         <span className="section-title" style={{ margin: 0 }}>
-          Skin kitaplığım
+          {t('Skin kitaplığım')}
         </span>
         <div className="row" style={{ gap: 8 }}>
           <button
@@ -66,7 +67,7 @@ export function SkinLibrary({
           <button
             className="btn btn--sm btn--primary"
             disabled={saving || busy || !currentSkinUrl}
-            title={currentSkinUrl ? undefined : 'Bu hesapta özel bir skin yok'}
+            title={currentSkinUrl ? undefined : t('Bu hesapta özel bir skin yok')}
             onClick={() =>
               void guard(() =>
                 api.skins.saveFromUrl(currentSkinUrl!, `Skin ${skins.length + 1}`, currentVariant)
@@ -190,7 +191,7 @@ function SavedSkinCard({
             Sil
           </button>
           <button className="btn btn--sm btn--ghost" onClick={onCancelRemove}>
-            Vazgeç
+            {t('Vazgeç')}
           </button>
         </div>
       ) : (

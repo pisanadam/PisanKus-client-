@@ -1,4 +1,5 @@
 import { useApp } from '../state/AppContext'
+import { t } from '../../shared/i18n'
 
 /**
  * Microsoft sign-in is mandatory: nothing else in the launcher renders until an
@@ -25,7 +26,7 @@ export function LoginGate(): JSX.Element {
           {signingIn ? (
             <>
               <div className="spinner" />
-              Oturum açılıyor…
+              {t('Oturum açılıyor…')}
             </>
           ) : (
             <>
@@ -35,7 +36,7 @@ export function LoginGate(): JSX.Element {
                 <i />
                 <i />
               </span>
-              Microsoft ile oturum aç
+              {t('Microsoft ile oturum aç')}
             </>
           )}
         </button>

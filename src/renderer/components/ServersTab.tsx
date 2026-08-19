@@ -4,6 +4,7 @@ import type { Profile } from '../../shared/types'
 import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
+import { t } from '../../shared/i18n'
 
 /**
  * The profile's multiplayer list, read from and written back to its own
@@ -92,7 +93,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
 
       {editing && (
         <div className="settings-group">
-          <div className="section-title">{editing.index === null ? 'Yeni sunucu' : 'Sunucuyu düzenle'}</div>
+          <div className="section-title">{editing.index === null ? 'Yeni sunucu' : t('Sunucuyu düzenle')}</div>
           <div className="field">
             <label className="field__label" htmlFor="server-name">
               Ad
@@ -119,7 +120,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
           </div>
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <button className="btn" onClick={() => setEditing(null)} disabled={busy}>
-              Vazgeç
+              {t('Vazgeç')}
             </button>
             <button
               className="btn btn--primary"
@@ -178,7 +179,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
                       >
                         {state.online
                           ? `${state.players?.online ?? 0}/${state.players?.max ?? 0} oyuncu`
-                          : (state.error ?? 'çevrimdışı')}
+                          : (state.error ?? t('çevrimdışı'))}
                       </span>
                     )}
                   </div>
@@ -191,7 +192,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
 
                 <button
                   className="btn btn--ghost btn--icon"
-                  aria-label="Yukarı taşı"
+                  aria-label={t('Yukarı taşı')}
                   disabled={busy || server.index === 0}
                   onClick={() => void run(() => api.servers.move(profile.id, server.index, server.index - 1))}
                 >
@@ -199,7 +200,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
                 </button>
                 <button
                   className="btn btn--ghost btn--icon"
-                  aria-label="Aşağı taşı"
+                  aria-label={t('Aşağı taşı')}
                   disabled={busy || server.index === servers.length - 1}
                   onClick={() => void run(() => api.servers.move(profile.id, server.index, server.index + 1))}
                 >
@@ -210,11 +211,11 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
                   disabled={busy}
                   onClick={() => setEditing({ index: server.index, name: server.name, address: server.address })}
                 >
-                  Düzenle
+                  {t('Düzenle')}
                 </button>
                 <button
                   className="btn btn--ghost btn--icon"
-                  aria-label="Kaldır"
+                  aria-label={t('Kaldır')}
                   disabled={busy}
                   onClick={() => void run(() => api.servers.remove(profile.id, server.index))}
                 >

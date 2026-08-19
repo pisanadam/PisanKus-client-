@@ -30,6 +30,7 @@ function defaultSettings(): Settings {
     searchPageSize: 30,
     keepLauncherOpen: true,
     theme: 'dark',
+    language: 'system',
     accentColor: '#14b8b8',
     soundEffects: true,
     minecraftOptions: '',

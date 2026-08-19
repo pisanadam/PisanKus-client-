@@ -8,6 +8,7 @@ import { PACKS, type CuratedPack } from '../../shared/curatedPack'
 import { api } from '../lib/api'
 import { errorMessage, formatBytes, formatCount, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
+import { t } from '../../shared/i18n'
 
 const KINDS: { id: ContentKind; label: string; icon: string }[] = [
   { id: 'mod', label: 'Modlar', icon: '🧩' },
@@ -260,7 +261,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
                   setKind(entry.id)
                 }}
               >
-                <span aria-hidden="true">{entry.icon}</span> {entry.label}
+                <span aria-hidden="true">{entry.icon}</span> {t(entry.label)}
               </button>
             ))}
 
@@ -280,11 +281,11 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             style={{ width: 150 }}
             value={sort}
             onChange={(event) => setSort(event.target.value as NonNullable<SearchQuery['sort']>)}
-            aria-label="Sıralama"
+            aria-label={t('Sıralama')}
           >
             {SORTS.map((entry) => (
               <option key={entry.id} value={entry.id}>
-                {entry.label}
+                {t(entry.label)}
               </option>
             ))}
           </select>
@@ -318,7 +319,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             kapatırsanız tümünü görebilirsiniz.
             <div style={{ marginTop: 8 }}>
               <button className="btn btn--sm" onClick={() => setProfileId(BROWSE)}>
-                Gezinti moduna dön
+                {t('Gezinti moduna dön')}
               </button>
             </div>
           </div>
@@ -573,10 +574,10 @@ function ProjectModal({
 
       <div className="row row--between">
         <span className="section-title" style={{ margin: 0 }}>
-          Sürümler
+          {t('Sürümler')}
         </span>
         <button className="chip" aria-pressed={onlyCompatible} onClick={() => setOnlyCompatible((value) => !value)}>
-          Yalnızca uyumlu
+          {t('Yalnızca uyumlu')}
         </button>
       </div>
 
@@ -590,7 +591,7 @@ function ProjectModal({
           <p>
             {profile
               ? `${profile.gameVersion} · ${profile.loader} için yayınlanmış bir sürüm bulunamadı.`
-              : 'Bir profil seçin.'}
+              : t('Bir profil seçin.')}
           </p>
         </div>
       ) : (

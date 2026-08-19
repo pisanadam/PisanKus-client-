@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { Texture } from '../../preload'
 import { useTexture } from '../lib/useTexture'
+import { t } from '../../shared/i18n'
 
 /**
  * Renders a Minecraft skin as a real 3D model out of CSS-transformed boxes.
@@ -330,7 +331,7 @@ export function SkinViewer({
       <div className={`skin-stage ${className ?? ''}`}>
         <div className="empty" style={{ border: 'none' }}>
           <div className="empty__icon">🧍</div>
-          <div className="muted">{fetching ? 'Skin yükleniyor…' : 'Bu hesapta özel skin yok.'}</div>
+          <div className="muted">{fetching ? t('Skin yükleniyor…') : t('Bu hesapta özel skin yok.')}</div>
         </div>
       </div>
     )

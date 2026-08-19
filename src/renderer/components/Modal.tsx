@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { Icon } from './Icon'
+import { t } from '../../shared/i18n'
 
 export interface ModalProps {
   title: string
@@ -63,7 +64,7 @@ export function Confirm({
       footer={
         <>
           <button className="btn" onClick={onClose}>
-            Vazgeç
+            {t('Vazgeç')}
           </button>
           <button
             className={danger ? 'btn btn--danger' : 'btn btn--primary'}

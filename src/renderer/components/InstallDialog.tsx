@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
+import { t } from '../../shared/i18n'
 
 export interface Compatibility {
   ok: boolean
@@ -46,7 +47,7 @@ export function checkCompatibility(
       } else {
         issues.push(
           profile.loader === 'vanilla'
-            ? 'Bu profilde mod yükleyici yok (vanilla)'
+            ? t('Bu profilde mod yükleyici yok (vanilla)')
             : `${profile.loader} yükleyicisi desteklenmiyor`
         )
       }
@@ -68,7 +69,7 @@ function describeSupport(supports: { gameVersions: string[]; loaders: string[] }
   const SHOWN = 4
 
   let versions: string
-  if (gameVersions.length === 0) versions = 'belirtilmemiş'
+  if (gameVersions.length === 0) versions = t('belirtilmemiş')
   else {
     // Modrinth returns them oldest first.
     const newest = gameVersions.slice(-SHOWN).reverse()
@@ -175,7 +176,7 @@ export function InstallDialog({
   const footer = (
     <>
       <button className="btn" onClick={onClose} disabled={installing}>
-        Vazgeç
+        {t('Vazgeç')}
       </button>
       <button
         className={compatibility?.ok === false ? 'btn btn--danger' : 'btn btn--primary'}

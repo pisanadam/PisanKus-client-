@@ -9,6 +9,8 @@ import {
   type ReactNode
 } from 'react'
 import type { GameLogLine, GameState, Profile, Settings, TaskProgress } from '../../shared/types'
+import '../../shared/i18n/tables'
+import { detectLanguage, isRtl, setLanguage } from '../../shared/i18n'
 import { api } from '../lib/api'
 import { errorMessage, isSignInError } from '../lib/format'
 import type { PublicAccount } from '../../preload'
@@ -115,10 +117,26 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     })()
   }, [refreshAccounts, refreshProfiles])
 
-  // Apply theme and accent as soon as settings load or change.
+  /**
+   * The language in force, resolved from the setting.
+   *
+   * It is applied during render rather than in an effect: `t()` is read while
+   * the tree is being built, so the table has to be in place before the first
+   * line is drawn — an effect would leave one frame in the old language.
+   */
+  const language = settings
+    ? settings.language === 'system'
+      ? detectLanguage(navigator.language)
+      : settings.language
+    : 'tr'
+  setLanguage(language)
+
+  // Apply theme, accent and writing direction as soon as settings load or change.
   useEffect(() => {
     if (!settings) return
     const root = document.documentElement
+    root.lang = language
+    root.dir = isRtl(language) ? 'rtl' : 'ltr'
     root.style.setProperty('--accent', settings.accentColor)
     root.style.setProperty('--on-accent', onAccent(settings.accentColor))
     const theme =
@@ -128,7 +146,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
           : 'dark'
         : settings.theme
     root.dataset.theme = theme
-  }, [settings])
+  }, [settings, language])
 
   useEffect(() => {
     const offProgress = api.tasks.onProgress((task) => {

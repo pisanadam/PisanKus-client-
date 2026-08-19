@@ -14,6 +14,7 @@ import { KEY_BIND_DEFAULTS, UNBOUND, keyFromCode, keyFromMouseButton, keyLabel }
 import { api } from '../lib/api'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
+import { t } from '../../shared/i18n'
 
 /**
  * Editor for the options.txt template.
@@ -52,7 +53,7 @@ export function OptionsEditor({
   const footer = (
     <>
       <button className="btn" onClick={onClose} disabled={saving}>
-        Vazgeç
+        {t('Vazgeç')}
       </button>
       <button
         className="btn btn--primary"
@@ -73,7 +74,7 @@ export function OptionsEditor({
   )
 
   return (
-    <Modal title="Minecraft ayarları" onClose={onClose} wide footer={footer}>
+    <Modal title={t('Minecraft ayarları')} onClose={onClose} wide footer={footer}>
       <div className="options">
         <div className="options__bar">
           <button
@@ -83,7 +84,7 @@ export function OptionsEditor({
                 const imported = await api.options.importFile()
                 if (imported) {
                   setText(imported)
-                  notify('options.txt içe aktarıldı.')
+                  notify(t('options.txt içe aktarıldı.'))
                 }
               } catch (error) {
                 notify(error, 'error')
@@ -91,12 +92,12 @@ export function OptionsEditor({
             }}
           >
             <Icon name="download" size={15} />
-            Dosyadan içe aktar
+            {t('Dosyadan içe aktar')}
           </button>
 
           <button className="btn btn--sm" onClick={() => setText(defaultOptionsText())}>
             <Icon name="refresh" size={15} />
-            Varsayılanlar
+            {t('Varsayılanlar')}
           </button>
 
           <div className="topbar__spacer" />
@@ -169,10 +170,10 @@ function OptionRow({
         {type.kind === 'bool' && (
           <div className="chips">
             <button className="chip" aria-pressed={value === 'true'} onClick={() => onChange('true')}>
-              Açık
+              {t('Açık')}
             </button>
             <button className="chip" aria-pressed={value !== 'true'} onClick={() => onChange('false')}>
-              Kapalı
+              {t('Kapalı')}
             </button>
           </div>
         )}
@@ -304,11 +305,11 @@ function KeyBindButton({
         aria-pressed={listening}
         onClick={() => setListening((current) => !current)}
       >
-        {listening ? 'Bir tuşa basın…' : keyLabel(value)}
+        {listening ? t('Bir tuşa basın…') : keyLabel(value)}
       </button>
       <button
         className="btn btn--sm btn--ghost btn--icon"
-        aria-label="Atamayı kaldır"
+        aria-label={t('Atamayı kaldır')}
         disabled={unbound}
         onClick={() => onChange(UNBOUND)}
       >

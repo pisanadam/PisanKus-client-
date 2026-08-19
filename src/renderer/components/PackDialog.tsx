@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { errorMessage, loaderLabel } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
+import { t } from '../../shared/i18n'
 
 /**
  * Sets up the launcher's own performance pack.
@@ -73,7 +74,7 @@ export function PackDialog({
         footer={
           <button className="btn btn--primary" onClick={() => onInstalled(result.profile.id)}>
             <Icon name="play" size={16} />
-            Profili aç
+            {t('Profili aç')}
           </button>
         }
       >
@@ -120,7 +121,7 @@ export function PackDialog({
       footer={
         <>
           <button className="btn" onClick={onClose} disabled={busy}>
-            Vazgeç
+            {t('Vazgeç')}
           </button>
           <button className="btn btn--primary" onClick={() => void install()} disabled={busy || !gameVersion}>
             {busy ? <div className="spinner" /> : <Icon name="download" size={16} />}
@@ -140,7 +141,7 @@ export function PackDialog({
 
       <div className="field">
         <label className="field__label" htmlFor="pack-version">
-          Minecraft sürümü
+          {t('Minecraft sürümü')}
         </label>
         {versions === null ? (
           <div className="row" style={{ gap: 8 }}>
@@ -155,7 +156,7 @@ export function PackDialog({
             onChange={(event) => setGameVersion(event.target.value)}
           >
             {recommended.length > 0 && (
-              <optgroup label="Önerilen">
+              <optgroup label={t('Önerilen')}>
                 {recommended.map((entry) => (
                   <option key={entry.version} value={entry.version}>
                     {entry.version} — {entry.why}
@@ -163,7 +164,7 @@ export function PackDialog({
                 ))}
               </optgroup>
             )}
-            <optgroup label="Diğer sürümler">
+            <optgroup label={t('Diğer sürümler')}>
               {others.map((version) => (
                 <option key={version} value={version}>
                   {version}
@@ -181,7 +182,7 @@ export function PackDialog({
 
       <div className="field">
         <label className="field__label" htmlFor="pack-name">
-          Profil adı
+          {t('Profil adı')}
         </label>
         <input
           id="pack-name"
@@ -192,7 +193,7 @@ export function PackDialog({
       </div>
 
       <div className="section-title" style={{ marginTop: 18 }}>
-        İçindekiler
+        {t('İçindekiler')}
       </div>
       <ul className="pack-list">
         {pack.mods.map((mod) => (

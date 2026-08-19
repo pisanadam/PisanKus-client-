@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import welcomeChime from '../assets/welcome.wav'
 import { Icon, type IconName } from './Icon'
+import { t } from '../../shared/i18n'
 
 const HIGHLIGHTS: { icon: IconName; title: string; text: string }[] = [
   { icon: 'compass', title: 'Modrinth', text: 'Mod, doku paketi, shader ve dünyaları tek tıkla kur' },
@@ -72,7 +73,7 @@ export function Welcome({
         </ul>
 
         <button className="btn btn--primary welcome__cta" onClick={dismiss} autoFocus>
-          Başlayalım
+          {t('Başlayalım')}
         </button>
       </div>
     </div>

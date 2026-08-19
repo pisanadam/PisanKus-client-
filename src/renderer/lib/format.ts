@@ -1,4 +1,5 @@
 import { cleanMessage, needsSignIn } from '../../shared/authErrors'
+import { t } from '../../shared/i18n'
 
 const compact = new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 })
 const relative = new Intl.RelativeTimeFormat('tr', { numeric: 'auto' })
@@ -21,12 +22,12 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 ]
 
 export function formatRelative(value: number | string | undefined): string {
-  if (!value) return 'hiç'
+  if (!value) return t('hiç')
   const elapsed = new Date(value).getTime() - Date.now()
   for (const [unit, ms] of UNITS) {
     if (Math.abs(elapsed) >= ms) return relative.format(Math.round(elapsed / ms), unit)
   }
-  return 'az önce'
+  return t('az önce')
 }
 
 export function formatPlaytime(ms: number): string {

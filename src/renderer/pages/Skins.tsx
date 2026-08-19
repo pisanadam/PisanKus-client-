@@ -6,6 +6,7 @@ import { SkinViewer } from '../components/SkinViewer'
 import { api } from '../lib/api'
 import { useTexture } from '../lib/useTexture'
 import { useApp } from '../state/AppContext'
+import { t } from '../../shared/i18n'
 
 /** A skin chosen but not yet sent to Mojang. */
 type Pending =
@@ -49,7 +50,7 @@ export function Skins(): JSX.Element {
         setVariant(updated.variant)
         setPending(null)
         await refreshAccounts()
-        notify('Skin güncellendi.')
+        notify(t('Skin güncellendi.'))
       }
     } catch (error) {
       notify(error, 'error')
@@ -104,11 +105,11 @@ export function Skins(): JSX.Element {
             <div className="preview-bar">
               <Icon name="image" size={15} />
               <span className="preview-bar__text">
-                {pending.kind === 'file' ? pending.file.name : 'Bağlantıdaki skin'} · önizleme,
+                {pending.kind === 'file' ? pending.file.name : t('Bağlantıdaki skin')} · önizleme,
                 henüz uygulanmadı
               </span>
               <button className="btn btn--sm btn--ghost" onClick={() => setPending(null)} disabled={busy}>
-                Vazgeç
+                {t('Vazgeç')}
               </button>
             </div>
           )}
@@ -132,7 +133,7 @@ export function Skins(): JSX.Element {
                 onClick={() => setVariant('classic')}
                 disabled={busy}
               >
-                Klasik (geniş kol)
+                {t('Klasik (geniş kol)')}
               </button>
               <button
                 className="chip"
@@ -140,7 +141,7 @@ export function Skins(): JSX.Element {
                 onClick={() => setVariant('slim')}
                 disabled={busy}
               >
-                İnce (Alex)
+                {t('İnce (Alex)')}
               </button>
             </div>
             <p className="faint">
@@ -164,13 +165,13 @@ export function Skins(): JSX.Element {
               }}
             >
               <Icon name="image" size={16} />
-              PNG dosyası seç
+              {t('PNG dosyası seç')}
             </button>
             <p className="faint">64×64 (veya eski biçim 64×32) boyutunda, en fazla 24 KB bir PNG seçin.</p>
 
             <div className="field">
               <label className="field__label" htmlFor="skin-url">
-                Bağlantıdan uygula
+                {t('Bağlantıdan uygula')}
               </label>
               <div className="row">
                 <input
@@ -188,7 +189,7 @@ export function Skins(): JSX.Element {
                     setUrlInput('')
                   }}
                 >
-                  Seç
+                  {t('Seç')}
                 </button>
               </div>
               <p className="faint">
@@ -222,7 +223,7 @@ export function Skins(): JSX.Element {
               onClick={() => void mutate(() => api.skins.reset(activeAccount.id))}
             >
               <Icon name="refresh" size={16} />
-              Varsayılan skine dön
+              {t('Varsayılan skine dön')}
             </button>
           </div>
 

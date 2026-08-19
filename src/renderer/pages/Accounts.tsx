@@ -5,6 +5,7 @@ import { SkinHead } from '../components/SkinViewer'
 import { api } from '../lib/api'
 import { formatRelative } from '../lib/format'
 import { useApp } from '../state/AppContext'
+import { t } from '../../shared/i18n'
 
 export function Accounts(): JSX.Element {
   const { accounts, activeAccount, refreshAccounts, signIn, signingIn, authError, notify } = useApp()
@@ -61,7 +62,7 @@ export function Accounts(): JSX.Element {
                     await refreshAccounts()
                   }}
                 >
-                  Etkinleştir
+                  {t('Etkinleştir')}
                 </button>
               )}
 
@@ -87,7 +88,7 @@ export function Accounts(): JSX.Element {
 
               <button
                 className="btn btn--ghost btn--icon"
-                aria-label="Hesabı kaldır"
+                aria-label={t('Hesabı kaldır')}
                 onClick={() => setPendingRemove(account.id)}
               >
                 <Icon name="trash" size={16} />
@@ -99,9 +100,9 @@ export function Accounts(): JSX.Element {
 
       {removing && (
         <Confirm
-          title="Hesabı kaldır"
+          title={t('Hesabı kaldır')}
           danger
-          confirmLabel="Kaldır"
+          confirmLabel={t('Kaldır')}
           message={
             <>
               <strong>{removing.name}</strong> hesabının oturumu bu cihazdan silinecek. Profilleriniz ve dosyalarınız

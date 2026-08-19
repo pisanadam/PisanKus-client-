@@ -132,6 +132,8 @@ export interface Settings {
   searchPageSize: number
   keepLauncherOpen: boolean
   theme: 'dark' | 'light' | 'system'
+  /** UI language code, or `system` to follow the operating system. */
+  language: string
   accentColor: string
   /** Whether the launcher plays its welcome chime. */
   soundEffects: boolean

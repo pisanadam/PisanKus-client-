@@ -6,6 +6,7 @@ import { OptionsEditor } from '../components/OptionsEditor'
 import { defaultOptionsText, parseOptions } from '../../shared/options'
 import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
+import { LANGUAGES, t } from '../../shared/i18n'
 
 const ACCENTS = ['#14b8b8', '#2fb6c8', '#3fb98a', '#d9b23c', '#5b8cff', '#7c5cff', '#e0567a']
 
@@ -77,7 +78,7 @@ export function Settings(): JSX.Element {
           onSave={async (text) => {
             await saveSettings({ minecraftOptions: text })
             setEditingOptions(false)
-            notify('Minecraft ayarları kaydedildi.')
+            notify(t('Minecraft ayarları kaydedildi.'))
           }}
         />
       )}
@@ -92,6 +93,25 @@ export function Settings(): JSX.Element {
       <div className="stack-lg" style={{ maxWidth: 820 }}>
         <section className="settings-group">
           <div className="section-title">Görünüm</div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">{t('Dil')}</div>
+              <div className="faint">{t('Sistem seçeneği işletim sistemi dilini izler')}</div>
+            </div>
+            <select
+              className="select"
+              value={settings.language}
+              onChange={(event) => void saveSettings({ language: event.target.value })}
+            >
+              <option value="system">{t('Sistem')}</option>
+              {LANGUAGES.map((entry) => (
+                <option key={entry.code} value={entry.code}>
+                  {entry.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="settings-row">
             <div>
@@ -139,14 +159,14 @@ export function Settings(): JSX.Element {
                 aria-pressed={settings.soundEffects}
                 onClick={() => void saveSettings({ soundEffects: true })}
               >
-                Açık
+                {t('Açık')}
               </button>
               <button
                 className="chip"
                 aria-pressed={!settings.soundEffects}
                 onClick={() => void saveSettings({ soundEffects: false })}
               >
-                Kapalı
+                {t('Kapalı')}
               </button>
             </div>
           </div>
@@ -165,7 +185,7 @@ export function Settings(): JSX.Element {
               }}
             >
               <Icon name="refresh" size={16} />
-              Yeniden göster
+              {t('Yeniden göster')}
             </button>
           </div>
         </section>
@@ -182,13 +202,13 @@ export function Settings(): JSX.Element {
               {updateStatus.state === 'available' && (
                 <button className="btn btn--primary" onClick={() => void api.updates.download()}>
                   <Icon name="download" size={16} />
-                  İndir
+                  {t('İndir')}
                 </button>
               )}
               {updateStatus.state === 'ready' && (
                 <button className="btn btn--primary" onClick={() => void api.updates.install()}>
                   <Icon name="refresh" size={16} />
-                  Yeniden başlat ve kur
+                  {t('Yeniden başlat ve kur')}
                 </button>
               )}
               <button
@@ -202,7 +222,7 @@ export function Settings(): JSX.Element {
                     // one never checks at all, which is worth saying out loud.
                     if (result.state === 'available') notify(`Yeni sürüm hazır: ${result.version}`)
                     else if (result.state === 'error') notify(result.message, 'error')
-                    else if (result.state === 'idle') notify('En güncel sürümü kullanıyorsunuz.')
+                    else if (result.state === 'idle') notify(t('En güncel sürümü kullanıyorsunuz.'))
                   } catch (error) {
                     notify(error, 'error')
                   } finally {
@@ -343,7 +363,7 @@ export function Settings(): JSX.Element {
               }}
             >
               <Icon name="folder" size={16} />
-              Değiştir
+              {t('Değiştir')}
             </button>
           </div>
 
@@ -379,7 +399,7 @@ export function Settings(): JSX.Element {
 
           <div className="field">
             <label className="field__label" htmlFor="global-jvm">
-              Varsayılan JVM argümanları
+              {t('Varsayılan JVM argümanları')}
             </label>
             <textarea
               id="global-jvm"
@@ -464,7 +484,7 @@ export function Settings(): JSX.Element {
           {settings.authMode === 'azure' && (
             <div className="field">
               <label className="field__label" htmlFor="ms-client">
-                Azure istemci kimliği
+                {t('Azure istemci kimliği')}
               </label>
               <input
                 id="ms-client"

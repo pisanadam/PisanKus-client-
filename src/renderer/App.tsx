@@ -13,6 +13,7 @@ import { ProfileDetail } from './pages/ProfileDetail'
 import { Settings } from './pages/Settings'
 import { Skins } from './pages/Skins'
 import { useApp } from './state/AppContext'
+import { t } from '../shared/i18n'
 
 type Route =
   | { page: 'library' }
@@ -55,7 +56,7 @@ export function App(): JSX.Element {
               Launcher verileri okunamadı. Uygulamayı yeniden başlatın; sorun sürerse aşağıdaki hatayı paylaşın.
             </p>
           </div>
-          <div className="gate__error">{startupError ?? 'Ayarlar yüklenemedi.'}</div>
+          <div className="gate__error">{startupError ?? t('Ayarlar yüklenemedi.')}</div>
         </div>
       </div>
     )
@@ -100,7 +101,7 @@ export function App(): JSX.Element {
             onClick={() => setRoute({ page: entry.page } as Route)}
           >
             <Icon name={entry.icon} size={18} />
-            {entry.label}
+            {t(entry.label)}
             {entry.page === 'library' && profiles.length > 0 && (
               <span className="nav-item__badge">{profiles.length}</span>
             )}

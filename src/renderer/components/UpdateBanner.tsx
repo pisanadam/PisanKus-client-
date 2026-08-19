@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { UpdateStatus } from '../../shared/types'
 import { api } from '../lib/api'
 import { Icon } from './Icon'
+import { t } from '../../shared/i18n'
 
 /**
  * Sits above the brand in the sidebar and only appears when there is something
@@ -50,7 +51,7 @@ export function UpdateBanner(): JSX.Element | null {
     <button className="update" onClick={() => void api.updates.download()}>
       <Icon name="download" size={14} />
       <span className="update__label">
-        Yeni sürüm var
+        {t('Yeni sürüm var')}
         <span className="update__version">{status.version}</span>
       </span>
     </button>
