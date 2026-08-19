@@ -10,6 +10,15 @@
     <net.kdt.pojavlaunch.prefs.BackButtonPreference/>
 
     <PreferenceCategory android:title="@string/pisankus_about_category">
+
+        <ListPreference
+            android:key="pisankus_language"
+            android:title="@string/pisankus_language_title"
+            android:summary="%s"
+            android:defaultValue="system"
+            android:entries="@array/pisankus_language_names"
+            android:entryValues="@array/pisankus_language_values" />
+
         <Preference
             android:key="pisankus_check_update"
             android:title="@string/pisankus_update_title"

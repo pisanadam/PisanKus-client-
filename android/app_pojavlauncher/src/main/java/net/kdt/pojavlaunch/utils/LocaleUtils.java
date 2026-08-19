@@ -13,9 +13,29 @@ import androidx.preference.*;
 import java.util.*;
 
 public class LocaleUtils extends ContextWrapper {
+    /** Which language the player chose; "system" means "whatever the phone says". */
+    public static final String PREF_LANGUAGE = "pisankus_language";
+    public static final String SYSTEM = "system";
 
     public LocaleUtils(Context base) {
         super(base);
+    }
+
+    /**
+     * The language tag to run in, or null to follow the phone.
+     *
+     * Upstream had one switch here — force English — for players whose phone
+     * language the launcher had no translation for. PisanKus ships a real list
+     * instead, and a phone's language is often not the one its owner wants an
+     * app in, so the choice is theirs. The old switch keeps working: someone who
+     * turned it on still gets English until they pick something else.
+     */
+    public static String chosenLanguage(Context context) {
+        String language = DEFAULT_PREF.getString(PREF_LANGUAGE, SYSTEM);
+        if (SYSTEM.equals(language)) {
+            return DEFAULT_PREF.getBoolean("force_english", false) ? "en" : null;
+        }
+        return language;
     }
 
     public static ContextWrapper setLocale(Context context) {
@@ -27,14 +47,16 @@ public class LocaleUtils extends ContextWrapper {
             PREF_FORCE_ENGLISH = DEFAULT_PREF.getBoolean("force_english", false);
         }
 
-        if(PREF_FORCE_ENGLISH){
+        String language = chosenLanguage(context);
+        if (language != null) {
+            Locale locale = Locale.forLanguageTag(language);
             Resources resources = context.getResources();
             Configuration configuration = resources.getConfiguration();
 
-            configuration.setLocale(Locale.ENGLISH);
-            Locale.setDefault(Locale.ENGLISH);
+            configuration.setLocale(locale);
+            Locale.setDefault(locale);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                LocaleList localeList = new LocaleList(Locale.ENGLISH);
+                LocaleList localeList = new LocaleList(locale);
                 LocaleList.setDefault(localeList);
                 configuration.setLocales(localeList);
             }

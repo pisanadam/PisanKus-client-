@@ -16,6 +16,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import net.kdt.pojavlaunch.LauncherActivity;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
+import net.kdt.pojavlaunch.utils.LocaleUtils;
 
 /**
  * Preference for the main screen, any sub-screen should inherit this class for consistent behavior,
@@ -40,6 +41,25 @@ public class LauncherPreferenceFragment extends PreferenceFragmentCompat impleme
         addPreferencesFromResource(R.xml.pref_main);
         setupNotificationRequestPreference();
         setupUpdatePreference();
+        setupLanguagePreference();
+    }
+
+    /**
+     * The language entry.
+     *
+     * A language is applied when a context is created, so the screens already on
+     * screen keep the old one until they are built again — the activity is
+     * recreated so the change is visible the moment it is made, rather than at
+     * the next restart.
+     */
+    private void setupLanguagePreference() {
+        Preference language = findPreference(LocaleUtils.PREF_LANGUAGE);
+        if (language == null) return;
+        language.setOnPreferenceChangeListener((preference, value) -> {
+            Activity activity = getActivity();
+            if (activity != null) activity.recreate();
+            return true;
+        });
     }
 
     /**

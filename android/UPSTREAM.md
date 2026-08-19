@@ -154,6 +154,26 @@ Keşfet'in karşılığı:
 Profil ne yükleyicisini ne de sürümünü saklıyor; ikisi de sürüm kimliğinin
 biçiminden ve sürüm json'ındaki `inheritsFrom` alanından okunuyor.
 
+### 10. Diller
+
+`res/values/strings.xml` (varsayılan) + `res/values-*/strings.xml`
+
+Bizim 97 metnimiz yalnızca Türkçe vardı ve varsayılan dosyada duruyordu; yani
+telefonu Türkçe olmayan herkes bizim ekranlarımızı Türkçe görüyordu. Artık
+varsayılan İngilizce ve on altı dil ayrı klasörlerde: türkçe, ingilizce, rusça,
+ispanyolca, fransızca, almanca, çince, japonca, korece, italyanca, arapça,
+farsça, azerbaycanca, türkmence, kazakça, kırgızca, özbekçe. Üçü (tk, ky, uz)
+üst kaynakta hiç yoktu, klasörleri yeni.
+
+Android tek bir dil klasörü seçer — orada olmayan metin daha genel bir dile
+değil, doğrudan varsayılana düşer — bu yüzden cihazın düşebileceği her klasöre
+(`values-zh` ile `values-zh-rCN`, `values-fa` ile `values-fa-rIR`, `values-az`
+ile `values-az-rAZ`) ayrı ayrı yazıldı.
+
+`utils/LocaleUtils.java` genelleştirildi: üst kaynakta yalnızca "İngilizceye
+zorla" anahtarı vardı, artık ayarlardan dil seçilebiliyor. Eski anahtarı açmış
+olanlar İngilizce görmeye devam ediyor.
+
 ## Üst kaynağı güncellerken
 
 1. `UPSTREAM.md`'deki commit'i not al.
