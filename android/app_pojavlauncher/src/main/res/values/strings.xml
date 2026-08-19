@@ -623,4 +623,22 @@
     <string name="import_modpack_json">Reading modpack info…</string>
     <string name="import_modpack_copy">Copying modpack file to cache… (%s MB/ %s MB)</string>
 
+    <string name="pisan_update_no_apk">No Android package in the release.</string>
+    <string name="pisan_update_install_failed">The install could not be started: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s is not published for %2$s</string>
+    <string name="pisan_pack_mods_dir_failed">The mods folder could not be created: %1$s</string>
+    <string name="pisan_pack_no_version_for">No version for %1$s</string>
+    <string name="pisan_pack_mod_download_failed">%1$s could not be downloaded</string>
+    <string name="pisan_modrinth_no_file">The version has no file.</string>
+    <string name="pisan_modrinth_dir_failed">The folder could not be created: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">The file has no download link.</string>
+    <string name="pisan_modrinth_unreadable">The Modrinth answer could not be read: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">The library folder could not be created.</string>
+    <string name="pisan_skin_file_open_failed">The file could not be opened.</string>
+    <string name="pisan_skin_not_png">This file is not a PNG.</string>
+    <string name="pisan_skin_bad_size">A skin must be 64×64 (or 64×32 in the old layout). This file is %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">The session has expired. Sign out of your account and sign in again.</string>
+    <string name="pisan_skin_rate_limited">You have hit Mojang\'s limit on skin changes. Try again in a while.</string>
+    <string name="pisan_skin_service_rejected">Minecraft services refused the request (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">The server\'s answer could not be read.</string>
 </resources>

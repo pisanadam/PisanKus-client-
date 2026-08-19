@@ -146,15 +146,14 @@ public class PisanKusSkins {
     public static void assertValidSkin(byte[] png) throws IOException {
         if (png.length < 24
                 || (png[0] & 0xFF) != 0x89 || png[1] != 'P' || png[2] != 'N' || png[3] != 'G') {
-            throw new ServiceException("Bu dosya bir PNG değil.");
+            throw new ServiceException(PisanKusText.get(R.string.pisan_skin_not_png));
         }
         int width = readInt(png, 16);
         int height = readInt(png, 20);
         boolean modern = width == 64 && height == 64;
         boolean legacy = width == 64 && height == 32;
         if (!modern && !legacy) {
-            throw new ServiceException("Skin 64×64 (veya eski biçimde 64×32) olmalı. Bu dosya "
-                    + width + "×" + height + ".");
+            throw new ServiceException(PisanKusText.get(R.string.pisan_skin_bad_size, width, height));
         }
     }
 
@@ -192,17 +191,17 @@ public class PisanKusSkins {
         try {
             int status = connection.getResponseCode();
             if (status == 401) {
-                throw new ServiceException("Oturum süresi dolmuş. Hesabınızdan çıkıp yeniden giriş yapın.");
+                throw new ServiceException(PisanKusText.get(R.string.pisan_skin_session_expired));
             }
             if (status == 429) {
                 // Mojang's limit on skin changes is a server-side cooldown; it
                 // does not clear by undoing anything on this device.
-                throw new ServiceException("Mojang skin değiştirme sınırına takıldınız. Bir süre sonra tekrar deneyin.");
+                throw new ServiceException(PisanKusText.get(R.string.pisan_skin_rate_limited));
             }
             if (status < 200 || status >= 300) {
                 String detail = read(connection.getErrorStream());
-                throw new ServiceException("Minecraft servisleri isteği reddetti (" + status + "). "
-                        + detail.substring(0, Math.min(detail.length(), 200)));
+                throw new ServiceException(PisanKusText.get(R.string.pisan_skin_service_rejected, status,
+                        detail.substring(0, Math.min(detail.length(), 200))));
             }
             return read(connection.getInputStream());
         } finally {
@@ -214,7 +213,7 @@ public class PisanKusSkins {
         try {
             return new JSONObject(body);
         } catch (Exception e) {
-            throw new ServiceException("Sunucu yanıtı okunamadı.");
+            throw new ServiceException(PisanKusText.get(R.string.pisan_skin_response_unreadable));
         }
     }
 

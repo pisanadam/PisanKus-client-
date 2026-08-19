@@ -508,4 +508,22 @@
     <string name="pisan_optimized_essential_missing">%1$s n\'est pas encore sorti pour %2$s. Le pack ne peut pas être installé sur cette version ; choisissez-en une autre.</string>
     <string name="pisankus_language_title">Langue</string>
     <string name="pisankus_language_system">Langue du système</string>
+    <string name="pisan_update_no_apk">Aucun paquet Android dans la version publiée.</string>
+    <string name="pisan_update_install_failed">L\'installation n\'a pas pu démarrer : %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s n\'est pas publié pour %2$s</string>
+    <string name="pisan_pack_mods_dir_failed">Le dossier des mods n\'a pas pu être créé : %1$s</string>
+    <string name="pisan_pack_no_version_for">Aucune version pour %1$s</string>
+    <string name="pisan_pack_mod_download_failed">%1$s n\'a pas pu être téléchargé</string>
+    <string name="pisan_modrinth_no_file">La version n\'a aucun fichier.</string>
+    <string name="pisan_modrinth_dir_failed">Le dossier n\'a pas pu être créé : %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Le fichier n\'a pas de lien de téléchargement.</string>
+    <string name="pisan_modrinth_unreadable">La réponse de Modrinth n\'a pas pu être lue : %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Le dossier de la bibliothèque n\'a pas pu être créé.</string>
+    <string name="pisan_skin_file_open_failed">Le fichier n\'a pas pu être ouvert.</string>
+    <string name="pisan_skin_not_png">Ce fichier n\'est pas un PNG.</string>
+    <string name="pisan_skin_bad_size">Un skin doit faire 64×64 (ou 64×32 à l\'ancien format). Ce fichier fait %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">La session a expiré. Déconnectez-vous puis reconnectez-vous.</string>
+    <string name="pisan_skin_rate_limited">Vous avez atteint la limite de Mojang sur les changements de skin. Réessayez plus tard.</string>
+    <string name="pisan_skin_service_rejected">Les services Minecraft ont refusé la requête (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">La réponse du serveur n\'a pas pu être lue.</string>
 </resources>

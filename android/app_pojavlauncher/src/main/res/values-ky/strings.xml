@@ -98,4 +98,22 @@
     <string name="pisan_optimized_essential_missing">%1$s азырынча %2$s версиясына чыга элек. Топтом бул версияга орнотулбайт; башка версияны тандаңыз.</string>
     <string name="pisankus_language_title">Тил</string>
     <string name="pisankus_language_system">Тутум тили</string>
+    <string name="pisan_update_no_apk">Чыгарылышта Android топтому табылган жок.</string>
+    <string name="pisan_update_install_failed">Орнотууну баштоо мүмкүн болгон жок: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s, %2$s үчүн жарыяланган эмес</string>
+    <string name="pisan_pack_mods_dir_failed">Мод папкасын түзүү мүмкүн болгон жок: %1$s</string>
+    <string name="pisan_pack_no_version_for">%1$s үчүн версия жок</string>
+    <string name="pisan_pack_mod_download_failed">%1$s жүктөлгөн жок</string>
+    <string name="pisan_modrinth_no_file">Версиянын файлы жок.</string>
+    <string name="pisan_modrinth_dir_failed">Папка түзүү мүмкүн болгон жок: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Файлдын жүктөө шилтемеси жок.</string>
+    <string name="pisan_modrinth_unreadable">Modrinth жообун окуу мүмкүн болгон жок: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Китепкана папкасын түзүү мүмкүн болгон жок.</string>
+    <string name="pisan_skin_file_open_failed">Файлды ачуу мүмкүн болгон жок.</string>
+    <string name="pisan_skin_not_png">Бул файл PNG эмес.</string>
+    <string name="pisan_skin_bad_size">Скин 64×64 (же эски форматта 64×32) болушу керек. Бул файл %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">Сессиянын мөөнөтү бүттү. Эсептен чыгып кайра кириңиз.</string>
+    <string name="pisan_skin_rate_limited">Mojang\'дын скин алмаштыруу чегине жеттиңиз. Бир аздан кийин кайра аракет кылыңыз.</string>
+    <string name="pisan_skin_service_rejected">Minecraft кызматтары сурамды четке какты (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Сервердин жообун окуу мүмкүн болгон жок.</string>
 </resources>

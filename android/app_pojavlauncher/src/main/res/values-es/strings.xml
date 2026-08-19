@@ -451,4 +451,22 @@
     <string name="pisan_optimized_essential_missing">%1$s todavía no ha salido para %2$s. El paquete no se puede instalar en esa versión; elige otra.</string>
     <string name="pisankus_language_title">Idioma</string>
     <string name="pisankus_language_system">Idioma del sistema</string>
+    <string name="pisan_update_no_apk">No hay paquete de Android en la publicación.</string>
+    <string name="pisan_update_install_failed">No se pudo iniciar la instalación: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s no está publicado para %2$s</string>
+    <string name="pisan_pack_mods_dir_failed">No se pudo crear la carpeta de mods: %1$s</string>
+    <string name="pisan_pack_no_version_for">No hay versión para %1$s</string>
+    <string name="pisan_pack_mod_download_failed">No se pudo descargar %1$s</string>
+    <string name="pisan_modrinth_no_file">La versión no tiene archivo.</string>
+    <string name="pisan_modrinth_dir_failed">No se pudo crear la carpeta: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">El archivo no tiene enlace de descarga.</string>
+    <string name="pisan_modrinth_unreadable">No se pudo leer la respuesta de Modrinth: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">No se pudo crear la carpeta de la biblioteca.</string>
+    <string name="pisan_skin_file_open_failed">No se pudo abrir el archivo.</string>
+    <string name="pisan_skin_not_png">Este archivo no es un PNG.</string>
+    <string name="pisan_skin_bad_size">Una skin debe ser 64×64 (o 64×32 en el formato antiguo). Este archivo es %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">La sesión ha caducado. Cierra la sesión de tu cuenta y vuelve a entrar.</string>
+    <string name="pisan_skin_rate_limited">Has llegado al límite de Mojang para cambiar de skin. Inténtalo más tarde.</string>
+    <string name="pisan_skin_service_rejected">Los servicios de Minecraft rechazaron la petición (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">No se pudo leer la respuesta del servidor.</string>
 </resources>

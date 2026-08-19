@@ -522,4 +522,22 @@
     <string name="pisan_optimized_essential_missing">%1$s henüz %2$s sürümü için yayınlanmamış. Paket bu sürüme kurulamıyor; başka bir sürüm seçin.</string>
     <string name="pisankus_language_title">Dil</string>
     <string name="pisankus_language_system">Sistem dili</string>
+    <string name="pisan_update_no_apk">Yayında Android paketi bulunamadı.</string>
+    <string name="pisan_update_install_failed">Kurulum başlatılamadı: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s, %2$s için yayınlanmamış</string>
+    <string name="pisan_pack_mods_dir_failed">Mod klasörü oluşturulamadı: %1$s</string>
+    <string name="pisan_pack_no_version_for">%1$s için sürüm yok</string>
+    <string name="pisan_pack_mod_download_failed">%1$s indirilemedi</string>
+    <string name="pisan_modrinth_no_file">Sürümün dosyası yok.</string>
+    <string name="pisan_modrinth_dir_failed">Klasör oluşturulamadı: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Dosyanın indirme bağlantısı yok.</string>
+    <string name="pisan_modrinth_unreadable">Modrinth yanıtı okunamadı: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Kitaplık klasörü oluşturulamadı.</string>
+    <string name="pisan_skin_file_open_failed">Dosya açılamadı.</string>
+    <string name="pisan_skin_not_png">Bu dosya bir PNG değil.</string>
+    <string name="pisan_skin_bad_size">Skin 64×64 (veya eski biçimde 64×32) olmalı. Bu dosya %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">Oturum süresi dolmuş. Hesabınızdan çıkıp yeniden giriş yapın.</string>
+    <string name="pisan_skin_rate_limited">Mojang skin değiştirme sınırına takıldınız. Bir süre sonra tekrar deneyin.</string>
+    <string name="pisan_skin_service_rejected">Minecraft servisleri isteği reddetti (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Sunucu yanıtı okunamadı.</string>
 </resources>

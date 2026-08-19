@@ -119,7 +119,7 @@ public class PisanKusModrinth {
      */
     public static String downloadPrimaryFile(JSONObject version, File targetDir) throws IOException {
         JSONArray files = version.optJSONArray("files");
-        if (files == null || files.length() == 0) throw new IOException("Sürümün dosyası yok.");
+        if (files == null || files.length() == 0) throw new IOException(PisanKusText.get(R.string.pisan_modrinth_no_file));
         JSONObject chosen = files.optJSONObject(0);
         for (int i = 0; i < files.length(); i++) {
             JSONObject file = files.optJSONObject(i);
@@ -133,11 +133,11 @@ public class PisanKusModrinth {
         // anywhere except inside the target folder.
         String fileName = new File(chosen.optString("filename", "mod.jar")).getName();
         if (!targetDir.exists() && !targetDir.mkdirs()) {
-            throw new IOException("Klasör oluşturulamadı: " + targetDir);
+            throw new IOException(PisanKusText.get(R.string.pisan_modrinth_dir_failed, targetDir));
         }
 
         String downloadUrl = chosen.optString("url", null);
-        if (downloadUrl == null) throw new IOException("Dosyanın indirme bağlantısı yok.");
+        if (downloadUrl == null) throw new IOException(PisanKusText.get(R.string.pisan_modrinth_no_download_url));
 
         HttpURLConnection connection = open(downloadUrl);
         try (InputStream in = connection.getInputStream();
@@ -181,7 +181,7 @@ public class PisanKusModrinth {
 
     /** Modrinth answering with something other than the documented shape. */
     private static IOException unreadable(JSONException cause) {
-        return new IOException("Modrinth yanıtı okunamadı: " + cause.getMessage());
+        return new IOException(PisanKusText.get(R.string.pisan_modrinth_unreadable, cause.getMessage()));
     }
 
     public static String encode(String value) {

@@ -75,7 +75,7 @@ public class PisanKusSkinLibrary {
     public static Entry add(Context context, byte[] png, String name, String variant) throws IOException {
         PisanKusSkins.assertValidSkin(png);
         File dir = dir(context);
-        if (!dir.exists() && !dir.mkdirs()) throw new IOException("Kitaplık klasörü oluşturulamadı.");
+        if (!dir.exists() && !dir.mkdirs()) throw new IOException(PisanKusText.get(R.string.pisan_skin_library_dir_failed));
 
         Entry entry = new Entry(UUID.randomUUID().toString(), cleanName(name), variant, System.currentTimeMillis());
         try (FileOutputStream out = new FileOutputStream(file(context, entry.id))) {

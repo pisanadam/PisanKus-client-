@@ -98,4 +98,22 @@
     <string name="pisan_optimized_essential_missing">%1$s heniz %2$s wersiýasy üçin çykarylmady. Toplum bu wersiýa gurnalanok; başga wersiýa saýlaň.</string>
     <string name="pisankus_language_title">Dil</string>
     <string name="pisankus_language_system">Ulgam dili</string>
+    <string name="pisan_update_no_apk">Neşirde Android paketi tapylmady.</string>
+    <string name="pisan_update_install_failed">Gurnama başladylyp bilinmedi: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s, %2$s üçin çykarylmady</string>
+    <string name="pisan_pack_mods_dir_failed">Mod bukjasy döredilip bilinmedi: %1$s</string>
+    <string name="pisan_pack_no_version_for">%1$s üçin wersiýa ýok</string>
+    <string name="pisan_pack_mod_download_failed">%1$s ýüklenip bilinmedi</string>
+    <string name="pisan_modrinth_no_file">Wersiýanyň faýly ýok.</string>
+    <string name="pisan_modrinth_dir_failed">Bukja döredilip bilinmedi: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Faýlyň ýükleme salgysy ýok.</string>
+    <string name="pisan_modrinth_unreadable">Modrinth jogaby okalyp bilinmedi: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Kitaphana bukjasy döredilip bilinmedi.</string>
+    <string name="pisan_skin_file_open_failed">Faýl açylyp bilinmedi.</string>
+    <string name="pisan_skin_not_png">Bu faýl PNG däl.</string>
+    <string name="pisan_skin_bad_size">Skin 64×64 (ýa-da köne görnüşde 64×32) bolmaly. Bu faýl %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">Sessiýanyň möhleti gutardy. Hasabyňyzdan çykyp täzeden giriň.</string>
+    <string name="pisan_skin_rate_limited">Mojang-yň skin çalyşmak çägine ýetdiňiz. Biraz soň gaýtadan synanyň.</string>
+    <string name="pisan_skin_service_rejected">Minecraft hyzmatlary haýyşy ret etdi (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Serweriň jogaby okalyp bilinmedi.</string>
 </resources>

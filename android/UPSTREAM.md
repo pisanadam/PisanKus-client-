@@ -158,7 +158,7 @@ biçiminden ve sürüm json'ındaki `inheritsFrom` alanından okunuyor.
 
 `res/values/strings.xml` (varsayılan) + `res/values-*/strings.xml`
 
-Bizim 97 metnimiz yalnızca Türkçe vardı ve varsayılan dosyada duruyordu; yani
+Bizim metinlerimiz yalnızca Türkçe vardı ve varsayılan dosyada duruyordu; yani
 telefonu Türkçe olmayan herkes bizim ekranlarımızı Türkçe görüyordu. Artık
 varsayılan İngilizce ve on altı dil ayrı klasörlerde: türkçe, ingilizce, rusça,
 ispanyolca, fransızca, almanca, çince, japonca, korece, italyanca, arapça,
@@ -168,7 +168,16 @@ farsça, azerbaycanca, türkmence, kazakça, kırgızca, özbekçe. Üçü (tk, 
 Android tek bir dil klasörü seçer — orada olmayan metin daha genel bir dile
 değil, doğrudan varsayılana düşer — bu yüzden cihazın düşebileceği her klasöre
 (`values-zh` ile `values-zh-rCN`, `values-fa` ile `values-fa-rIR`, `values-az`
-ile `values-az-rAZ`) ayrı ayrı yazıldı.
+ile `values-az-rAZ`) ayrı ayrı yazıldı. `values-zh-rTW` de dolduruldu:
+geleneksel yazı, basitleştirilmişin bir yazım farkı değil; Tayvan'daki bir
+telefonun `values-zh`e düşmesi ona yanlış yazıyı gösterirdi.
+
+Arka planda çalışan kodun hata mesajları da kodun içinde Türkçe duruyordu:
+paket kurucusu, Modrinth istemcisi ve skin servisi ekrandan uzakta çalışıyor
+ama hataları oyuncuya metin olarak ulaşıyor. On sekizi kaynak dizesine
+çevrildi; `PisanKusText`, `PojavApplication.onCreate`'te aldığı Application
+üzerinden bunları Context elde tutmadan çözüyor — her birine Context taşımak
+üst kaynak ağacının çok daha büyük bir bölümüne dokunurdu.
 
 `utils/LocaleUtils.java` genelleştirildi: üst kaynakta yalnızca "İngilizceye
 zorla" anahtarı vardı, artık ayarlardan dil seçilebiliyor. Eski anahtarı açmış

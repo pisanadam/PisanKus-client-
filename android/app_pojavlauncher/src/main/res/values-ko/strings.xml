@@ -508,4 +508,22 @@
     <string name="pisan_optimized_essential_missing">%1$s은(는) 아직 %2$s용으로 출시되지 않았습니다. 이 버전에는 팩을 설치할 수 없으니 다른 버전을 고르세요.</string>
     <string name="pisankus_language_title">언어</string>
     <string name="pisankus_language_system">시스템 언어</string>
+    <string name="pisan_update_no_apk">릴리스에 Android 패키지가 없습니다.</string>
+    <string name="pisan_update_install_failed">설치를 시작하지 못했습니다: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s은(는) %2$s용으로 공개되지 않았습니다</string>
+    <string name="pisan_pack_mods_dir_failed">모드 폴더를 만들지 못했습니다: %1$s</string>
+    <string name="pisan_pack_no_version_for">%1$s용 버전이 없습니다</string>
+    <string name="pisan_pack_mod_download_failed">%1$s을(를) 내려받지 못했습니다</string>
+    <string name="pisan_modrinth_no_file">이 버전에는 파일이 없습니다.</string>
+    <string name="pisan_modrinth_dir_failed">폴더를 만들지 못했습니다: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">이 파일에는 내려받기 링크가 없습니다.</string>
+    <string name="pisan_modrinth_unreadable">Modrinth 응답을 읽지 못했습니다: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">라이브러리 폴더를 만들지 못했습니다.</string>
+    <string name="pisan_skin_file_open_failed">파일을 열지 못했습니다.</string>
+    <string name="pisan_skin_not_png">이 파일은 PNG가 아닙니다.</string>
+    <string name="pisan_skin_bad_size">스킨은 64×64(또는 옛 형식 64×32)여야 합니다. 이 파일은 %1$d×%2$d입니다.</string>
+    <string name="pisan_skin_session_expired">세션이 만료되었습니다. 계정에서 로그아웃한 뒤 다시 로그인하세요.</string>
+    <string name="pisan_skin_rate_limited">Mojang의 스킨 변경 제한에 걸렸습니다. 잠시 뒤에 다시 시도하세요.</string>
+    <string name="pisan_skin_service_rejected">Minecraft 서비스가 요청을 거부했습니다(%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">서버 응답을 읽지 못했습니다.</string>
 </resources>

@@ -533,4 +533,22 @@
     <string name="pisan_optimized_essential_missing">%1$s 尚未为 %2$s 发布。该整合包无法安装到这个版本，请另选一个。</string>
     <string name="pisankus_language_title">语言</string>
     <string name="pisankus_language_system">跟随系统</string>
+    <string name="pisan_update_no_apk">发布中没有 Android 安装包。</string>
+    <string name="pisan_update_install_failed">无法启动安装：%1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s 未为 %2$s 发布</string>
+    <string name="pisan_pack_mods_dir_failed">无法创建模组文件夹：%1$s</string>
+    <string name="pisan_pack_no_version_for">没有对应 %1$s 的版本</string>
+    <string name="pisan_pack_mod_download_failed">无法下载 %1$s</string>
+    <string name="pisan_modrinth_no_file">该版本没有文件。</string>
+    <string name="pisan_modrinth_dir_failed">无法创建文件夹：%1$s</string>
+    <string name="pisan_modrinth_no_download_url">该文件没有下载链接。</string>
+    <string name="pisan_modrinth_unreadable">无法读取 Modrinth 的响应：%1$s</string>
+    <string name="pisan_skin_library_dir_failed">无法创建库文件夹。</string>
+    <string name="pisan_skin_file_open_failed">无法打开文件。</string>
+    <string name="pisan_skin_not_png">此文件不是 PNG。</string>
+    <string name="pisan_skin_bad_size">皮肤必须是 64×64（或旧格式 64×32）。此文件为 %1$d×%2$d。</string>
+    <string name="pisan_skin_session_expired">会话已过期。请退出账户后重新登录。</string>
+    <string name="pisan_skin_rate_limited">你已触及 Mojang 的皮肤更换限制。请稍后再试。</string>
+    <string name="pisan_skin_service_rejected">Minecraft 服务拒绝了该请求（%1$d）。%2$s</string>
+    <string name="pisan_skin_response_unreadable">无法读取服务器的响应。</string>
 </resources>

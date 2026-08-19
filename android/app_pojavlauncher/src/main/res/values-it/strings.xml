@@ -513,4 +513,22 @@ se vuoi scaricare dalla sorgente ufficiale premi \"Passa al sito ufficiale"\ e r
     <string name="pisan_optimized_essential_missing">%1$s non è ancora uscito per %2$s. Il pacchetto non si può installare su quella versione; scegline un\'altra.</string>
     <string name="pisankus_language_title">Lingua</string>
     <string name="pisankus_language_system">Lingua di sistema</string>
+    <string name="pisan_update_no_apk">Nessun pacchetto Android nella pubblicazione.</string>
+    <string name="pisan_update_install_failed">Non è stato possibile avviare l\'installazione: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s non è pubblicato per %2$s</string>
+    <string name="pisan_pack_mods_dir_failed">Non è stato possibile creare la cartella delle mod: %1$s</string>
+    <string name="pisan_pack_no_version_for">Nessuna versione per %1$s</string>
+    <string name="pisan_pack_mod_download_failed">Non è stato possibile scaricare %1$s</string>
+    <string name="pisan_modrinth_no_file">La versione non ha alcun file.</string>
+    <string name="pisan_modrinth_dir_failed">Non è stato possibile creare la cartella: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Il file non ha un link di download.</string>
+    <string name="pisan_modrinth_unreadable">Non è stato possibile leggere la risposta di Modrinth: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Non è stato possibile creare la cartella della libreria.</string>
+    <string name="pisan_skin_file_open_failed">Non è stato possibile aprire il file.</string>
+    <string name="pisan_skin_not_png">Questo file non è un PNG.</string>
+    <string name="pisan_skin_bad_size">Una skin deve essere 64×64 (o 64×32 nel formato vecchio). Questo file è %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">La sessione è scaduta. Esci dall\'account e rientra.</string>
+    <string name="pisan_skin_rate_limited">Hai raggiunto il limite di Mojang sui cambi di skin. Riprova più tardi.</string>
+    <string name="pisan_skin_service_rejected">I servizi Minecraft hanno rifiutato la richiesta (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Non è stato possibile leggere la risposta del server.</string>
 </resources>

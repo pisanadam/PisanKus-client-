@@ -79,7 +79,7 @@ public class PisanKusUpdater {
 
                 String url = assetUrl(release, ASSET_NAME);
                 if (url == null) {
-                    post(() -> listener.onFailed("Yayında Android paketi bulunamadı."));
+                    post(() -> listener.onFailed(PisanKusText.get(R.string.pisan_update_no_apk)));
                     return;
                 }
 
@@ -231,7 +231,7 @@ public class PisanKusUpdater {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         } catch (Exception e) {
-            listener.onFailed("Kurulum başlatılamadı: " + e.getMessage());
+            listener.onFailed(PisanKusText.get(R.string.pisan_update_install_failed, e.getMessage()));
         }
     }
 

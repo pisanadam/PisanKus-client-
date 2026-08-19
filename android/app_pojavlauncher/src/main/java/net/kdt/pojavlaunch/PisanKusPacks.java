@@ -76,7 +76,7 @@ public class PisanKusPacks {
             // detects it by name and throws — and Podium is the mixin that
             // removes the check. Not essential: it only exists for 1.20.1 and
             // newer, and the older Sodium builds predate the check.
-            mod("podium", "Podium (Sodium yaması)"),
+            mod("podium", "Podium"),
             mod("lithium", "Lithium"),
             mod("ferrite-core", "FerriteCore"),
             mod("immediatelyfast", "ImmediatelyFast"),

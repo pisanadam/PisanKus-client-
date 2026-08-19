@@ -444,4 +444,22 @@
     <string name="pisan_optimized_essential_missing">لم يصدر %1$s بعد لـ %2$s. لا يمكن تثبيت الحزمة على هذا الإصدار؛ اختر إصدارًا آخر.</string>
     <string name="pisankus_language_title">اللغة</string>
     <string name="pisankus_language_system">لغة النظام</string>
+    <string name="pisan_update_no_apk">لا توجد حزمة Android في الإصدار المنشور.</string>
+    <string name="pisan_update_install_failed">تعذّر بدء التثبيت: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">‏%1$s غير منشور لـ %2$s</string>
+    <string name="pisan_pack_mods_dir_failed">تعذّر إنشاء مجلد التعديلات: %1$s</string>
+    <string name="pisan_pack_no_version_for">لا يوجد إصدار لـ %1$s</string>
+    <string name="pisan_pack_mod_download_failed">تعذّر تنزيل %1$s</string>
+    <string name="pisan_modrinth_no_file">لا ملف لهذا الإصدار.</string>
+    <string name="pisan_modrinth_dir_failed">تعذّر إنشاء المجلد: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">لا يوجد رابط تنزيل لهذا الملف.</string>
+    <string name="pisan_modrinth_unreadable">تعذّرت قراءة رد Modrinth: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">تعذّر إنشاء مجلد المكتبة.</string>
+    <string name="pisan_skin_file_open_failed">تعذّر فتح الملف.</string>
+    <string name="pisan_skin_not_png">هذا الملف ليس PNG.</string>
+    <string name="pisan_skin_bad_size">يجب أن يكون المظهر بمقاس 64×64 (أو 64×32 بالصيغة القديمة). هذا الملف %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">انتهت صلاحية الجلسة. سجّل الخروج من حسابك ثم ادخل من جديد.</string>
+    <string name="pisan_skin_rate_limited">بلغت حد Mojang لتغيير المظهر. حاول بعد قليل.</string>
+    <string name="pisan_skin_service_rejected">رفضت خدمات Minecraft الطلب (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">تعذّرت قراءة رد الخادم.</string>
 </resources>

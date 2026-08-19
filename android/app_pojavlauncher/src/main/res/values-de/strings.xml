@@ -523,4 +523,22 @@ Um die offizielle Download-Quelle zu verwenden, drücke \"Auf offizielle Seite u
     <string name="pisan_optimized_essential_missing">%1$s ist für %2$s noch nicht erschienen. Das Paket lässt sich auf dieser Version nicht installieren; wähle eine andere.</string>
     <string name="pisankus_language_title">Sprache</string>
     <string name="pisankus_language_system">Systemsprache</string>
+    <string name="pisan_update_no_apk">Im Release ist kein Android-Paket.</string>
+    <string name="pisan_update_install_failed">Die Installation konnte nicht gestartet werden: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s ist für %2$s nicht erschienen</string>
+    <string name="pisan_pack_mods_dir_failed">Der Mods-Ordner konnte nicht angelegt werden: %1$s</string>
+    <string name="pisan_pack_no_version_for">Keine Version für %1$s</string>
+    <string name="pisan_pack_mod_download_failed">%1$s konnte nicht geladen werden</string>
+    <string name="pisan_modrinth_no_file">Die Version hat keine Datei.</string>
+    <string name="pisan_modrinth_dir_failed">Der Ordner konnte nicht angelegt werden: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Die Datei hat keinen Downloadlink.</string>
+    <string name="pisan_modrinth_unreadable">Die Antwort von Modrinth war nicht lesbar: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Der Bibliotheksordner konnte nicht angelegt werden.</string>
+    <string name="pisan_skin_file_open_failed">Die Datei ließ sich nicht öffnen.</string>
+    <string name="pisan_skin_not_png">Diese Datei ist kein PNG.</string>
+    <string name="pisan_skin_bad_size">Ein Skin muss 64×64 sein (oder 64×32 im alten Format). Diese Datei ist %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">Die Sitzung ist abgelaufen. Melde dich ab und wieder an.</string>
+    <string name="pisan_skin_rate_limited">Du bist an Mojangs Limit für Skinwechsel gestoßen. Versuch es später erneut.</string>
+    <string name="pisan_skin_service_rejected">Die Minecraft-Dienste haben die Anfrage abgelehnt (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Die Antwort des Servers war nicht lesbar.</string>
 </resources>

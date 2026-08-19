@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import net.kdt.pojavlaunch.PisanKusSkinLibrary;
 import net.kdt.pojavlaunch.PisanKusSkinPreview;
 import net.kdt.pojavlaunch.PisanKusSkins;
+import net.kdt.pojavlaunch.PisanKusText;
 import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.PojavProfile;
 import net.kdt.pojavlaunch.R;
@@ -381,7 +382,7 @@ public class SkinFragment extends Fragment {
 
     private byte[] readAll(Uri uri) throws Exception {
         try (InputStream in = mContext.getContentResolver().openInputStream(uri)) {
-            if (in == null) throw new Exception("Dosya açılamadı.");
+            if (in == null) throw new Exception(PisanKusText.get(R.string.pisan_skin_file_open_failed));
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             byte[] chunk = new byte[8192];
             int count;

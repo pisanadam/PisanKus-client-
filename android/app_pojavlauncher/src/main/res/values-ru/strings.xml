@@ -517,4 +517,22 @@
     <string name="pisan_optimized_essential_missing">%1$s ещё не выпущен для %2$s. Сборку нельзя поставить на эту версию; выберите другую.</string>
     <string name="pisankus_language_title">Язык</string>
     <string name="pisankus_language_system">Язык системы</string>
+    <string name="pisan_update_no_apk">В выпуске нет пакета для Android.</string>
+    <string name="pisan_update_install_failed">Не удалось запустить установку: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s не издан для %2$s</string>
+    <string name="pisan_pack_mods_dir_failed">Не удалось создать папку модов: %1$s</string>
+    <string name="pisan_pack_no_version_for">Для %1$s версии нет</string>
+    <string name="pisan_pack_mod_download_failed">Не удалось скачать %1$s</string>
+    <string name="pisan_modrinth_no_file">У версии нет файла.</string>
+    <string name="pisan_modrinth_dir_failed">Не удалось создать папку: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">У файла нет ссылки для скачивания.</string>
+    <string name="pisan_modrinth_unreadable">Не удалось прочитать ответ Modrinth: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Не удалось создать папку библиотеки.</string>
+    <string name="pisan_skin_file_open_failed">Не удалось открыть файл.</string>
+    <string name="pisan_skin_not_png">Этот файл не PNG.</string>
+    <string name="pisan_skin_bad_size">Скин должен быть 64×64 (или 64×32 в старом формате). Этот файл — %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">Сессия истекла. Выйдите из учётной записи и войдите заново.</string>
+    <string name="pisan_skin_rate_limited">Вы упёрлись в ограничение Mojang на смену скина. Попробуйте позже.</string>
+    <string name="pisan_skin_service_rejected">Сервисы Minecraft отклонили запрос (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Не удалось прочитать ответ сервера.</string>
 </resources>

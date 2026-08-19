@@ -28,7 +28,7 @@ public class PisanKusPackInstaller {
         public final PisanKusPacks.Mod mod;
 
         EssentialMissingException(PisanKusPacks.Mod mod, String gameVersion) {
-            super(mod.name + " " + gameVersion + " için yayınlanmamış");
+            super(PisanKusText.get(R.string.pisan_pack_mod_unpublished, mod.name, gameVersion));
             this.mod = mod;
         }
     }
@@ -49,7 +49,7 @@ public class PisanKusPackInstaller {
     public static int install(PisanKusPacks.Pack pack, File modsDir, String gameVersion,
                               Listener listener) throws IOException {
         if (!modsDir.exists() && !modsDir.mkdirs()) {
-            throw new IOException("Mod klasörü oluşturulamadı: " + modsDir);
+            throw new IOException(PisanKusText.get(R.string.pisan_pack_mods_dir_failed, modsDir));
         }
 
         int skipped = 0;
@@ -60,7 +60,9 @@ public class PisanKusPackInstaller {
             try {
                 version = PisanKusModrinth.latestVersion(mod.slug, pack.loader, gameVersion);
             } catch (Exception e) {
-                if (mod.essential) throw new IOException(mod.name + " indirilemedi", e);
+                if (mod.essential) {
+                    throw new IOException(PisanKusText.get(R.string.pisan_pack_mod_download_failed, mod.name), e);
+                }
                 listener.onModSkipped(mod, describe(e));
                 skipped++;
                 continue;
@@ -77,14 +79,16 @@ public class PisanKusPackInstaller {
             }
             if (version == null) {
                 if (mod.essential) throw new EssentialMissingException(mod, gameVersion);
-                listener.onModSkipped(mod, gameVersion + " için sürüm yok");
+                listener.onModSkipped(mod, PisanKusText.get(R.string.pisan_pack_no_version_for, gameVersion));
                 skipped++;
                 continue;
             }
             try {
                 listener.onModInstalled(mod, PisanKusModrinth.downloadPrimaryFile(version, modsDir));
             } catch (Exception e) {
-                if (mod.essential) throw new IOException(mod.name + " indirilemedi", e);
+                if (mod.essential) {
+                    throw new IOException(PisanKusText.get(R.string.pisan_pack_mod_download_failed, mod.name), e);
+                }
                 listener.onModSkipped(mod, describe(e));
                 skipped++;
             }

@@ -362,4 +362,22 @@
     <string name="pisan_optimized_essential_missing">%1$s hələ %2$s versiyası üçün buraxılmayıb. Dəst bu versiyaya quraşdırıla bilmir; başqa versiya seçin.</string>
     <string name="pisankus_language_title">Dil</string>
     <string name="pisankus_language_system">Sistem dili</string>
+    <string name="pisan_update_no_apk">Yayında Android paketi tapılmadı.</string>
+    <string name="pisan_update_install_failed">Quraşdırma başladıla bilmədi: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">%1$s, %2$s üçün nəşr olunmayıb</string>
+    <string name="pisan_pack_mods_dir_failed">Mod qovluğu yaradıla bilmədi: %1$s</string>
+    <string name="pisan_pack_no_version_for">%1$s üçün versiya yoxdur</string>
+    <string name="pisan_pack_mod_download_failed">%1$s endirilə bilmədi</string>
+    <string name="pisan_modrinth_no_file">Versiyanın faylı yoxdur.</string>
+    <string name="pisan_modrinth_dir_failed">Qovluq yaradıla bilmədi: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">Faylın endirmə keçidi yoxdur.</string>
+    <string name="pisan_modrinth_unreadable">Modrinth cavabı oxuna bilmədi: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">Kitabxana qovluğu yaradıla bilmədi.</string>
+    <string name="pisan_skin_file_open_failed">Fayl açıla bilmədi.</string>
+    <string name="pisan_skin_not_png">Bu fayl PNG deyil.</string>
+    <string name="pisan_skin_bad_size">Skin 64×64 (və ya köhnə formatda 64×32) olmalıdır. Bu fayl %1$d×%2$d.</string>
+    <string name="pisan_skin_session_expired">Sessiyanın vaxtı bitib. Hesabdan çıxıb yenidən daxil olun.</string>
+    <string name="pisan_skin_rate_limited">Mojang-ın skin dəyişmə həddinə çatdınız. Bir müddət sonra yenidən cəhd edin.</string>
+    <string name="pisan_skin_service_rejected">Minecraft xidmətləri sorğunu rədd etdi (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">Server cavabı oxuna bilmədi.</string>
 </resources>

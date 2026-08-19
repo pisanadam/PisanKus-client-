@@ -344,4 +344,22 @@
     <string name="pisan_optimized_essential_missing">%1$s هنوز برای %2$s منتشر نشده است. بسته روی این نسخه نصب نمی‌شود؛ نسخهٔ دیگری انتخاب کنید.</string>
     <string name="pisankus_language_title">زبان</string>
     <string name="pisankus_language_system">زبان سیستم</string>
+    <string name="pisan_update_no_apk">در انتشار بستهٔ Android نیست.</string>
+    <string name="pisan_update_install_failed">نصب آغاز نشد: %1$s</string>
+    <string name="pisan_pack_mod_unpublished">‏%1$s برای %2$s منتشر نشده</string>
+    <string name="pisan_pack_mods_dir_failed">پوشهٔ مادها ساخته نشد: %1$s</string>
+    <string name="pisan_pack_no_version_for">برای %1$s نسخه‌ای نیست</string>
+    <string name="pisan_pack_mod_download_failed">‏%1$s دریافت نشد</string>
+    <string name="pisan_modrinth_no_file">این نسخه فایلی ندارد.</string>
+    <string name="pisan_modrinth_dir_failed">پوشه ساخته نشد: %1$s</string>
+    <string name="pisan_modrinth_no_download_url">این فایل پیوند دریافت ندارد.</string>
+    <string name="pisan_modrinth_unreadable">پاسخ Modrinth خوانده نشد: %1$s</string>
+    <string name="pisan_skin_library_dir_failed">پوشهٔ کتابخانه ساخته نشد.</string>
+    <string name="pisan_skin_file_open_failed">فایل باز نشد.</string>
+    <string name="pisan_skin_not_png">این فایل PNG نیست.</string>
+    <string name="pisan_skin_bad_size">پوسته باید ۶۴×۶۴ باشد (یا ۶۴×۳۲ در قالب قدیمی). این فایل %1$d×%2$d است.</string>
+    <string name="pisan_skin_session_expired">نشست منقضی شده است. از حساب خارج شوید و دوباره وارد شوید.</string>
+    <string name="pisan_skin_rate_limited">به محدودیت Mojang برای تعویض پوسته خورده‌اید. کمی بعد دوباره تلاش کنید.</string>
+    <string name="pisan_skin_service_rejected">سرویس‌های Minecraft درخواست را رد کردند (%1$d). %2$s</string>
+    <string name="pisan_skin_response_unreadable">پاسخ سرور خوانده نشد.</string>
 </resources>
