@@ -126,7 +126,151 @@ const MODERN: CuratedPack = {
  * guess.
  */
 
-export const PACKS: CuratedPack[] = [MODERN]
+/**
+ * A big, curated adventure pack rather than a performance one: new biomes,
+ * animals, food, dungeons and furniture, held together by the libraries they
+ * all need.
+ *
+ * Forge and 1.20.1 on purpose. Nearly every mod in it is published for Forge,
+ * and 1.20.1 is the version 86 of the 90 have a build for — on 1.21.1 only 30
+ * do, which would leave the pack a shadow of itself.
+ *
+ * The poster this list comes from names a few pieces that are not on Modrinth
+ * at all (the original Twilight Forest, MrCrayfish's Furniture Mod and its
+ * Framework, Hamsters Plus Lite, Gale's Bugcatching, Spice of Life: Classic
+ * Edition, GolleoLib, Xaero's Naturalist Icons). The launcher installs from
+ * Modrinth, so those are simply not here — better an honest 90 than a list
+ * that reports failures every time it runs.
+ */
+const SWEETIE: CuratedPack = {
+  id: 'sweetie-pack',
+  name: 'Sweetie Pack',
+  summary:
+    'Maceraya yönelik büyük derleme: yeni biyomlar, hayvanlar, yemekler, zindanlar ve mobilyalar. ' +
+    'Forge profili olarak kurulur, oyun ayarlarınıza dokunmaz.',
+  icon: '🍬',
+  loader: 'forge',
+  modrinthLoaders: ['forge'],
+  recommended: [{ version: '1.20.1', why: 'Paketin neredeyse tamamı burada' }],
+  note:
+    'Yüzden fazla parçadan oluşan bir derlemede her modun her sürüme yetişmesi beklenemez; ' +
+    'seçtiğiniz sürüme yayınlanmamış olanlar atlanır ve kurulum sonunda listelenir.',
+  mods: [
+    // Dünya üretimi ve keşif
+    { slug: 'tectonic', name: 'Tectonic', role: 'Dağları, vadileri ve nehirleri baştan şekillendirir' },
+    { slug: 'biomes-o-plenty', name: 'Biomes O’ Plenty', role: 'Yüzlerce yeni biyom' },
+    { slug: 'the-twilight-forest-dungeons-villages', name: 'Twilight Forest - Dungeons & Villages', role: 'Alacakaranlık Ormanı’na zindan ve köy ekler' },
+    { slug: 'when-dungeons-arise', name: 'When Dungeons Arise', role: 'El yapımı büyük zindanlar ve yapılar' },
+    { slug: 'lithostitched', name: 'Lithostitched', role: 'Dünya üretimi eklerini birbirine bağlar' },
+    { slug: 'terrablender', name: 'TerraBlender', role: 'Biyom modlarının aynı dünyada geçinmesini sağlar' },
+    { slug: 'chunky', name: 'Chunky', role: 'Dünyayı önceden üretir; keşifte takılma olmaz' },
+    { slug: 'regions-unexplored', name: 'Regions Unexplored', role: 'Yeni biyomlar ve ağaç türleri' },
+    { slug: 'aures-farmers-structures', name: 'Farmer’s Structures', role: 'Köylere ve kırlara çiftçilik yapıları' },
+    { slug: 'the-graveyard-forge', name: 'The Graveyard', role: 'Mezarlıklar, kriptalar ve yeni yaratıklar' },
+    { slug: 'alexs-caves', name: 'Alex’s Caves', role: 'Yeraltına tematik dev mağaralar' },
+
+    // Hayvanlar ve yaratıklar
+    { slug: 'alexs-mobs', name: 'Alex’s Mobs', role: 'Onlarca yeni hayvan ve yaratık' },
+    { slug: 'alexs-mobs-naturalist-compat', name: 'Alex’s Mobs - Naturalist Compat', role: 'Alex’s Mobs ile Naturalist’i uyumlu kılar' },
+    { slug: 'naturalist', name: 'Naturalist', role: 'Gerçekçi vahşi yaşam ve davranışlar' },
+    { slug: 'inhabitants', name: 'Inhabitants', role: 'Boş yapıları kendi sakinleriyle doldurur' },
+    { slug: 'ecologics', name: 'Ecologics', role: 'Biyomlara özgü hayvan ve bitkiler' },
+    { slug: 'ribbits', name: 'Ribbits', role: 'Kurbağa halkı köyleri' },
+    { slug: 'guard-ribbits', name: 'Guard Ribbits', role: 'Kurbağa köylerine muhafızlar' },
+    { slug: 'useful-ribbits', name: 'Useful Ribbits', role: 'Kurbağa halkıyla ticaret' },
+    { slug: 'faunify', name: 'Faunify', role: 'Vanilya hayvanlarına yeni davranışlar' },
+    { slug: 'dragns-bettas-aquatics', name: 'Dragn’s Bettas & Aquatics', role: 'Süs balıkları ve akvaryum canlıları' },
+    { slug: 'whisperwoods', name: 'Whisperwoods', role: 'Ormanlara ürkütücü yaratıklar' },
+    { slug: 'zombie-awareness', name: 'Zombie Awareness', role: 'Yaratıklar sesi ve kokuyu takip eder' },
+    { slug: 'doggy-talents-next', name: 'Doggy Talents Next', role: 'Köpekleri eğitin, yetenek kazandırın' },
+    { slug: 'callable-horses', name: 'Callable Horses', role: 'Atınızı uzaktan çağırın' },
+
+    // Tarım, yemek ve pişirme
+    { slug: 'farmers-delight', name: 'Farmer’s Delight', role: 'Mutfak, tarla ve onlarca yemek', essential: true },
+    { slug: 'farmers-respite', name: 'Farmer’s Respite', role: 'Çay, kahve ve demleme' },
+    { slug: 'oceans-delight', name: 'Ocean’s Delight', role: 'Deniz ürünleri ve tarifleri' },
+    { slug: 'naturalist-delight', name: 'Naturalist Delight', role: 'Naturalist hayvanlarını mutfağa bağlar' },
+    { slug: 'aquaculture', name: 'Aquaculture 2', role: 'Balıkçılığı derinleştirir' },
+    { slug: 'aquaculture-delight', name: 'Aquaculture Delight', role: 'Aquaculture ile Farmer’s Delight köprüsü' },
+    { slug: 'large-meals', name: 'Large Meals', role: 'Kalabalığa yetecek tencere yemekleri' },
+    { slug: 'incubation', name: 'Incubation', role: 'Yumurtadan yavru çıkarma' },
+
+    // Dövüş ve ilerleme
+    { slug: 'better-combat', name: 'Better Combat', role: 'Dövüşü kombolu ve animasyonlu hâle getirir' },
+    { slug: 'apotheosis', name: 'Apotheosis', role: 'Büyüleme, mücevher ve zorluk katmanı' },
+    { slug: 'apothic-attributes', name: 'Apothic Attributes', role: 'Yeni karakter özellikleri' },
+    { slug: 'age-of-weapons-reforged', name: 'Age of Weapons', role: 'Tarihî silah çeşitleri' },
+    { slug: 'darkquesting', name: 'DarkQuesting', role: 'Görev sistemi' },
+    { slug: 'luminous-beasts', name: 'LUMINOUS: BEASTS', role: 'Karanlıkta parlayan yeni yaratıklar' },
+    { slug: 'yungs-better-dungeons', name: 'YUNG’s Better Dungeons', role: 'Zindanları elden geçirir' },
+    { slug: 'yungs-better-jungle-temples', name: 'YUNG’s Better Jungle Temples', role: 'Orman tapınaklarını elden geçirir' },
+
+    // Yapı, mobilya ve dekorasyon
+    { slug: 'amendments', name: 'Amendments', role: 'Vanilya bloklarına küçük hayat kalitesi eklemeleri' },
+    { slug: 'supplementaries', name: 'Supplementaries', role: 'Yüzlerce dekorasyon bloğu' },
+    { slug: 'rustic-engineer', name: 'Rustic Engineer', role: 'Köy dokusunda yapı parçaları' },
+
+    // Harita ve yön bulma
+    { slug: 'xaeros-world-map', name: 'Xaero’s World Map', role: 'Tam ekran dünya haritası' },
+    { slug: 'xaeros-minimap', name: 'Xaero’s Minimap', role: 'Köşede mini harita' },
+
+    // Envanter, arayüz ve konfor
+    { slug: 'travelersbackpack', name: 'Traveler’s Backpack', role: 'Giyilebilir, büyük sırt çantası' },
+    { slug: 'jei', name: 'Just Enough Items', role: 'Tarif ve eşya rehberi', essential: true },
+    { slug: 'inventory-profiles-next', name: 'Inventory Profiles Next', role: 'Envanteri tek tuşla düzenler' },
+    { slug: 'inventory-hud+-by-soulspeed', name: 'Inventory HUD+', role: 'Envanteri ekranda gösterir' },
+    { slug: 'mouse-tweaks', name: 'Mouse Tweaks', role: 'Envanterde fare ile hızlı taşıma' },
+    { slug: 'jade', name: 'Jade', role: 'Baktığınız blok ve yaratık hakkında bilgi' },
+    { slug: 'jade-addons-forge', name: 'Jade Addons', role: 'Jade’e mod desteği ekler' },
+    { slug: 'appleskin', name: 'AppleSkin', role: 'Açlık ve doygunluk bilgisi' },
+    { slug: 'configured', name: 'Configured', role: 'Mod ayarlarını oyun içinden düzenler' },
+    { slug: 'polymorph', name: 'Polymorph', role: 'Çakışan tariflerde seçim sunar' },
+    { slug: 'gravestone-mod', name: 'Gravestone Mod', role: 'Ölünce eşyalarınız mezar taşında kalır' },
+    { slug: 'gravestone-x-curios-api-compat', name: 'Gravestone x Curios', role: 'Curios eşyalarını da mezara koyar' },
+    { slug: 'patchouli', name: 'Patchouli', role: 'Mod kitapçıklarını okunur kılar' },
+    { slug: 'tree-harvester', name: 'Tree Harvester', role: 'Ağacı tek vuruşta devirir' },
+
+    // Görsellik ve animasyon
+    { slug: 'oculus', name: 'Oculus', role: 'Forge’da shader desteği' },
+    { slug: 'embeddium', name: 'Embeddium', role: 'Render motorunu hızlandırır' },
+    { slug: 'playeranimator', name: 'playerAnimator', role: 'Modların oyuncu animasyonlarını çalıştırır' },
+    { slug: 'not-enough-animations', name: 'Not Enough Animations', role: 'Vanilya hareketlerine animasyon' },
+    { slug: '3dskinlayers', name: '3D Skin Layers', role: 'Skin’in üst katmanını üç boyutlu gösterir' },
+    { slug: 'pretty-rain', name: 'Pretty Rain', role: 'Yağmuru daha güzel çizer' },
+    { slug: 'vminus', name: 'VMinus', role: 'Vanilyayı sadeleştiren görsel dokunuşlar' },
+
+    // Performans
+    { slug: 'modernfix', name: 'ModernFix', role: 'Açılışı kısaltır, bellek sızıntılarını kapatır' },
+    { slug: 'ai-improvements', name: 'AI Improvements', role: 'Yaratık yapay zekâsının yükünü azaltır' },
+    { slug: 'ferrite-core', name: 'FerriteCore', role: 'Bellek kullanımını düşürür' },
+    { slug: 'libipn', name: 'libIPN', role: 'Arayüz modlarının ortak kütüphanesi' },
+
+    // Kütüphaneler
+    { slug: 'blueprint', name: 'Blueprint', role: 'Kütüphane' },
+    { slug: 'placebo', name: 'Placebo', role: 'Kütüphane' },
+    { slug: 'coroutil', name: 'CoroUtil', role: 'Kütüphane' },
+    { slug: 'glitchcore', name: 'GlitchCore', role: 'Kütüphane' },
+    { slug: 'cristel-lib', name: 'Cristel Lib', role: 'Kütüphane' },
+    { slug: 'collective', name: 'Collective', role: 'Kütüphane' },
+    { slug: 'architectury-api', name: 'Architectury API', role: 'Kütüphane' },
+    { slug: 'moonlight', name: 'Moonlight Lib', role: 'Kütüphane' },
+    { slug: 'caelus', name: 'Caelus API', role: 'Kütüphane' },
+    { slug: 'kotlin-for-forge', name: 'Kotlin for Forge', role: 'Kotlin ile yazılmış modların çalışma ortamı' },
+    { slug: 'cloth-config', name: 'Cloth Config API', role: 'Ayar ekranı kütüphanesi' },
+    { slug: 'citadel', name: 'Citadel', role: 'Kütüphane' },
+    { slug: 'curios', name: 'Curios API', role: 'Aksesuar yuvaları kütüphanesi' },
+    { slug: 'yungs-api', name: 'YUNG’s API', role: 'Kütüphane' },
+    { slug: 'baguettelib', name: 'BaguetteLib', role: 'Kütüphane' },
+
+    // Doku paketleri
+    { slug: 'better-dogs-x-doggy-talents-next!', name: 'Better Dogs X Doggy Talents Next', role: 'Köpek dokularını yeniler' },
+    { slug: 'realistic-mobs-new', name: 'Realistic Mobs', role: 'Yaratıklara gerçekçi dokular' },
+    { slug: 'better-farm-animals', name: 'Better Farm Animals', role: 'Çiftlik hayvanlarına yeni dokular' },
+    { slug: 'better-dogs', name: 'Better Dogs', role: 'Köpek dokularını yeniler' }
+  ]
+}
+
+export const PACKS: CuratedPack[] = [MODERN, SWEETIE]
 
 export function packById(id: string): CuratedPack | undefined {
   return PACKS.find((pack) => pack.id === id)

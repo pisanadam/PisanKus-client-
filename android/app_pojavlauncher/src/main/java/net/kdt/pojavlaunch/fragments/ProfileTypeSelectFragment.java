@@ -36,7 +36,9 @@ public class ProfileTypeSelectFragment extends Fragment {
         view.findViewById(R.id.optifine_profile).setOnClickListener(v ->
                 tryInstall(OptiFineInstallFragment.class, OptiFineInstallFragment.TAG));
         view.findViewById(R.id.modded_profile_pisan_optimized).setOnClickListener((v)->
-                tryInstall(PisanOptimizedInstallFragment.class, PisanOptimizedInstallFragment.TAG));
+                installPack(net.kdt.pojavlaunch.PisanKusPacks.PISAN_OPTIMIZED.id));
+        view.findViewById(R.id.modded_profile_sweetie).setOnClickListener((v)->
+                installPack(net.kdt.pojavlaunch.PisanKusPacks.SWEETIE.id));
         view.findViewById(R.id.modded_profile_fabric).setOnClickListener((v)->
                 tryInstall(FabricInstallFragment.class, FabricInstallFragment.TAG));
         view.findViewById(R.id.modded_profile_forge).setOnClickListener((v)->
@@ -49,6 +51,17 @@ public class ProfileTypeSelectFragment extends Fragment {
                 tryInstall(LWJGL3ifyInstallFragment.class, LWJGL3ifyInstallFragment.TAG));
         view.findViewById(R.id.modded_profile_quilt).setOnClickListener((v)->
                 tryInstall(QuiltInstallFragment.class, QuiltInstallFragment.TAG));
+    }
+
+    /** Both of the launcher's own packs share one screen; the id says which. */
+    private void installPack(String packId) {
+        if (!hasOnlineProfile()) {
+            hasNoOnlineProfileDialog(requireActivity());
+            return;
+        }
+        Bundle args = new Bundle(1);
+        args.putString(PisanKusPackFragment.ARG_PACK, packId);
+        Tools.swapFragment(requireActivity(), PisanKusPackFragment.class, PisanKusPackFragment.TAG, args);
     }
 
     private void tryInstall(Class<? extends Fragment> fragmentClass, String tag){

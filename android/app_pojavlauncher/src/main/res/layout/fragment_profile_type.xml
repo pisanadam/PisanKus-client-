@@ -95,6 +95,17 @@
             android:text="@string/pisan_optimized_button" />
 
         <com.kdt.mcgui.MineButton
+            android:id="@+id/modded_profile_sweetie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/padding_large"
+            android:layout_marginTop="@dimen/padding_large"
+            android:drawableStart="@drawable/pk_ic_rocket"
+            android:drawablePadding="@dimen/padding_medium"
+            android:drawableTint="@color/primary_text"
+            android:text="@string/pisan_pack_sweetie_button" />
+
+        <com.kdt.mcgui.MineButton
             android:id="@+id/modded_profile_fabric"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

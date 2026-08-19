@@ -17,6 +17,12 @@
          file on purpose, like the strings above: these name our own features,
          and upstream's translations will never carry them. -->
     <string name="pisan_optimized_title">Pisan Optimized</string>
+    <string name="pisan_pack_sweetie_button">Sweetie Pack kur</string>
+    <string name="pisan_pack_summary">%1$d parçalık PisanKus paketi — %2$s profili olarak kurulur.</string>
+    <string name="pisan_pack_note_forge">Bu paket Forge ile çalışır ve Forge kendi kurucusunu çalıştırarak kurulur. Önce aşağıdaki Forge adımını tamamlayın, geri döndüğünüzde paketi kurabilirsiniz.\n\nModlar bu profile ait ayrı bir klasöre iner; diğer profilleriniz etkilenmez. Seçtiğiniz sürüme yayınlanmamış olanlar atlanır.</string>
+    <string name="pisan_pack_install_forge">1. adım: %1$s için Forge kur</string>
+    <string name="pisan_pack_forge_ready">Forge hazır: %1$s</string>
+    <string name="pisan_pack_no_forge">%1$s için Forge sürümü bulunamadı.</string>
     <string name="pisan_optimized_button">Pisan Optimized kur</string>
     <string name="pisan_optimized_summary">PisanKus performans paketi — %1$d mod, Fabric profili olarak kurulur.</string>
     <string name="pisan_optimized_note">Modlar bu profile ait ayrı bir klasöre kurulur; diğer profilleriniz etkilenmez. Seçtiğiniz sürüm için yayınlanmamış modlar atlanır.\n\nSodium\'un Android\'de çalışması için gerekenler kendiliğinden ayarlanır: Podium yaması kurulur ve profilin görüntüleyicisi MobileGlues olur.</string>
