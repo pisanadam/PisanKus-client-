@@ -22,7 +22,8 @@ public class PisanKusProfileTarget {
     /** Modrinth's loader tag: fabric, quilt, forge, neoforge — or null for vanilla. */
     public final String loader;
     public final String gameVersion;
-    public final File modsDir;
+    /** The profile's own game folder; every kind of content lands somewhere in it. */
+    public final File gameDir;
     /**
      * The key this profile is stored under, which is how it is found again.
      *
@@ -32,12 +33,21 @@ public class PisanKusProfileTarget {
     public final String profileKey;
 
     private PisanKusProfileTarget(String profileKey, String profileName, String loader,
-                                  String gameVersion, File modsDir) {
+                                  String gameVersion, File gameDir) {
         this.profileKey = profileKey;
         this.profileName = profileName;
         this.loader = loader;
         this.gameVersion = gameVersion;
-        this.modsDir = modsDir;
+        this.gameDir = gameDir;
+    }
+
+    /** Where one kind of content is installed, with Minecraft's own folder names. */
+    public File dirFor(String folder) {
+        return new File(gameDir, folder);
+    }
+
+    public File modsDir() {
+        return dirFor("mods");
     }
 
     public boolean loadsMods() {
@@ -57,7 +67,7 @@ public class PisanKusProfileTarget {
                 profile.name == null ? versionId : profile.name,
                 loaderOf(versionId),
                 gameVersionOf(versionId),
-                new File(Tools.getGameDirPath(profile), "mods"));
+                Tools.getGameDirPath(profile));
     }
 
     /**

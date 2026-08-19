@@ -130,16 +130,26 @@ görsel telefon tarafından her an taşınabilir ya da silinebilir.
 Doku bağlantıları https'e çevriliyor — Mojang hâlâ http veriyor, Android ise
 düz metin trafiğini reddediyor.
 
-### 9. Tek tek mod kurma
+### 9. Mağaza
 
 `PisanKusModrinth.java`, `PisanKusProfileTarget.java`,
 `fragments/PisanModsFragment.java`
 
 Üst kaynak yalnızca modpack kurabiliyor ve her modpack kendi profilini
 oluşturuyor. Eksik olan sıradan durumdu: elinde zaten bir Fabric profili olan
-oyuncunun ona bir mod daha eklemesi. Ana menüdeki "Modlar" düğmesi, seçili
-profilin yükleyicisine ve sürümüne göre Modrinth'te arıyor ve dosyayı o
-profilin kendi `mods` klasörüne indiriyor.
+oyuncunun ona bir mod daha eklemesi. Ana menüdeki "Mağaza" düğmesi masaüstündeki
+Keşfet'in karşılığı:
+
+- **Türler:** mod, mod paketi, doku paketi, shader, veri paketi. Her biri kendi
+  klasörüne iniyor; mod paketleri ise üst kaynağın kendi kurucusuna devrediliyor
+  — bir paket klasöre atılacak bir dosya değil, sürümüyle ve yükleyicisiyle
+  birlikte gelen bir profil.
+- **Filtre düğmesi:** tür, yükleyici, Minecraft sürümü ve sıralama elle
+  seçilebiliyor. Sürüm seçici, launcher'ın kendi sürüm listesini açıyor, yani
+  yalnızca profilinki değil bildiği her sürüm seçilebilir.
+- **PisanKus düğmesi:** `pisankusgaming` hesabının yayınladığı her şey. Adla
+  aranmıyor, doğrudan proje listesi okunuyor — alakasız sonuç gelmiyor, hiçbiri
+  atlanmıyor.
 
 Profil ne yükleyicisini ne de sürümünü saklıyor; ikisi de sürüm kimliğinin
 biçiminden ve sürüm json'ındaki `inheritsFrom` alanından okunuyor.

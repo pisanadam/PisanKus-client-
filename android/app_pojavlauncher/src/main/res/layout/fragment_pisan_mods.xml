@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Which profile the mods land in, stated before anything is installed. -->
+    <!-- Which profile the content lands in, stated before anything is installed. -->
     <TextView
         android:id="@+id/pisan_mods_target"
         android:layout_width="0dp"
@@ -37,47 +37,53 @@
         android:background="@drawable/background_line"
         android:hint="@string/pisan_mods_search_hint"
         android:imeOptions="actionSearch"
+        android:importantForAutofill="no"
         android:inputType="text"
         android:minHeight="48dp"
         android:paddingHorizontal="@dimen/padding_large"
-        android:importantForAutofill="no"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/pisan_mods_featured"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pisan_mods_target" />
 
-    <!--
-      Filters. Sorting is what turns a search into browsing, and the version
-      switch matters because a mod that has not tagged the newest Minecraft
-      release yet is invisible without it.
-    -->
-    <LinearLayout
-        android:id="@+id/pisan_mods_filters"
+    <!-- The launcher's own publisher, one tap away: what PisanKus released,
+         read from their project list rather than searched for by name. -->
+    <ImageButton
+        android:id="@+id/pisan_mods_featured"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_marginStart="@dimen/padding_medium"
+        android:background="@drawable/pk_card_selectable"
+        android:contentDescription="@string/pisan_mods_featured"
+        android:padding="@dimen/padding_medium"
+        android:src="@drawable/pk_ic_rocket"
+        app:layout_constraintBottom_toBottomOf="@+id/pisan_mods_search"
+        app:layout_constraintEnd_toStartOf="@+id/pisan_mods_filter"
+        app:layout_constraintTop_toTopOf="@+id/pisan_mods_search" />
+
+    <ImageButton
+        android:id="@+id/pisan_mods_filter"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_marginStart="@dimen/padding_medium"
+        android:background="@drawable/pk_card_selectable"
+        android:contentDescription="@string/pisan_mods_filters"
+        android:padding="@dimen/padding_medium"
+        android:src="@drawable/pk_ic_filter"
+        app:layout_constraintBottom_toBottomOf="@+id/pisan_mods_search"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/pisan_mods_search" />
+
+    <!-- What the filters currently say, so the list is never unexplained. -->
+    <TextView
+        android:id="@+id/pisan_mods_filter_summary"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/padding_medium"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:gravity="center"
+        android:textColor="@color/accent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_search">
-
-        <Spinner
-            android:id="@+id/pisan_mods_sort"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/background_line"
-            android:minHeight="@dimen/_34sdp"
-            android:paddingHorizontal="7dp" />
-
-        <CheckBox
-            android:id="@+id/pisan_mods_version_filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/padding_large"
-            android:checked="true"
-            android:text="@string/pisan_mods_only_this_version" />
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_search" />
 
     <ProgressBar
         android:id="@+id/pisan_mods_progress"
@@ -88,13 +94,13 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_filters" />
+        app:layout_constraintTop_toBottomOf="@+id/pisan_mods_filter_summary" />
 
     <TextView
         android:id="@+id/pisan_mods_status"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/padding_medium"
+        android:layout_marginTop="@dimen/padding_small"
         android:gravity="center"
         android:textColor="@color/secondary_text"
         app:layout_constraintEnd_toEndOf="parent"

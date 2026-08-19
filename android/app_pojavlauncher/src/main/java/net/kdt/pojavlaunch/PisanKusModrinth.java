@@ -36,19 +36,23 @@ public class PisanKusModrinth {
     }
 
     /**
-     * One page of mods for a loader and, optionally, a game version.
+     * One page of results.
+     *
+     * `projectType` is Modrinth's own name for the kind — mod, modpack,
+     * resourcepack, shader, datapack. The loader facet is only meaningful for
+     * the first two: a resource pack lists `minecraft` as its loader and a
+     * shader lists `iris`, so filtering those by the profile's loader matches
+     * nothing at all.
      *
      * Modrinth pages its search — there is no "give me everything" — so the
      * caller asks for the next slice as the player scrolls. `total` is what
      * lets it know when to stop.
-     *
-     * The version facet is optional on purpose: filtering by it hides mods that
-     * simply have not tagged the newest Minecraft release yet, and a player who
-     * knows what they are doing should be able to look anyway.
      */
-    public static SearchPage searchMods(String query, String loader, String gameVersion,
-                                        String sort, int offset, int limit) throws IOException {
-        StringBuilder facets = new StringBuilder("[[\"project_type:mod\"]");
+    public static SearchPage search(String projectType, String query, String loader,
+                                    String gameVersion, String sort, int offset, int limit)
+            throws IOException {
+        StringBuilder facets = new StringBuilder("[[\"project_type:")
+                .append(projectType == null ? "mod" : projectType).append("\"]");
         if (loader != null) facets.append(",[\"categories:").append(loader).append("\"]");
         if (gameVersion != null) facets.append(",[\"versions:").append(gameVersion).append("\"]");
         facets.append("]");
@@ -60,6 +64,22 @@ public class PisanKusModrinth {
         try {
             JSONObject response = new JSONObject(get(url));
             return new SearchPage(response.optJSONArray("hits"), response.optInt("total_hits"));
+        } catch (JSONException e) {
+            throw unreadable(e);
+        }
+    }
+
+    /**
+     * Everything one publisher has released.
+     *
+     * Read from their project list rather than searched for by name, so it
+     * shows exactly what they published — no unrelated matches, nothing missed.
+     * The shape differs from a search hit: `project_type` per project instead
+     * of a facet, and no paging.
+     */
+    public static JSONArray userProjects(String username) throws IOException {
+        try {
+            return new JSONArray(get(API + "/user/" + encode(username) + "/projects"));
         } catch (JSONException e) {
             throw unreadable(e);
         }

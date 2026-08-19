@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The store's filters, all in one place.
+
+  A store that only ever shows mods for one profile's exact version is a store
+  with most of its shelves hidden. Everything here can be set by hand: what kind
+  of content, which loader, which Minecraft version, in what order.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/padding_large">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pisan_mods_filter_kind"
+            android:textColor="@color/accent" />
+
+        <RadioGroup
+            android:id="@+id/pisan_filter_kind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/pisan_filter_kind_mod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/pisan_mods_kind_mod" />
+
+            <RadioButton
+                android:id="@+id/pisan_filter_kind_modpack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pisan_mods_kind_modpack" />
+
+            <RadioButton
+                android:id="@+id/pisan_filter_kind_resourcepack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pisan_mods_kind_resourcepack" />
+
+            <RadioButton
+                android:id="@+id/pisan_filter_kind_shader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pisan_mods_kind_shader" />
+
+            <RadioButton
+                android:id="@+id/pisan_filter_kind_datapack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pisan_mods_kind_datapack" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisan_mods_filter_loader"
+            android:textColor="@color/accent" />
+
+        <Spinner
+            android:id="@+id/pisan_filter_loader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_line"
+            android:minHeight="@dimen/_34sdp"
+            android:paddingHorizontal="7dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisan_mods_filter_version"
+            android:textColor="@color/accent" />
+
+        <!-- Opens the launcher's own version list, so every Minecraft version it
+             knows about is selectable rather than just the profile's. -->
+        <Button
+            android:id="@+id/pisan_filter_version"
+            style="@style/PisanKusSecondaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/pisan_filter_all_versions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pisan_mods_filter_all_versions" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_large"
+            android:text="@string/pisan_mods_filter_sort"
+            android:textColor="@color/accent" />
+
+        <Spinner
+            android:id="@+id/pisan_filter_sort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_line"
+            android:minHeight="@dimen/_34sdp"
+            android:paddingHorizontal="7dp" />
+    </LinearLayout>
+</ScrollView>
