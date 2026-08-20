@@ -23,11 +23,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.kdt.pojavlaunch.PisanKusModrinth;
+import net.kdt.pojavlaunch.PisanKusInstalledContent;
 import net.kdt.pojavlaunch.PisanKusProfileTarget;
 import net.kdt.pojavlaunch.PisanKusSodium;
 import net.kdt.pojavlaunch.PojavApplication;
@@ -130,6 +132,7 @@ public class PisanModsFragment extends Fragment {
     private ImageButton mFeaturedButton;
 
     private PisanKusProfileTarget mProfile;
+    private PisanKusInstalledContent mInstalled;
     private final ModAdapter mAdapter = new ModAdapter();
 
     // The filters, as they currently stand.
@@ -191,6 +194,7 @@ public class PisanModsFragment extends Fragment {
             mFeaturedButton.setEnabled(false);
             return;
         }
+        mInstalled = new PisanKusInstalledContent(mProfile.gameDir);
         mTarget.setText(getString(R.string.pisan_mods_target,
                 mProfile.profileName,
                 mProfile.loadsMods() ? mProfile.loader : getString(R.string.pisan_mods_no_loader_word),
@@ -386,6 +390,7 @@ public class PisanModsFragment extends Fragment {
                             project.optString("title"),
                             project.optString("description"),
                             project.optString("icon_url", null),
+                            null,
                             Kind.ofProjectType(project.optString("project_type", "mod"))));
                 }
                 Tools.runOnUiThread(() -> {
@@ -431,6 +436,7 @@ public class PisanModsFragment extends Fragment {
                                 hit.optString("title"),
                                 hit.optString("description"),
                                 hit.optString("icon_url", null),
+                                null,
                                 kind));
                     }
                 }
@@ -473,40 +479,131 @@ public class PisanModsFragment extends Fragment {
         }
 
         boolean modpack = hit.kind == Kind.MODPACK;
+        if (!modpack) {
+            resolveInstall(hit);
+            return;
+        }
         new AlertDialog.Builder(requireContext())
                 .setTitle(hit.title)
                 .setMessage(modpack
                         ? getString(R.string.pisan_mods_modpack_confirm, hit.title)
                         : getString(R.string.pisan_mods_confirm, hit.title, mProfile.profileName))
                 .setPositiveButton(R.string.pisan_mods_install, (d, w) -> {
-                    if (modpack) installModpack(hit);
-                    else install(hit);
+                    installModpack(hit);
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
     }
 
-    private void install(Hit hit) {
-        final File target = mProfile.dirFor(hit.kind.folder);
+    /** Resolves the exact compatible build before deciding whether this is an update. */
+    private void resolveInstall(Hit hit) {
+        final String loader = hit.kind.loaderApplies ? effectiveLoader() : null;
+        final String gameVersion = mGameVersion;
         setBusy(true);
-        mStatus.setText(getString(R.string.pisan_mods_installing, hit.title));
-        // A resource pack or shader is published for the game, not for a loader,
-        // so those are asked for without one.
+        mStatus.setText(getString(R.string.pisan_mods_checking_version, hit.title));
+        PojavApplication.sExecutorService.execute(() -> {
+            try {
+                final JSONObject version = PisanKusModrinth.latestVersion(hit.slug, loader, gameVersion);
+                final PisanKusInstalledContent.Entry installed = mInstalled.get(hit.projectId);
+                Tools.runOnUiThread(() -> {
+                    if (!isAdded()) return;
+                    setBusy(false);
+                    if (version == null) {
+                        mStatus.setText(getString(R.string.pisan_mods_no_version, hit.title,
+                                gameVersion == null ? "" : gameVersion));
+                        return;
+                    }
+
+                    hit.latestVersionNumber = version.optString("version_number", version.optString("id"));
+                    mAdapter.notifyDataSetChanged();
+                    if (installed != null && installed.versionId.equals(version.optString("id"))) {
+                        mStatus.setText(getString(R.string.pisan_mods_installed_current, hit.title));
+                        return;
+                    }
+                    if (installed != null) showUpdateConfirmation(hit, version, installed);
+                    else showInstallConfirmation(hit, version);
+                });
+            } catch (Exception e) {
+                showError(e);
+            }
+        });
+    }
+
+    /** Checks only installed rows, against this profile's exact compatibility filters. */
+    private void resolveUpdateBadge(Hit hit) {
+        if (hit.checkingUpdate || hit.latestVersionNumber != null) return;
+        hit.checkingUpdate = true;
         final String loader = hit.kind.loaderApplies ? effectiveLoader() : null;
         final String gameVersion = mGameVersion;
         PojavApplication.sExecutorService.execute(() -> {
             try {
                 JSONObject version = PisanKusModrinth.latestVersion(hit.slug, loader, gameVersion);
-                if (version == null) {
-                    Tools.runOnUiThread(() -> {
-                        if (!isAdded()) return;
-                        setBusy(false);
-                        mStatus.setText(getString(R.string.pisan_mods_no_version, hit.title,
-                                gameVersion == null ? "" : gameVersion));
-                    });
-                    return;
-                }
+                hit.latestVersionNumber = version == null
+                        ? ""
+                        : version.optString("version_number", version.optString("id"));
+            } catch (Exception ignored) {
+                // A badge check is advisory. Keep the installed mod usable and
+                // let the next manual search retry after a network failure.
+                hit.latestVersionNumber = "";
+            } finally {
+                hit.checkingUpdate = false;
+                Tools.runOnUiThread(() -> {
+                    if (isAdded()) mAdapter.notifyDataSetChanged();
+                });
+            }
+        });
+    }
+
+    private void showInstallConfirmation(Hit hit, JSONObject version) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(hit.title)
+                .setMessage(getString(R.string.pisan_mods_confirm, hit.title, mProfile.profileName))
+                .setPositiveButton(R.string.pisan_mods_install,
+                        (dialog, which) -> install(hit, version, null))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showUpdateConfirmation(Hit hit, JSONObject version,
+                                        PisanKusInstalledContent.Entry installed) {
+        TextView warning = new TextView(requireContext());
+        int padding = Math.round(20 * getResources().getDisplayMetrics().density);
+        warning.setPadding(padding, padding / 2, padding, padding);
+        warning.setText(R.string.pisan_mods_update_warning);
+        warning.setTextColor(ContextCompat.getColor(requireContext(), R.color.warning));
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.pisan_mods_update_available)
+                .setMessage(getString(R.string.pisan_mods_update_confirm, hit.title))
+                // Kept below the normal explanation, matching the requested
+                // orange warning under the update action.
+                .setView(warning)
+                .setPositiveButton(R.string.pisan_mods_update_anyway,
+                        (dialog, which) -> install(hit, version, installed))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void install(Hit hit, JSONObject version, PisanKusInstalledContent.Entry previous) {
+        final File target = mProfile.dirFor(hit.kind.folder);
+        setBusy(true);
+        mStatus.setText(getString(R.string.pisan_mods_installing, hit.title));
+        final String gameVersion = mGameVersion;
+        PojavApplication.sExecutorService.execute(() -> {
+            try {
                 final String fileName = PisanKusModrinth.downloadPrimaryFile(version, target);
+                mInstalled.put(
+                        hit.projectId,
+                        version.optString("id"),
+                        version.optString("version_number", version.optString("id")),
+                        fileName,
+                        hit.kind.projectType
+                );
+                // The working file survives until the replacement has fully
+                // downloaded and the registry has been saved.
+                if (previous != null && !previous.fileName.equals(fileName)) {
+                    new File(target, previous.fileName).delete();
+                }
                 // Sodium alone does not start on this launcher; it needs the
                 // patch mod and a renderer that can carry it. A player who
                 // installs it here should get the same working setup the pack
@@ -520,6 +617,8 @@ public class PisanModsFragment extends Fragment {
                 Tools.runOnUiThread(() -> {
                     if (!isAdded()) return;
                     setBusy(false);
+                    hit.latestVersionNumber = version.optString("version_number", version.optString("id"));
+                    mAdapter.notifyDataSetChanged();
                     if (sodium) {
                         mStatus.setText(getString(R.string.pisan_mods_installed_sodium, fileName));
                     } else if (hit.kind == Kind.DATAPACK) {
@@ -603,15 +702,19 @@ public class PisanModsFragment extends Fragment {
         final String title;
         final String description;
         final String iconUrl;
+        volatile String latestVersionNumber;
+        volatile boolean checkingUpdate;
         /** Carried per result: the featured list mixes every kind together. */
         final Kind kind;
 
-        Hit(String slug, String projectId, String title, String description, String iconUrl, Kind kind) {
+        Hit(String slug, String projectId, String title, String description, String iconUrl,
+            String latestVersionNumber, Kind kind) {
             this.slug = slug;
             this.projectId = projectId;
             this.title = title;
             this.description = description;
             this.iconUrl = iconUrl;
+            this.latestVersionNumber = latestVersionNumber;
             this.kind = kind;
         }
     }
@@ -657,12 +760,14 @@ public class PisanModsFragment extends Fragment {
             private final ImageView mIcon;
             private final TextView mTitle;
             private final TextView mDescription;
+            private final TextView mUpdate;
 
             Holder(@NonNull View itemView) {
                 super(itemView);
                 mIcon = itemView.findViewById(R.id.pk_mod_icon);
                 mTitle = itemView.findViewById(R.id.pk_mod_title);
                 mDescription = itemView.findViewById(R.id.pk_mod_description);
+                mUpdate = itemView.findViewById(R.id.pk_mod_update);
             }
 
             void bind(Hit hit) {
@@ -671,6 +776,12 @@ public class PisanModsFragment extends Fragment {
                         ? hit.title + " · " + getString(hit.kind.label)
                         : hit.title);
                 mDescription.setText(hit.description);
+                PisanKusInstalledContent.Entry installed = mInstalled.get(hit.projectId);
+                if (installed != null && hit.latestVersionNumber == null) resolveUpdateBadge(hit);
+                boolean update = installed != null && hit.latestVersionNumber != null
+                        && !hit.latestVersionNumber.isEmpty()
+                        && !hit.latestVersionNumber.equals(installed.versionNumber);
+                mUpdate.setVisibility(update ? View.VISIBLE : View.GONE);
                 itemView.setOnClickListener(v -> confirmInstall(hit));
                 loadIcon(hit);
             }

@@ -207,6 +207,18 @@ a {
   color: var(--warning);
 }
 
+.notice--success {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, transparent);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+
+.notice--danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
 .notice strong {
   display: block;
   margin-bottom: 4px;
@@ -217,6 +229,50 @@ a {
   margin: 0 0 6px;
   padding-inline-start: 17px;
   color: var(--text);
+}
+
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.screenshot-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.screenshot-card > img,
+.screenshot-card__empty {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--bg-elevated);
+}
+
+.screenshot-card__empty {
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+}
+
+.screenshot-card__info {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.screenshot-card__info .list__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.screenshot-card__info .btn {
+  justify-self: end;
 }
 
 /* ----------------------------------------------------- options editor */
@@ -1772,6 +1828,16 @@ button.update--ready:hover {
   margin: 0;
   padding-inline-start: 20px;
   color: var(--text-muted);
+}
+
+.crash-analysis__suspect {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 24%, var(--border));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--danger) 5%, var(--surface));
 }
 
 .crash-analysis__evidence {

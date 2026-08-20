@@ -78,6 +78,12 @@
     <string name="pisan_mods_installed_datapack">Installed: %1$s — data packs sit in the profile\'s datapacks folder; move it into your world\'s datapacks folder to use it.</string>
     <string name="pisan_mods_installed_sodium">Installed: %1$s — the Podium patch was installed for Sodium and the profile\'s renderer set to MobileGlues.</string>
     <string name="pisan_mods_no_version">%1$s has no build for %2$s</string>
+    <string name="pisan_mods_checking_version">Checking %1$s version…</string>
+    <string name="pisan_mods_update_available">New version available</string>
+    <string name="pisan_mods_update_confirm">%1$s will only be updated if you confirm. The installed version stays unchanged until then.</string>
+    <string name="pisan_mods_update_warning">This update may break the profile or its mods, or make them unstable.</string>
+    <string name="pisan_mods_update_anyway">Update anyway</string>
+    <string name="pisan_mods_installed_current">%1$s is already on the installed version.</string>
 
     <!-- Skin -->
     <string name="pisan_skin_title">Change skin</string>
@@ -633,6 +639,7 @@
     <string name="pisan_modrinth_dir_failed">The folder could not be created: %1$s</string>
     <string name="pisan_modrinth_no_download_url">The file has no download link.</string>
     <string name="pisan_modrinth_unreadable">The Modrinth answer could not be read: %1$s</string>
+    <string name="pisan_modrinth_replace_failed">The downloaded file could not replace the installed version.</string>
     <string name="pisan_skin_library_dir_failed">The library folder could not be created.</string>
     <string name="pisan_skin_file_open_failed">The file could not be opened.</string>
     <string name="pisan_skin_not_png">This file is not a PNG.</string>

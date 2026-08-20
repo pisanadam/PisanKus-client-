@@ -383,6 +383,16 @@ export async function checkForUpdates(profileId: string): Promise<InstalledConte
   return profile.content
 }
 
+/** Keeps an installed version out of both one-item and bulk updates. */
+export function setContentPinned(profileId: string, contentId: string, pinned: boolean): InstalledContent {
+  const profile = store.profile(profileId)
+  const entry = profile?.content.find((item) => item.id === contentId)
+  if (!profile || !entry) throw new Error('İçerik bulunamadı.')
+  entry.pinned = pinned || undefined
+  store.updateProfile(profileId, { content: profile.content })
+  return entry
+}
+
 export async function updateContent(
   profileId: string,
   contentId: string,
@@ -390,7 +400,7 @@ export async function updateContent(
 ): Promise<InstalledContent[]> {
   const profile = store.profile(profileId)
   const entry = profile?.content.find((item) => item.id === contentId)
-  if (!profile || !entry || !entry.projectId || entry.source === 'local') {
+  if (!profile || !entry || !entry.projectId || entry.source === 'local' || !entry.updateAvailable || entry.pinned) {
     throw new Error('Bu içerik güncellenemiyor.')
   }
 

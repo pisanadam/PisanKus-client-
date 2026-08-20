@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ProfileIcon } from './components/ProfileIcon'
 import { Icon, type IconName } from './components/Icon'
 import { LoginGate } from './components/LoginGate'
@@ -21,7 +21,7 @@ type Route =
   | { page: 'skins' }
   | { page: 'accounts' }
   | { page: 'settings' }
-  | { page: 'profile'; profileId: string }
+  | { page: 'profile'; profileId: string; tab?: 'logs'; tabRequestKey?: number }
 
 const NAV: { page: Route['page']; label: string; icon: IconName }[] = [
   { page: 'library', label: 'Kitaplık', icon: 'grid' },
@@ -32,10 +32,32 @@ const NAV: { page: Route['page']; label: string; icon: IconName }[] = [
 ]
 
 export function App(): JSX.Element {
-  const { ready, startupError, settings, saveSettings, accounts, activeAccount, profiles, gameStates } = useApp()
+  const {
+    ready,
+    startupError,
+    settings,
+    saveSettings,
+    accounts,
+    activeAccount,
+    profiles,
+    gameStates,
+    crashOpenRequest,
+    clearCrashOpenRequest
+  } = useApp()
   const [route, setRoute] = useState<Route>({ page: 'library' })
   // Kept locally as well so the panel can animate out before the flag round-trips.
   const [welcomed, setWelcomed] = useState(false)
+
+  useEffect(() => {
+    if (!crashOpenRequest) return
+    setRoute({
+      page: 'profile',
+      profileId: crashOpenRequest.profileId,
+      tab: 'logs',
+      tabRequestKey: crashOpenRequest.nonce
+    })
+    clearCrashOpenRequest()
+  }, [crashOpenRequest, clearCrashOpenRequest])
 
   if (!ready) {
     return (
@@ -167,6 +189,8 @@ export function App(): JSX.Element {
         {route.page === 'profile' && (
           <ProfileDetail
             profileId={route.profileId}
+            initialTab={route.tab}
+            initialTabRequestKey={route.tabRequestKey}
             onBack={() => setRoute({ page: 'library' })}
             onBrowse={(profileId) => setRoute({ page: 'discover', profileId })}
           />

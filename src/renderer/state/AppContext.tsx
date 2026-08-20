@@ -8,9 +8,9 @@ import {
   useState,
   type ReactNode
 } from 'react'
-import type { GameLogLine, GameState, Profile, Settings, TaskProgress } from '../../shared/types'
+import type { CrashReport, GameLogLine, GameState, Profile, Settings, TaskProgress } from '../../shared/types'
 import '../../shared/i18n/tables'
-import { detectLanguage, isRtl, setLanguage } from '../../shared/i18n'
+import { detectLanguage, isRtl, setLanguage, t } from '../../shared/i18n'
 import { api } from '../lib/api'
 import { errorMessage, isSignInError } from '../lib/format'
 import type { PublicAccount } from '../../preload'
@@ -65,6 +65,9 @@ interface AppValue {
   gameStates: Record<string, GameState['status']>
   logs: Record<string, GameLogLine[]>
   clearLogs: (profileId: string) => void
+  crashOpenRequest: { profileId: string; nonce: number } | null
+  openCrashAnalysis: (profileId: string) => void
+  clearCrashOpenRequest: () => void
 }
 
 const AppContext = createContext<AppValue | null>(null)
@@ -83,6 +86,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
   const [logs, setLogs] = useState<Record<string, GameLogLine[]>>({})
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [crashOpenRequest, setCrashOpenRequest] = useState<{ profileId: string; nonce: number } | null>(null)
 
   // Log lines arrive faster than React should re-render, so they are buffered
   // and flushed on an interval.
@@ -98,6 +102,29 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     setProfiles(await api.profiles.list())
   }, [])
 
+  const showCrashNotice = useCallback((report: CrashReport) => {
+    const suspect = report.suspectedMods?.[0]
+    const details = [
+      report.detectedWhileLauncherClosed
+        ? t("PisanKus kapalıyken Minecraft'ın çöktüğü tespit edildi.")
+        : report.summary,
+      report.confidence != null ? t('%{confidence} güven', { confidence: report.confidence }) : undefined,
+      suspect ? t('Muhtemel mod: {name}', { name: suspect.name }) : undefined
+    ].filter(Boolean)
+    setTasks((current) => [
+      ...current.filter((task) => task.id !== `crash-${report.id}`),
+      {
+        id: `crash-${report.id}`,
+        label: `${t('Minecraft çöktü')} · ${report.title}`,
+        detail: details.join(' · '),
+        progress: 1,
+        state: 'error',
+        action: 'openCrash',
+        actionProfileId: report.profileId
+      }
+    ])
+  }, [])
+
   useEffect(() => {
     void (async () => {
       try {
@@ -109,13 +136,14 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
         ])
         setSettings(loadedSettings)
         setGameStates(Object.fromEntries(running.map((id) => [id, 'running' as const])))
+        for (const report of await api.crashes.detectPending().catch(() => [])) showCrashNotice(report)
       } catch (error) {
         setStartupError(errorMessage(error))
       } finally {
         setReady(true)
       }
     })()
-  }, [refreshAccounts, refreshProfiles])
+  }, [refreshAccounts, refreshProfiles, showCrashNotice])
 
   /**
    * The language in force, resolved from the setting.
@@ -175,6 +203,8 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       bucket.push(line)
     })
 
+    const offCrash = api.crashes.onCreated(showCrashNotice)
+
     const flush = setInterval(() => {
       const pending = logBuffer.current
       if (Object.keys(pending).length === 0) return
@@ -193,9 +223,10 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       offProfiles()
       offState()
       offLog()
+      offCrash()
       clearInterval(flush)
     }
-  }, [refreshProfiles])
+  }, [refreshProfiles, showCrashNotice])
 
   const saveSettings = useCallback(async (patch: Partial<Settings>) => {
     setSettings(await api.settings.update(patch))
@@ -252,6 +283,12 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     setLogs((current) => ({ ...current, [profileId]: [] }))
   }, [])
 
+  const openCrashAnalysis = useCallback((profileId: string) => {
+    setCrashOpenRequest({ profileId, nonce: Date.now() })
+  }, [])
+
+  const clearCrashOpenRequest = useCallback(() => setCrashOpenRequest(null), [])
+
   const value = useMemo<AppValue>(
     () => ({
       ready,
@@ -271,7 +308,10 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       notify,
       gameStates,
       logs,
-      clearLogs
+      clearLogs,
+      crashOpenRequest,
+      openCrashAnalysis,
+      clearCrashOpenRequest
     }),
     [
       ready,
@@ -291,7 +331,10 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       notify,
       gameStates,
       logs,
-      clearLogs
+      clearLogs,
+      crashOpenRequest,
+      openCrashAnalysis,
+      clearCrashOpenRequest
     ]
   )
 
