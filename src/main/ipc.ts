@@ -9,6 +9,7 @@ import type {
   GameState,
   LoaderId,
   Profile,
+  ProfileHealthFix,
   ProjectVersion,
   SearchQuery,
   Settings,
@@ -23,7 +24,12 @@ import * as install from './content/install'
 import * as modrinth from './content/modrinth'
 import { discoverJava } from './minecraft/java'
 import { launch, prepareOnly, type GameSession } from './minecraft/launcher'
-import { GameDiagnostics, listCrashReports } from './minecraft/crash'
+import {
+  detectUnprocessedCrashes,
+  GameDiagnostics,
+  listCrashReports,
+  sanitizeCrashReportForShare
+} from './minecraft/crash'
 import { listLoaderVersions } from './minecraft/loaders'
 import * as servers from './minecraft/servers'
 import { listVersions as listGameVersions } from './minecraft/versions'
@@ -34,6 +40,8 @@ import { writeProfileOptions } from './minecraft/options'
 import { requireLeafName, requireProfileDirectory, resolveInside } from './pathSafety'
 import * as profileArchive from './profileArchive'
 import { withProfileRollback } from './profileTransaction'
+import { fixProfileHealth, inspectProfileHealth } from './profileHealth'
+import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
 
 /** Account shape safe to hand to the renderer — tokens stay in the main process. */
 export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { expired: boolean }
@@ -215,6 +223,25 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('profiles:list', () => store.profiles)
 
+  handle('profiles:health', async (id: string) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return inspectProfileHealth(profile)
+  })
+
+  handle('profiles:healthFix', async (id: string, fix: ProfileHealthFix) => {
+    const allowed = new Set<ProfileHealthFix>([
+      'create-profile-directory',
+      'clear-custom-java',
+      'set-safe-memory',
+      'remove-missing-content'
+    ])
+    if (!allowed.has(fix)) throw new Error('Geçersiz profil düzeltme işlemi.')
+    const report = await fixProfileHealth(id, fix)
+    profilesChanged()
+    return report
+  })
+
   /**
    * Picks a picture for a profile and stores it inline.
    *
@@ -301,6 +328,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         }
       }
     }
+    if (typeof patch.autoBackupWorlds === 'boolean') allowed.autoBackupWorlds = patch.autoBackupWorlds
     return store.updateProfile(id, allowed)
   })
 
@@ -357,7 +385,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   // ---------------------------------------------------------------------- game
 
-  handle('game:launch', async (profileId: string, options?: { offline?: boolean }) => {
+  handle('game:launch', async (profileId: string, options?: { offline?: boolean; serverAddress?: string }) => {
     if (sessions.has(profileId)) throw new Error('Bu profil zaten çalışıyor.')
 
     const profile = store.profile(profileId)
@@ -373,6 +401,20 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     }
 
     const offline = options?.offline === true
+    const serverAddress = options?.serverAddress?.trim()
+    if (serverAddress && (serverAddress.length > 255 || /[\s\0]/.test(serverAddress))) {
+      throw new Error('Sunucu adresi geçersiz.')
+    }
+    if (profile.autoBackupWorlds) {
+      onProgress({ id: `world-backup-${profileId}`, label: 'Dünyalar yedekleniyor', progress: -1, state: 'running' })
+      const count = await createAutomaticWorldBackups(profile)
+      onProgress({
+        id: `world-backup-${profileId}`,
+        label: count > 0 ? `${count} dünya yedeklendi` : 'Yedeklenecek dünya yok',
+        progress: 1,
+        state: 'done'
+      })
+    }
     const diagnostics = new GameDiagnostics(structuredClone(profile))
     const recordedLog = (line: GameLogLine): void => {
       diagnostics.record(line)
@@ -420,6 +462,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         onProgress,
         onLog: recordedLog,
         onState: (state) => {
+          if (state.status === 'running') diagnostics.markRunning()
           if ((state.status === 'exited' || state.status === 'crashed') && !terminal) {
             terminal = true
             sessions.delete(profileId)
@@ -434,11 +477,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
           }
           onState(state)
         },
+        onRuntimeReady: (runtime) => diagnostics.setRuntime(runtime),
         offline,
+        serverAddress,
         signal: controller.signal
       })
 
-      sessions.set(profileId, session)
+      if (!terminal) sessions.set(profileId, session)
       store.updateProfile(profileId, { lastPlayed: Date.now() })
       return { pid: session.pid }
     } catch (error) {
@@ -450,6 +495,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         onState(state)
         finishDiagnostics(state)
       }
+      if (controller.signal.aborted) return { pid: undefined }
       throw error
     }
   })
@@ -479,6 +525,19 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     const profile = store.profile(profileId)
     if (!profile) throw new Error('Profil bulunamadı.')
     return listCrashReports(profile)
+  })
+
+  handle('crashes:detectPending', async () => {
+    const reports = await Promise.all(store.profiles.map((profile) => detectUnprocessedCrashes(profile)))
+    return reports.flat().sort((left, right) => right.createdAt - left.createdAt)
+  })
+
+  handle('crashes:share', async (profileId: string, reportId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    const report = (await listCrashReports(profile)).find((candidate) => candidate.id === reportId)
+    if (!report) throw new Error('Crash raporu bulunamadı.')
+    return JSON.stringify(sanitizeCrashReportForShare(report, profile.directory), null, 2)
   })
 
   handle('crashes:openFolder', async (profileId: string) => {
@@ -513,6 +572,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('content:remove', (profileId: string, contentId: string) => install.removeContent(profileId, contentId))
   handle('content:toggle', (profileId: string, contentId: string, enabled: boolean) =>
     install.setContentEnabled(profileId, contentId, enabled)
+  )
+  handle('content:pin', (profileId: string, contentId: string, pinned: boolean) =>
+    install.setContentPinned(profileId, contentId, pinned)
   )
   handle('content:update', (profileId: string, contentId: string) =>
     withProfileRollback(
@@ -607,6 +669,58 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       () => profileArchive.importWorld(window, profile),
       onProgress
     )
+  })
+
+  handle('worlds:autoBackups', async (profileId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return listAutomaticWorldBackups(profile)
+  })
+  handle('worlds:restoreAutoBackup', async (profileId: string, folderName: string, backupId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    await restoreAutomaticWorldBackup(profile, folderName, backupId)
+    return install.listWorlds(profileId)
+  })
+  handle('worlds:openAutoBackups', async (profileId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    const directory = path.join(profile.directory, '.pisankus', 'world-backups')
+    await fsp.mkdir(directory, { recursive: true })
+    await shell.openPath(directory)
+  })
+
+  // --------------------------------------------------------------- screenshots
+
+  const screenshotDir = (profileId: string): string => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return path.join(profile.directory, 'screenshots')
+  }
+
+  const listScreenshots = async (profileId: string) => {
+    const directory = screenshotDir(profileId)
+    const names = await fsp.readdir(directory).catch(() => [] as string[])
+    const images = await Promise.all(names.filter((name) => /\.(png|jpe?g)$/i.test(name)).map(async (fileName) => {
+      const file = resolveInside(directory, requireLeafName(fileName, 'Ekran görüntüsü'))
+      const stat = await fsp.stat(file)
+      const source = nativeImage.createFromPath(file)
+      const thumbnail = source.isEmpty() ? '' : source.resize({ width: 360 }).toDataURL()
+      return { fileName, createdAt: stat.mtimeMs, sizeMb: Math.round(stat.size / 10_485.76) / 100, thumbnail }
+    }))
+    return images.sort((a, b) => b.createdAt - a.createdAt)
+  }
+
+  handle('screenshots:list', (profileId: string) => listScreenshots(profileId))
+  handle('screenshots:openFolder', async (profileId: string) => {
+    const directory = screenshotDir(profileId)
+    await fsp.mkdir(directory, { recursive: true })
+    await shell.openPath(directory)
+  })
+  handle('screenshots:delete', async (profileId: string, fileName: string) => {
+    const directory = screenshotDir(profileId)
+    await fsp.rm(resolveInside(directory, requireLeafName(fileName, 'Ekran görüntüsü')), { force: true })
+    return listScreenshots(profileId)
   })
 
   // --------------------------------------------------------------------- skins

@@ -7,6 +7,8 @@ import type {
   InstalledContent,
   LoaderId,
   Profile,
+  ProfileHealthFix,
+  ProfileHealthReport,
   ProjectVersion,
   SavedSkin,
   SearchQuery,
@@ -108,6 +110,19 @@ export interface WorldSummary {
   sizeMb: number
 }
 
+export interface ScreenshotSummary {
+  fileName: string
+  createdAt: number
+  sizeMb: number
+  thumbnail: string
+}
+
+export interface AutoWorldBackupSummary {
+  folderName: string
+  backupId: string
+  createdAt: number
+}
+
 export interface JavaInfo {
   path: string
   majorVersion: number
@@ -142,6 +157,9 @@ const api = {
     update: (id: string, patch: Partial<Profile>): Promise<Profile> =>
       ipcRenderer.invoke('profiles:update', id, patch),
     duplicate: (id: string): Promise<Profile> => ipcRenderer.invoke('profiles:duplicate', id),
+    health: (id: string): Promise<ProfileHealthReport> => ipcRenderer.invoke('profiles:health', id),
+    fixHealth: (id: string, fix: ProfileHealthFix): Promise<ProfileHealthReport> =>
+      ipcRenderer.invoke('profiles:healthFix', id, fix),
     /** Opens a picker and stores the chosen png/jpg as the profile's icon. */
     pickIcon: (id: string): Promise<Profile | null> => ipcRenderer.invoke('profiles:pickIcon', id),
     clearIcon: (id: string): Promise<Profile> => ipcRenderer.invoke('profiles:clearIcon', id),
@@ -169,7 +187,7 @@ const api = {
   },
 
   game: {
-    launch: (profileId: string, options?: { offline?: boolean }): Promise<{ pid?: number }> =>
+    launch: (profileId: string, options?: { offline?: boolean; serverAddress?: string }): Promise<{ pid?: number }> =>
       ipcRenderer.invoke('game:launch', profileId, options),
     kill: (profileId: string): Promise<boolean> => ipcRenderer.invoke('game:kill', profileId),
     prepare: (profileId: string): Promise<boolean> => ipcRenderer.invoke('game:prepare', profileId),
@@ -180,6 +198,10 @@ const api = {
 
   crashes: {
     list: (profileId: string): Promise<CrashReport[]> => ipcRenderer.invoke('crashes:list', profileId),
+    detectPending: (): Promise<CrashReport[]> => ipcRenderer.invoke('crashes:detectPending'),
+    /** Returns a clipboard-safe representation with credentials/private paths removed. */
+    share: (profileId: string, reportId: string): Promise<string> =>
+      ipcRenderer.invoke('crashes:share', profileId, reportId),
     openFolder: (profileId: string): Promise<void> => ipcRenderer.invoke('crashes:openFolder', profileId),
     onCreated: (listener: (report: CrashReport) => void): Unsubscribe => subscribe('crash:created', listener)
   },
@@ -210,6 +232,8 @@ const api = {
       ipcRenderer.invoke('content:remove', profileId, contentId),
     toggle: (profileId: string, contentId: string, enabled: boolean): Promise<InstalledContent> =>
       ipcRenderer.invoke('content:toggle', profileId, contentId, enabled),
+    pin: (profileId: string, contentId: string, pinned: boolean): Promise<InstalledContent> =>
+      ipcRenderer.invoke('content:pin', profileId, contentId, pinned),
     update: (profileId: string, contentId: string): Promise<InstalledContent[]> =>
       ipcRenderer.invoke('content:update', profileId, contentId),
     checkUpdates: (profileId: string): Promise<InstalledContent[]> =>
@@ -264,7 +288,19 @@ const api = {
     exportBackup: (profileId: string, folderName: string, displayName: string): Promise<string | null> =>
       ipcRenderer.invoke('worlds:export', profileId, folderName, displayName),
     importBackup: (profileId: string): Promise<string | null> =>
-      ipcRenderer.invoke('worlds:importBackup', profileId)
+      ipcRenderer.invoke('worlds:importBackup', profileId),
+    autoBackups: (profileId: string): Promise<AutoWorldBackupSummary[]> =>
+      ipcRenderer.invoke('worlds:autoBackups', profileId),
+    restoreAutoBackup: (profileId: string, folderName: string, backupId: string): Promise<WorldSummary[]> =>
+      ipcRenderer.invoke('worlds:restoreAutoBackup', profileId, folderName, backupId),
+    openAutoBackups: (profileId: string): Promise<void> => ipcRenderer.invoke('worlds:openAutoBackups', profileId)
+  },
+
+  screenshots: {
+    list: (profileId: string): Promise<ScreenshotSummary[]> => ipcRenderer.invoke('screenshots:list', profileId),
+    openFolder: (profileId: string): Promise<void> => ipcRenderer.invoke('screenshots:openFolder', profileId),
+    remove: (profileId: string, fileName: string): Promise<ScreenshotSummary[]> =>
+      ipcRenderer.invoke('screenshots:delete', profileId, fileName)
   },
 
   skins: {

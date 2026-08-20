@@ -1,0 +1,13 @@
+---- Minecraft Crash Report ----
+// This is a synthetic, privacy-safe fixture modelled after Minecraft's report format.
+
+Time: 2026-08-20 12:00:00
+Description: Initializing game
+
+org.spongepowered.asm.mixin.transformer.throwables.MixinTransformerError: An unexpected critical error was encountered
+Caused by: org.spongepowered.asm.mixin.throwables.MixinApplyError: Mixin [sodium.mixins.json:features.render.MixinWorldRenderer] from phase [DEFAULT] FAILED during APPLY
+
+-- MOD sodium --
+Suspected Mods: Sodium (sodium)
+Mod File: sodium-fabric-0.6.13+mc1.21.4.jar
+Failure message: Sodium failed to apply a renderer mixin

@@ -10,6 +10,7 @@ import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libra
 import { installLoader } from './loaders'
 import { clientDataVersion, seedProfileOptions } from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
+import { classifyGameExit } from './gameLifecycle'
 
 const LAUNCHER_NAME = 'PisanKusClient'
 const LAUNCHER_VERSION = '1.0.0'
@@ -46,12 +47,18 @@ export interface LaunchContext {
   onProgress: (task: TaskProgress) => void
   onLog: (line: GameLogLine) => void
   onState: (state: GameState) => void
+  /** Resolved runtime details used by the successful-run crash snapshot. */
+  onRuntimeReady?: (runtime: { javaPath: string; javaMajorVersion?: number; memoryMb: number }) => void
   /** Never refreshes auth or downloads; suitable for cached single-player use. */
   offline?: boolean
+  /** Opens multiplayer directly instead of stopping at the title screen. */
+  serverAddress?: string
   signal?: AbortSignal
 }
 
 export class GameSession extends EventEmitter {
+  private userStopRequested = false
+
   constructor(readonly profileId: string, private readonly child: ChildProcess) {
     super()
   }
@@ -60,7 +67,12 @@ export class GameSession extends EventEmitter {
     return this.child.pid
   }
 
+  get stopRequested(): boolean {
+    return this.userStopRequested
+  }
+
   kill(): void {
+    this.userStopRequested = true
     this.child.kill('SIGTERM')
     // Minecraft occasionally ignores SIGTERM while shutting down a world.
     setTimeout(() => {
@@ -78,7 +90,18 @@ export class GameSession extends EventEmitter {
  * natives, Java) and then starts the game.
  */
 export async function launch(context: LaunchContext): Promise<GameSession> {
-  const { profile, account, settings, onProgress, onLog, onState, offline = false, signal } = context
+  const {
+    profile,
+    account,
+    settings,
+    onProgress,
+    onLog,
+    onState,
+    onRuntimeReady,
+    offline = false,
+    serverAddress,
+    signal
+  } = context
   const dataDir = settings.dataDir
   const taskId = `launch-${profile.id}`
 
@@ -200,19 +223,25 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       classpath_separator: path.delimiter,
       library_directory: path.join(dataDir, 'libraries'),
       resolution_width: String(profile.resolution?.width ?? 1280),
-      resolution_height: String(profile.resolution?.height ?? 720)
+      resolution_height: String(profile.resolution?.height ?? 720),
+      quickPlayMultiplayer: serverAddress ?? ''
     }
 
     const features = {
       is_demo_user: false,
       has_custom_resolution: profile.resolution != null,
-      has_quick_plays_support: false,
+      has_quick_plays_support: serverAddress != null,
       is_quick_play_singleplayer: false,
-      is_quick_play_multiplayer: false,
+      is_quick_play_multiplayer: serverAddress != null,
       is_quick_play_realms: false
     }
 
     const memory = profile.memoryMb || settings.defaultMemoryMb
+    onRuntimeReady?.({
+      javaPath,
+      javaMajorVersion: version.javaVersion?.majorVersion,
+      memoryMb: memory
+    })
     const extraJvmArgs = (profile.jvmArgs ?? settings.jvmArgs).split(/\s+/).filter(Boolean)
 
     const jvmArgs = [
@@ -257,6 +286,18 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       ...flattenArguments(version.arguments?.game as ArgumentEntry[], values, features)
     ]
 
+    // New Minecraft versions add their own --quickPlayMultiplayer argument
+    // when the feature flag above is on. Older versions understand the
+    // classic --server/--port pair instead.
+    if (serverAddress && !gameArgs.includes('--quickPlayMultiplayer')) {
+      const bracketed = /^\[([^\]]+)](?::(\d+))?$/.exec(serverAddress)
+      const plain = bracketed ? null : /^([^:]+):(\d+)$/.exec(serverAddress)
+      const host = bracketed?.[1] ?? plain?.[1] ?? serverAddress
+      const port = bracketed?.[2] ?? plain?.[2]
+      gameArgs.push('--server', host)
+      if (port) gameArgs.push('--port', port)
+    }
+
     const args = [...jvmArgs, version.mainClass, ...gameArgs]
 
     log(`Başlatılıyor: ${path.basename(javaPath)} ${version.mainClass}`)
@@ -273,6 +314,8 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     // The launcher no longer waits on it; the pipes below are read while the
     // launcher is alive and simply end when it goes away.
     child.unref()
+    const session = new GameSession(profile.id, child)
+    let processTerminal = false
 
     const emit = (stream: 'stdout' | 'stderr', chunk: Buffer): void => {
       for (const line of String(chunk).split(/\r?\n/)) {
@@ -283,22 +326,33 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     child.stderr.on('data', (chunk: Buffer) => emit('stderr', chunk))
 
     child.on('error', (error) => {
+      if (processTerminal) return
+      processTerminal = true
       onLog({ profileId: profile.id, stream: 'launcher', line: `Hata: ${error.message}`, at: Date.now() })
       onState({ profileId: profile.id, status: 'crashed' })
     })
 
-    child.on('close', (code) => {
+    child.on('close', (code, closeSignal) => {
+      if (processTerminal) return
+      processTerminal = true
       onState({
         profileId: profile.id,
-        status: code === 0 ? 'exited' : 'crashed',
-        exitCode: code ?? undefined
+        status: classifyGameExit(code, closeSignal, session.stopRequested),
+        exitCode: code ?? undefined,
+        signal: closeSignal ?? undefined
       })
     })
 
     onState({ profileId: profile.id, status: 'running', pid: child.pid })
-    return new GameSession(profile.id, child)
+    return session
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    if (signal?.aborted) {
+      log('Başlatma kullanıcı tarafından durduruldu.')
+      onProgress({ id: taskId, label: 'Başlatma durduruldu', progress: 1, state: 'done' })
+      onState({ profileId: profile.id, status: 'exited' })
+      throw error
+    }
     log(`Başlatma başarısız: ${message}`)
     onProgress({ id: taskId, label: 'Başlatma başarısız', progress: 0, state: 'error', error: message })
     onState({ profileId: profile.id, status: 'crashed' })

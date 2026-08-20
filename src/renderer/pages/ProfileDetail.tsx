@@ -1,24 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ContentKind, CrashReport, InstalledContent, LoaderId } from '../../shared/types'
+import type { ContentKind, CrashReport, InstalledContent, LoaderId, ProfileHealthReport } from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { ServersTab } from '../components/ServersTab'
 import { parseOptions } from '../../shared/options'
-import { Confirm } from '../components/Modal'
-import type { JavaInfo, WorldSummary } from '../../preload'
+import { Confirm, Modal } from '../components/Modal'
+import type { AutoWorldBackupSummary, JavaInfo, ScreenshotSummary, WorldSummary } from '../../preload'
 import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 import { t } from '../../shared/i18n'
 
-type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'servers' | 'logs' | 'settings'
+type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'screenshots' | 'servers' | 'logs' | 'settings'
 
 const TABS: { id: Tab; label: string; kind?: ContentKind }[] = [
   { id: 'mods', label: 'Modlar', kind: 'mod' },
   { id: 'resourcepacks', label: 'Doku paketleri', kind: 'resourcepack' },
   { id: 'shaders', label: 'Shaderlar', kind: 'shader' },
   { id: 'worlds', label: 'Dünyalar', kind: 'world' },
+  { id: 'screenshots', label: 'Ekran görüntüleri' },
   { id: 'servers', label: 'Sunucular' },
   { id: 'logs', label: 'Günlük' },
   { id: 'settings', label: 'Ayarlar' }
@@ -26,10 +27,14 @@ const TABS: { id: Tab; label: string; kind?: ContentKind }[] = [
 
 export function ProfileDetail({
   profileId,
+  initialTab,
+  initialTabRequestKey,
   onBack,
   onBrowse
 }: {
   profileId: string
+  initialTab?: Tab
+  initialTabRequestKey?: number
   onBack: () => void
   onBrowse: (profileId: string) => void
 }): JSX.Element {
@@ -45,8 +50,12 @@ export function ProfileDetail({
       .then(() => refreshProfiles())
       .catch(() => undefined)
   }, [profileId, refreshProfiles])
-  const [tab, setTab] = useState<Tab>('mods')
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'mods')
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  useEffect(() => {
+    setTab(initialTab ?? 'mods')
+  }, [profileId, initialTab, initialTabRequestKey])
 
   if (!profile) {
     return (
@@ -170,8 +179,9 @@ export function ProfileDetail({
       )}
 
       {tab === 'worlds' && <WorldsTab profileId={profile.id} />}
+      {tab === 'screenshots' && <ScreenshotsTab profileId={profile.id} />}
       {tab === 'servers' && <ServersTab profile={profile} />}
-      {tab === 'logs' && <LogsTab profileId={profile.id} />}
+      {tab === 'logs' && <LogsTab profileId={profile.id} onOpenTab={(target) => setTab(target)} />}
       {tab === 'settings' && (
         <ProfileSettingsTab profileId={profile.id} onDeleteRequested={() => setConfirmDelete(true)} />
       )}
@@ -216,8 +226,9 @@ function ContentTab({
   const [checking, setChecking] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [dropping, setDropping] = useState(false)
+  const [pendingUpdates, setPendingUpdates] = useState<InstalledContent[] | null>(null)
 
-  const updatable = items.filter((item) => item.updateAvailable)
+  const updatable = items.filter((item) => item.updateAvailable && !item.pinned)
 
   /**
    * Takes files dropped anywhere on the tab. What each one is gets decided in
@@ -299,11 +310,8 @@ function ContentTab({
         {updatable.length > 0 && (
           <button
             className="btn btn--primary"
-            onClick={async () => {
-              for (const item of updatable) {
-                await run(item.id, () => api.content.update(profileId, item.id))
-              }
-            }}
+            disabled={busyId !== null}
+            onClick={() => setPendingUpdates(updatable)}
           >
             <Icon name="download" size={16} />
             {t('{count} güncellemeyi uygula', { count: updatable.length })}
@@ -337,8 +345,8 @@ function ContentTab({
                 <div className="list__title">
                   {item.name}
                   {item.updateAvailable && (
-                    <span className="badge badge--accent" style={{ marginLeft: 8 }}>
-                      {t('güncelleme var')}
+                    <span className="badge badge--warning" style={{ marginLeft: 8 }}>
+                      {t('Yeni sürüm çıktı')}
                     </span>
                   )}
                   {item.source === 'local' && (
@@ -346,18 +354,35 @@ function ContentTab({
                       yerel
                     </span>
                   )}
+                  {item.pinned && (
+                    <span className="badge" style={{ marginLeft: 8 }}>
+                      {t('Sürüm sabit')}
+                    </span>
+                  )}
                 </div>
                 <div className="list__sub">{item.fileName}</div>
               </div>
 
-              {item.updateAvailable && (
+              {item.updateAvailable && !item.pinned && (
                 <button
                   className="btn btn--sm btn--primary"
-                  disabled={busyId === item.id}
-                  onClick={() => void run(item.id, () => api.content.update(profileId, item.id))}
+                  disabled={busyId !== null}
+                  onClick={() => setPendingUpdates([item])}
                 >
                   <Icon name="download" size={14} />
                   {t('Güncelle')}
+                </button>
+              )}
+
+              {item.source !== 'local' && (
+                <button
+                  className="btn btn--ghost btn--icon"
+                  aria-label={item.pinned ? t('Sürüm sabitlemesini kaldır') : t('Bu sürümü sabitle')}
+                  title={item.pinned ? t('Sürüm sabitlemesini kaldır') : t('Bu sürümü sabitle')}
+                  disabled={busyId !== null}
+                  onClick={() => void run(item.id, () => api.content.pin(profileId, item.id, !item.pinned))}
+                >
+                  <Icon name={item.pinned ? 'check' : 'package'} size={16} />
                 </button>
               )}
 
@@ -382,21 +407,75 @@ function ContentTab({
           ))}
         </div>
       )}
+
+      {pendingUpdates && (
+        <Modal
+          title={t('Mod güncellemesini onayla')}
+          onClose={() => setPendingUpdates(null)}
+          footer={
+            <>
+              <button className="btn" onClick={() => setPendingUpdates(null)}>
+                {t('Vazgeç')}
+              </button>
+              <button
+                className="btn btn--primary"
+                onClick={() => {
+                  const requested = pendingUpdates
+                  setPendingUpdates(null)
+                  void (async () => {
+                    for (const item of requested) {
+                      await run(item.id, () => api.content.update(profileId, item.id))
+                    }
+                  })()
+                }}
+              >
+                <Icon name="download" size={15} />
+                {t('Yine de güncelle')}
+              </button>
+            </>
+          }
+        >
+          <p className="muted" style={{ marginBottom: 0 }}>
+            {pendingUpdates.length === 1
+              ? t('{name} yalnızca onay verirseniz güncellenecek. Kurulu sürüm o zamana kadar değişmez.', {
+                  name: pendingUpdates[0].name
+                })
+              : t('{count} içerik yalnızca onay verirseniz güncellenecek. Kurulu sürümler o zamana kadar değişmez.', {
+                  count: pendingUpdates.length
+                })}
+          </p>
+          <div className="notice notice--warning">
+            <Icon name="refresh" size={19} />
+            <div>
+              <strong>{t('Güncelleme riskli olabilir')}</strong>
+              {t('Bu güncelleme profili veya modları bozabilir ya da kararsız hâle getirebilir.')}
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
 
 function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
-  const { notify } = useApp()
+  const { notify, profiles, refreshProfiles } = useApp()
+  const profile = profiles.find((entry) => entry.id === profileId)!
   const [worlds, setWorlds] = useState<WorldSummary[]>([])
+  const [backups, setBackups] = useState<AutoWorldBackupSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [pendingDelete, setPendingDelete] = useState<WorldSummary | null>(null)
   const [exporting, setExporting] = useState<string | null>(null)
+  const [pendingRestore, setPendingRestore] = useState<AutoWorldBackupSummary | null>(null)
 
   const reload = async (): Promise<void> => {
     setLoading(true)
     try {
-      setWorlds(await api.worlds.list(profileId))
+      const [worldList, backupList] = await Promise.all([
+        api.worlds.list(profileId),
+        api.worlds.autoBackups(profileId)
+      ])
+      setWorlds(worldList)
+      setBackups(backupList)
     } catch (error) {
       notify(error, 'error')
     } finally {
@@ -411,7 +490,26 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
 
   return (
     <div className="stack-lg">
-      <div className="row">
+      <div className="row" style={{ flexWrap: 'wrap' }}>
+        <button
+          className="chip"
+          aria-pressed={profile.autoBackupWorlds === true}
+          onClick={async () => {
+            try {
+              await api.profiles.update(profileId, { autoBackupWorlds: !profile.autoBackupWorlds })
+              await refreshProfiles()
+              notify(profile.autoBackupWorlds ? t('Otomatik dünya yedeği kapatıldı.') : t('Otomatik dünya yedeği açıldı.'))
+            } catch (error) {
+              notify(error, 'error')
+            }
+          }}
+        >
+          {t('Otomatik yedek')}: {profile.autoBackupWorlds ? t('Açık') : t('Kapalı')}
+        </button>
+        <button className="btn" onClick={() => void api.worlds.openAutoBackups(profileId).catch((error) => notify(error, 'error'))}>
+          <Icon name="folder" size={16} />
+          {t('Otomatik yedekler')}
+        </button>
         <button
           className="btn btn--primary"
           onClick={async () => {
@@ -476,6 +574,14 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
               </div>
               <button
                 className="btn btn--sm"
+                disabled={!backups.some((backup) => backup.folderName === world.folderName)}
+                onClick={() => setPendingRestore(backups.find((backup) => backup.folderName === world.folderName) ?? null)}
+              >
+                <Icon name="refresh" size={14} />
+                {t('Son yedeğe dön')}
+              </button>
+              <button
+                className="btn btn--sm"
                 disabled={exporting === world.folderName}
                 onClick={async () => {
                   setExporting(world.folderName)
@@ -524,12 +630,106 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
           onClose={() => setPendingDelete(null)}
         />
       )}
+
+      {pendingRestore && (
+        <Confirm
+          title={t('Dünya yedeğini geri yükle')}
+          confirmLabel={t('Geri yükle')}
+          message={t('Dünyanın şu anki hâli önce ayrıca yedeklenecek, ardından {date} tarihli kopya geri yüklenecek.', {
+            date: new Date(pendingRestore.createdAt).toLocaleString('tr-TR')
+          })}
+          onConfirm={async () => {
+            try {
+              setWorlds(await api.worlds.restoreAutoBackup(profileId, pendingRestore.folderName, pendingRestore.backupId))
+              setBackups(await api.worlds.autoBackups(profileId))
+              notify(t('Dünya yedeği geri yüklendi.'))
+            } catch (error) {
+              notify(error, 'error')
+            }
+          }}
+          onClose={() => setPendingRestore(null)}
+        />
+      )}
     </div>
   )
 }
 
-function LogsTab({ profileId }: { profileId: string }): JSX.Element {
-  const { logs, clearLogs, notify } = useApp()
+function ScreenshotsTab({ profileId }: { profileId: string }): JSX.Element {
+  const { notify } = useApp()
+  const [items, setItems] = useState<ScreenshotSummary[] | null>(null)
+
+  const reload = async (): Promise<void> => {
+    try {
+      setItems(await api.screenshots.list(profileId))
+    } catch (error) {
+      setItems([])
+      notify(error, 'error')
+    }
+  }
+
+  useEffect(() => {
+    void reload()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileId])
+
+  return (
+    <div className="stack-lg">
+      <div className="row">
+        <button className="btn" onClick={() => void api.screenshots.openFolder(profileId).catch((error) => notify(error, 'error'))}>
+          <Icon name="folder" size={16} />
+          {t('Ekran görüntüsü klasörü')}
+        </button>
+        <button className="btn" onClick={() => void reload()}>
+          <Icon name="refresh" size={16} />
+          {t('Yenile')}
+        </button>
+      </div>
+
+      {items === null ? (
+        <div className="row" style={{ justifyContent: 'center', padding: 30 }}><div className="spinner" /></div>
+      ) : items.length === 0 ? (
+        <div className="empty">
+          <div className="empty__icon">📷</div>
+          <div className="empty__title">{t('Henüz ekran görüntüsü yok')}</div>
+          <p>{t("Minecraft'ta F2 tuşuyla çektiğiniz görüntüler burada görünür.")}</p>
+        </div>
+      ) : (
+        <div className="screenshot-grid">
+          {items.map((item) => (
+            <article className="screenshot-card" key={item.fileName}>
+              {item.thumbnail ? <img src={item.thumbnail} alt={item.fileName} /> : <div className="screenshot-card__empty">📷</div>}
+              <div className="screenshot-card__info">
+                <div className="list__title" title={item.fileName}>{item.fileName}</div>
+                <div className="list__sub">{formatRelative(item.createdAt)} · {item.sizeMb} MB</div>
+                <button
+                  className="btn btn--danger btn--sm"
+                  onClick={async () => {
+                    try {
+                      setItems(await api.screenshots.remove(profileId, item.fileName))
+                    } catch (error) {
+                      notify(error, 'error')
+                    }
+                  }}
+                >
+                  <Icon name="trash" size={14} /> {t('Sil')}
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function LogsTab({
+  profileId,
+  onOpenTab
+}: {
+  profileId: string
+  onOpenTab: (tab: 'mods' | 'shaders' | 'settings') => void
+}): JSX.Element {
+  const { logs, clearLogs, notify, profiles, refreshProfiles, signIn } = useApp()
   const lines = logs[profileId] ?? []
   const consoleRef = useRef<HTMLDivElement>(null)
   const [follow, setFollow] = useState(true)
@@ -573,10 +773,64 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
               <div className="list__title">{latest.title}</div>
             </div>
             <span className="badge badge--danger">{latest.category}</span>
+            {latest.confidence != null && (
+              <span className="badge badge--accent">{t('%{confidence} güven', { confidence: latest.confidence })}</span>
+            )}
             <div className="topbar__spacer" />
             <span className="faint">{new Date(latest.createdAt).toLocaleString('tr-TR')}</span>
           </div>
           <p className="muted">{latest.summary}</p>
+          {(latest.suspectedMods?.length ?? 0) > 0 && (
+            <div className="stack-sm">
+              <div className="section-title">{t('Muhtemel sorunlu modlar')}</div>
+              {latest.suspectedMods!.map((suspect) => (
+                <div className="crash-analysis__suspect" key={`${suspect.contentId ?? suspect.name}-${suspect.fileName ?? ''}`}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="list__title">
+                      {suspect.name}{suspect.versionId ? ` · ${suspect.versionId}` : ''}
+                    </div>
+                    <div className="muted">{t('%{confidence} güven', { confidence: suspect.confidence })}</div>
+                    <ul className="crash-analysis__steps">
+                      {suspect.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+                    </ul>
+                  </div>
+                  {suspect.contentId && profiles.find((item) => item.id === profileId)?.content.some(
+                    (content) => content.id === suspect.contentId && content.enabled
+                  ) && (
+                    <button
+                      className="btn btn--primary btn--sm"
+                      onClick={async () => {
+                        try {
+                          await api.content.toggle(profileId, suspect.contentId!, false)
+                          await refreshProfiles()
+                          await api.game.launch(profileId)
+                          notify(`${suspect.name} devre dışı bırakıldı; oyun yeniden başlatıldı.`)
+                        } catch (error) {
+                          notify(error, 'error')
+                        }
+                      }}
+                    >
+                      <Icon name="refresh" size={14} />
+                      {t('Devre dışı bırak ve tekrar dene')}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {(latest.changesSinceLastSuccess?.length ?? 0) > 0 && (
+            <details open>
+              <summary>{t('Son başarılı çalıştırmadan beri değişenler')}</summary>
+              <ul className="crash-analysis__steps">
+                {latest.changesSinceLastSuccess!.map((change, index) => (
+                  <li key={`${change.kind}-${change.contentId ?? index}`}>
+                    <strong>{change.label}:</strong> {change.detail}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+          <div className="section-title">{t('Öneriler')}</div>
           <ul className="crash-analysis__steps">
             {latest.suggestions.map((suggestion) => (
               <li key={suggestion}>{suggestion}</li>
@@ -588,7 +842,53 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
               <pre className="crash-analysis__evidence">{latest.evidence.join('\n')}</pre>
             </details>
           )}
+          {(latest.sources?.length ?? 0) > 0 && (
+            <details>
+              <summary>{t('Kullanılan kaynaklar ({count})', { count: latest.sources!.length })}</summary>
+              <ul className="crash-analysis__steps">
+                {latest.sources!.map((source) => (
+                  <li key={`${source.kind}-${source.path}`}>{source.kind} · {source.path}</li>
+                ))}
+              </ul>
+            </details>
+          )}
           <div className="row" style={{ flexWrap: 'wrap' }}>
+            {latest.category === 'memory' && (
+              <button
+                className="btn btn--primary btn--sm"
+                onClick={() => onOpenTab('settings')}
+              >
+                <Icon name="settings" size={14} />
+                {t('RAM ayarlarını aç')}
+              </button>
+            )}
+            {latest.category === 'java' && (
+              <button
+                className="btn btn--primary btn--sm"
+                onClick={() => onOpenTab('settings')}
+              >
+                <Icon name="settings" size={14} />
+                {t('Java ayarlarını aç')}
+              </button>
+            )}
+            {latest.category === 'authentication' && (
+              <button className="btn btn--primary btn--sm" onClick={() => void signIn()}>
+                <Icon name="user" size={14} />
+                {t('Yeniden oturum aç')}
+              </button>
+            )}
+            {(latest.category === 'dependency' || latest.category === 'mixin') && (
+              <button className="btn btn--primary btn--sm" onClick={() => onOpenTab('mods')}>
+                <Icon name="package" size={14} />
+                {t('Modları yönet')}
+              </button>
+            )}
+            {latest.category === 'graphics' && (
+              <button className="btn btn--primary btn--sm" onClick={() => onOpenTab('shaders')}>
+                <Icon name="image" size={14} />
+                {t('Shaderları yönet')}
+              </button>
+            )}
             <button
               className="btn btn--sm"
               onClick={() => void api.crashes.openFolder(profileId).catch((error) => notify(error, 'error'))}
@@ -598,7 +898,11 @@ function LogsTab({ profileId }: { profileId: string }): JSX.Element {
             </button>
             <button
               className="btn btn--sm"
-              onClick={() => void navigator.clipboard.writeText(JSON.stringify(latest, null, 2))}
+              onClick={() => void api.crashes
+                .share(profileId, latest.id)
+                .then((text) => navigator.clipboard.writeText(text))
+                .then(() => notify(t('Sanitize edilmiş analiz panoya kopyalandı.')))
+                .catch((error) => notify(error, 'error'))}
             >
               <Icon name="copy" size={14} />
               {t('Analizi kopyala')}
@@ -668,6 +972,8 @@ function ProfileSettingsTab({
   const [exportingProfile, setExportingProfile] = useState(false)
   const [options, setOptions] = useState<{ text: string; onDisk: boolean } | null>(null)
   const [editingOptions, setEditingOptions] = useState(false)
+  const [health, setHealth] = useState<ProfileHealthReport | null>(null)
+  const [healthBusy, setHealthBusy] = useState<string | null>(null)
 
   // Read straight from the profile's folder rather than from the global
   // template: what matters here is the file the game will actually load.
@@ -946,6 +1252,71 @@ function ProfileSettingsTab({
 
       <div className="settings-group">
         <div className="section-title">{t('Bakım')}</div>
+        <div className="stack" style={{ marginBottom: 14 }}>
+          <div className="row">
+            <div>
+              <div className="settings-row__label">{t('Profil sağlık kontrolü')}</div>
+              <div className="faint">{t('Eksik dosya, Java ve riskli profil ayarlarını denetler')}</div>
+            </div>
+            <div className="topbar__spacer" />
+            <button
+              className="btn btn--sm"
+              disabled={healthBusy !== null}
+              onClick={async () => {
+                setHealthBusy('scan')
+                try {
+                  setHealth(await api.profiles.health(profileId))
+                } catch (error) {
+                  notify(error, 'error')
+                } finally {
+                  setHealthBusy(null)
+                }
+              }}
+            >
+              {healthBusy === 'scan' ? <div className="spinner" /> : <Icon name="refresh" size={15} />}
+              {t('Şimdi tara')}
+            </button>
+          </div>
+
+          {health && health.issues.length === 0 && (
+            <div className="notice notice--success">
+              <strong>{t('Profil sağlıklı')}</strong>
+              <span>{t('Bilinen bir dosya veya ayar sorunu bulunamadı.')}</span>
+            </div>
+          )}
+
+          {health?.issues.map((issue) => (
+            <div key={issue.id} className={issue.severity === 'error' ? 'notice notice--danger' : 'notice notice--warning'}>
+              <div style={{ flex: 1 }}>
+                <strong>{t(issue.title)}</strong>
+                <span>{t(issue.detail)}</span>
+              </div>
+              {issue.fix && issue.fixLabel && (
+                <button
+                  className="btn btn--sm"
+                  disabled={healthBusy !== null}
+                  onClick={async () => {
+                    setHealthBusy(issue.id)
+                    try {
+                      const report = await api.profiles.fixHealth(profileId, issue.fix!)
+                      setHealth(report)
+                      await refreshProfiles()
+                      if (issue.fix === 'clear-custom-java') setJavaPath('')
+                      if (issue.fix === 'set-safe-memory') setMemory(4096)
+                      notify(t('Profil sorunu düzeltildi.'))
+                    } catch (error) {
+                      notify(error, 'error')
+                    } finally {
+                      setHealthBusy(null)
+                    }
+                  }}
+                >
+                  {healthBusy === issue.id ? <div className="spinner" /> : t(issue.fixLabel)}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
         <div className="row" style={{ flexWrap: 'wrap' }}>
           <button
             className="btn"
@@ -963,8 +1334,13 @@ function ProfileSettingsTab({
           <button
             className="btn"
             onClick={async () => {
-              await api.profiles.duplicate(profileId)
-              await refreshProfiles()
+              try {
+                await api.profiles.duplicate(profileId)
+                await refreshProfiles()
+                notify(t('Profil kopyalandı.'))
+              } catch (error) {
+                notify(error, 'error')
+              }
             }}
           >
             <Icon name="copy" size={16} />

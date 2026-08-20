@@ -15,12 +15,13 @@ import { t } from '../../shared/i18n'
  * makes no contact with it while the tab is closed.
  */
 export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
-  const { notify } = useApp()
+  const { notify, gameStates } = useApp()
   const [servers, setServers] = useState<ServerEntry[] | null>(null)
   const [status, setStatus] = useState<Record<string, ServerStatus>>({})
   const [checking, setChecking] = useState(false)
   const [editing, setEditing] = useState<{ index: number | null; name: string; address: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [joining, setJoining] = useState<string | null>(null)
 
   const refreshStatus = useCallback(async (list: ServerEntry[]) => {
     setChecking(true)
@@ -193,6 +194,23 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
                   </div>
                 </div>
 
+                <button
+                  className="btn btn--primary btn--sm"
+                  disabled={busy || joining !== null || ['preparing', 'running'].includes(gameStates[profile.id] ?? '')}
+                  onClick={async () => {
+                    setJoining(server.address)
+                    try {
+                      await api.game.launch(profile.id, { serverAddress: server.address })
+                    } catch (error) {
+                      notify(error, 'error')
+                    } finally {
+                      setJoining(null)
+                    }
+                  }}
+                >
+                  {joining === server.address ? <div className="spinner" /> : <Icon name="play" size={15} />}
+                  {t('Katıl')}
+                </button>
                 <button
                   className="btn btn--ghost btn--icon"
                   aria-label={t('Yukarı taşı')}

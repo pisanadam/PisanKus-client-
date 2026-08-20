@@ -494,6 +494,12 @@
     <string name="pisan_mods_installed_datapack">Kuruldu: %1$s — veri paketleri profilin datapacks klasöründe durur; kullanmak için dünyanızın datapacks klasörüne taşıyın.</string>
     <string name="pisan_mods_installed_sodium">Kuruldu: %1$s — Sodium için Podium yaması da kuruldu ve profilin görüntüleyicisi MobileGlues yapıldı.</string>
     <string name="pisan_mods_no_version">%1$s için %2$s sürümünde yapı yok</string>
+    <string name="pisan_mods_checking_version">%1$s sürümü denetleniyor…</string>
+    <string name="pisan_mods_update_available">Yeni sürüm çıktı</string>
+    <string name="pisan_mods_update_confirm">%1$s yalnızca onay verirseniz güncellenecek. Kurulu sürüm o zamana kadar değişmez.</string>
+    <string name="pisan_mods_update_warning">Bu güncelleme profili veya modları bozabilir ya da kararsız hâle getirebilir.</string>
+    <string name="pisan_mods_update_anyway">Yine de güncelle</string>
+    <string name="pisan_mods_installed_current">%1$s zaten kurulu sürümde.</string>
     <string name="pisan_skin_title">Skin değiştir</string>
     <string name="pisan_skin_button">Skin</string>
     <string name="pisan_skin_pick">PNG seç</string>
@@ -532,6 +538,7 @@
     <string name="pisan_modrinth_dir_failed">Klasör oluşturulamadı: %1$s</string>
     <string name="pisan_modrinth_no_download_url">Dosyanın indirme bağlantısı yok.</string>
     <string name="pisan_modrinth_unreadable">Modrinth yanıtı okunamadı: %1$s</string>
+    <string name="pisan_modrinth_replace_failed">İndirilen dosya kurulu sürümün yerini alamadı.</string>
     <string name="pisan_skin_library_dir_failed">Kitaplık klasörü oluşturulamadı.</string>
     <string name="pisan_skin_file_open_failed">Dosya açılamadı.</string>
     <string name="pisan_skin_not_png">Bu dosya bir PNG değil.</string>

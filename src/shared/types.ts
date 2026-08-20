@@ -75,6 +75,8 @@ export interface InstalledContent {
   iconUrl?: string
   /** Set when the source reports a newer version for the profile's game/loader. */
   updateAvailable?: string
+  /** A user choice to keep this exact version until they unpin it. */
+  pinned?: boolean
   enabled: boolean
   installedAt: number
 }
@@ -103,6 +105,8 @@ export interface Profile {
   javaPath?: string
   jvmArgs?: string
   resolution?: { width: number; height: number }
+  /** Copies each world before launch and keeps a short local history. */
+  autoBackupWorlds?: boolean
   content: InstalledContent[]
   /**
    * Set while a pack is still downloading into this profile.
@@ -115,6 +119,26 @@ export interface Profile {
   createdAt: number
   lastPlayed?: number
   totalPlaytimeMs: number
+}
+
+export type ProfileHealthFix =
+  | 'create-profile-directory'
+  | 'clear-custom-java'
+  | 'set-safe-memory'
+  | 'remove-missing-content'
+
+export interface ProfileHealthIssue {
+  id: string
+  severity: 'warning' | 'error'
+  title: string
+  detail: string
+  fix?: ProfileHealthFix
+  fixLabel?: string
+}
+
+export interface ProfileHealthReport {
+  checkedAt: number
+  issues: ProfileHealthIssue[]
 }
 
 export interface Settings {
@@ -175,7 +199,8 @@ export interface TaskProgress {
   state: 'running' | 'done' | 'error'
   error?: string
   /** Offers a way out of the failure instead of only naming it. */
-  action?: 'signIn'
+  action?: 'signIn' | 'openCrash'
+  actionProfileId?: string
 }
 
 export interface GameLogLine {
@@ -190,6 +215,8 @@ export interface GameState {
   status: 'preparing' | 'running' | 'exited' | 'crashed'
   pid?: number
   exitCode?: number
+  /** OS signal reported when no numeric exit code exists. */
+  signal?: string
 }
 
 export type CrashCategory =
@@ -203,6 +230,38 @@ export type CrashCategory =
   | 'network'
   | 'unknown'
 
+export type CrashSourceKind = 'minecraft-crash' | 'jvm-crash' | 'latest-log' | 'launcher-log'
+
+export interface CrashSource {
+  kind: CrashSourceKind
+  /** Sanitized profile-relative name, never an absolute disk path. */
+  path: string
+  modifiedAt?: number
+}
+
+export interface CrashSecondaryCause {
+  category: CrashCategory
+  confidence: number
+}
+
+export interface SuspectedCrashMod {
+  name: string
+  contentId?: string
+  versionId?: string
+  fileName?: string
+  confidence: number
+  reasons: string[]
+}
+
+export type CrashChangeKind = 'added' | 'updated' | 'enabled' | 'loader' | 'java' | 'memory'
+
+export interface CrashProfileChange {
+  kind: CrashChangeKind
+  label: string
+  detail: string
+  contentId?: string
+}
+
 /** A persisted, token-redacted explanation of a failed launch or game crash. */
 export interface CrashReport {
   id: string
@@ -210,6 +269,7 @@ export interface CrashReport {
   profileName: string
   createdAt: number
   exitCode?: number
+  signal?: string
   category: CrashCategory
   title: string
   summary: string
@@ -218,6 +278,14 @@ export interface CrashReport {
   evidence: string[]
   logFile: string
   reportFile: string
+  /** V2 fields are optional so reports written by older versions still load. */
+  confidence?: number
+  secondaryCauses?: CrashSecondaryCause[]
+  suspectedMods?: SuspectedCrashMod[]
+  sources?: CrashSource[]
+  changesSinceLastSuccess?: CrashProfileChange[]
+  detectedWhileLauncherClosed?: boolean
+  sourceFingerprint?: string
 }
 
 export interface SearchResult {

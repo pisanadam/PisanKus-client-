@@ -1,167 +1,200 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { finished } from 'node:stream/promises'
-import type {
-  CrashCategory,
-  CrashReport,
-  GameLogLine,
-  GameState,
-  Profile
-} from '../../shared/types'
+import type { CrashReport, CrashSourceKind, GameLogLine, GameState, Profile } from '../../shared/types'
+import {
+  analyzeCrash,
+  analyzeCrashText,
+  redactSensitiveText,
+  sanitizeCrashReportForShare,
+  type CrashTextSource
+} from './crashAnalysis.ts'
+import {
+  compareSuccessfulRunSnapshot,
+  loadSuccessfulRunSnapshot,
+  saveSuccessfulRunSnapshot,
+  type RuntimeSnapshotInfo
+} from './crashSnapshot.ts'
 
 const MAX_BUFFERED_LINES = 5_000
-const MAX_EVIDENCE_LINES = 8
+const MAX_SOURCE_BYTES = 2 * 1024 * 1024
+const SOURCE_CLOCK_SLOP_MS = 3_000
+const INDEX_VERSION = 1
 
-interface Analysis {
-  category: CrashCategory
-  title: string
-  summary: string
-  suggestions: string[]
-  evidence: string[]
+interface CrashIndex {
+  schemaVersion: number
+  processed: string[]
 }
 
-interface Signature extends Omit<Analysis, 'evidence'> {
-  patterns: RegExp[]
+interface SourceCandidate {
+  kind: CrashSourceKind
+  file: string
+  modifiedAt: number
+  size: number
 }
 
-const SIGNATURES: Signature[] = [
-  {
-    category: 'memory',
-    title: 'Bellek yetersizliği',
-    summary: 'Minecraft veya Java ayrılan belleği kullanamadığı için kapandı.',
-    suggestions: [
-      'Profil belleğini yükseltin; büyük mod paketlerinde 6–8 GB deneyin.',
-      'Bilgisayardaki diğer ağır uygulamaları kapatın.',
-      '“Could not reserve” görülüyorsa çok yüksek bellek değerini azaltın ve 64 bit Java seçin.'
-    ],
-    patterns: [/OutOfMemoryError/i, /Could not reserve enough space/i, /Java heap space/i, /GC overhead limit/i]
-  },
-  {
-    category: 'java',
-    title: 'Uyumsuz Java sürümü',
-    summary: 'Seçili Java sürümü bu Minecraft veya mod sürümüyle uyumlu görünmüyor.',
-    suggestions: [
-      'Profil ayarlarında Java seçimini “Genel ayarı kullan” yapın.',
-      'Minecraft sürümünün istediği Java sürümünü seçin ve yeniden deneyin.'
-    ],
-    patterns: [
-      /UnsupportedClassVersionError/i,
-      /class file version/i,
-      /only recognizes class file versions/i,
-      /requires Java \d+/i,
-      /Unable to locate a Java Runtime/i
-    ]
-  },
-  {
-    category: 'dependency',
-    title: 'Eksik veya uyumsuz mod bağımlılığı',
-    summary: 'Bir modun ihtiyaç duyduğu sınıf, mod veya sürüm bulunamadı.',
-    suggestions: [
-      'Mod güncellemelerini denetleyin ve eksik bağımlılığı Modrinth üzerinden kurun.',
-      'Son eklediğiniz modları geçici olarak devre dışı bırakıp yeniden deneyin.',
-      'Modların profilin Minecraft ve yükleyici sürümüyle aynı olduğundan emin olun.'
-    ],
-    patterns: [
-      /NoClassDefFoundError/i,
-      /ClassNotFoundException/i,
-      /ModResolutionException/i,
-      /requires any version of/i,
-      /depends on .* which is missing/i,
-      /missing mandatory dependenc/i,
-      /Incompatible mods found/i
-    ]
-  },
-  {
-    category: 'mixin',
-    title: 'Mod çakışması (Mixin)',
-    summary: 'Bir mod Minecraft koduna değişiklik uygularken başka bir mod veya sürümle çakıştı.',
-    suggestions: [
-      'Rapordaki mod adını güncelleyin veya geçici olarak devre dışı bırakın.',
-      'Aynı işlevi değiştiren performans/grafik modlarını birlikte kullanmadığınızdan emin olun.'
-    ],
-    patterns: [/MixinApplyError/i, /MixinTransformerError/i, /InjectionError/i, /mixin.*failed/i]
-  },
-  {
-    category: 'graphics',
-    title: 'Ekran kartı veya OpenGL sorunu',
-    summary: 'Minecraft grafik bağlamını oluşturamadı ya da ekran kartı sürücüsü yanıt vermedi.',
-    suggestions: [
-      'Ekran kartı sürücüsünü güncelleyin.',
-      'Shader ve grafik modlarını kapatıp tekrar deneyin.',
-      'Dizüstünde Minecraft’ın yüksek performanslı ekran kartını kullandığını kontrol edin.'
-    ],
-    patterns: [/GLFW error/i, /OpenGL.*(?:error|not supported)/i, /Failed to create window/i, /Pixel format launch fail/i]
-  },
-  {
-    category: 'authentication',
-    title: 'Oturum doğrulanamadı',
-    summary: 'Microsoft/Minecraft oturumu çevrimiçi hizmetler tarafından kabul edilmedi.',
-    suggestions: [
-      'Çevrimiçi oynamak için hesaptan çıkıp yeniden giriş yapın.',
-      'Yalnızca tek oyunculu oynayacaksanız profili çevrimdışı başlatabilirsiniz.'
-    ],
-    patterns: [/Invalid session/i, /Failed to verify username/i, /AuthenticationException/i, /Not authenticated with Minecraft/i]
-  },
-  {
-    category: 'native',
-    title: 'Yerel kütüphane yüklenemedi',
-    summary: 'LWJGL veya başka bir işletim sistemi kütüphanesi açılamadı.',
-    suggestions: [
-      'Profil bakımından “Dosyaları önceden indir” işlemini yeniden çalıştırın.',
-      'Java ve launcher mimarisinin işletim sistemiyle aynı olduğundan emin olun.'
-    ],
-    patterns: [/UnsatisfiedLinkError/i, /no lwjgl.* in java\.library\.path/i, /Failed to load a native library/i]
-  },
-  {
-    category: 'network',
-    title: 'Ağ veya indirme sorunu',
-    summary: 'Başlatma için gereken bir hizmete veya dosyaya erişilemedi.',
-    suggestions: [
-      'İnternet bağlantısını kontrol edip tekrar deneyin.',
-      'Dosyalar daha önce hazırlandıysa çevrimdışı başlatmayı deneyin.'
-    ],
-    patterns: [/fetch failed/i, /ENOTFOUND/i, /ECONNRESET/i, /ETIMEDOUT/i, /İstek başarısız/i, /dosya indirilemedi/i]
-  }
-]
+export { analyzeCrash, sanitizeCrashReportForShare }
 
-/** Removes credentials that occasionally appear in mod or authentication logs. */
+/** Backwards-compatible line helper used by existing log consumers/tests. */
 export function redactLogLine(value: string): string {
-  return value
-    .replace(/((?:access|refresh)[_-]?token["'=:\s]+)[^\s",}]+/gi, '$1[REDACTED]')
-    .replace(/(Authorization["':\s]+Bearer\s+)[^\s",}]+/gi, '$1[REDACTED]')
-    .replace(/(--accessToken\s+)[^\s]+/gi, '$1[REDACTED]')
-    .slice(0, 8_000)
+  return redactSensitiveText(value).slice(0, 8_000)
 }
 
-export function analyzeCrash(logText: string): Analysis {
-  const lines = logText.split(/\r?\n/).filter(Boolean)
-  for (const signature of SIGNATURES) {
-    if (!signature.patterns.some((pattern) => pattern.test(logText))) continue
-    const evidence = lines
-      .filter((line) => signature.patterns.some((pattern) => pattern.test(line)))
-      .slice(-MAX_EVIDENCE_LINES)
-      .map(redactLogLine)
-    return {
-      category: signature.category,
-      title: signature.title,
-      summary: signature.summary,
-      suggestions: signature.suggestions,
-      evidence
-    }
-  }
+function publicSourcePath(profile: Profile, file: string): string {
+  return `<PROFILE>/${path.relative(profile.directory, file).split(path.sep).join('/')}`
+}
 
-  return {
-    category: 'unknown',
-    title: 'Bilinmeyen çökme',
-    summary: 'Günlükte bilinen bir hata imzası bulunamadı; son satırlar rapora eklendi.',
-    suggestions: [
-      'Son eklediğiniz mod veya shaderı devre dışı bırakıp tekrar deneyin.',
-      'Crash raporunu ve tam günlüğü paylaşarak ayrıntılı inceleme yapın.'
-    ],
-    evidence: lines.slice(-MAX_EVIDENCE_LINES).map(redactLogLine)
+async function listMatching(directory: string, pattern: RegExp, kind: CrashSourceKind): Promise<SourceCandidate[]> {
+  const names = await fsp.readdir(directory).catch(() => [])
+  const entries = await Promise.all(
+    names.filter((name) => pattern.test(name)).map(async (name): Promise<SourceCandidate | null> => {
+      const file = path.join(directory, name)
+      try {
+        const stat = await fsp.lstat(file)
+        if (!stat.isFile() || stat.isSymbolicLink()) return null
+        return { kind, file, modifiedAt: stat.mtimeMs, size: stat.size }
+      } catch {
+        return null
+      }
+    })
+  )
+  return entries.filter((entry): entry is SourceCandidate => entry !== null)
+}
+
+async function sourceCandidates(profile: Profile): Promise<SourceCandidate[]> {
+  const crashReports = await listMatching(
+    path.join(profile.directory, 'crash-reports'),
+    /^crash-.+\.txt$/i,
+    'minecraft-crash'
+  )
+  const jvmCrashes = await listMatching(profile.directory, /^hs_err_pid\d+\.log$/i, 'jvm-crash')
+  const latestFile = path.join(profile.directory, 'logs', 'latest.log')
+  const latest = await fsp.lstat(latestFile).then<SourceCandidate | null>((stat) =>
+    stat.isFile() && !stat.isSymbolicLink()
+      ? { kind: 'latest-log', file: latestFile, modifiedAt: stat.mtimeMs, size: stat.size }
+      : null
+  ).catch(() => null)
+  return [...crashReports, ...jvmCrashes, ...(latest ? [latest] : [])]
+}
+
+async function readSource(candidate: SourceCandidate, profile: Profile): Promise<CrashTextSource | null> {
+  try {
+    const handle = await fsp.open(candidate.file, 'r')
+    try {
+      const bytes = Math.min(candidate.size, MAX_SOURCE_BYTES)
+      const buffer = Buffer.alloc(bytes)
+      const position = candidate.kind === 'latest-log' ? Math.max(0, candidate.size - bytes) : 0
+      const { bytesRead } = await handle.read(buffer, 0, bytes, position)
+      return {
+        kind: candidate.kind,
+        path: publicSourcePath(profile, candidate.file),
+        modifiedAt: candidate.modifiedAt,
+        text: redactSensitiveText(buffer.subarray(0, bytesRead).toString('utf8'), {
+          profileDirectory: profile.directory
+        })
+      }
+    } finally {
+      await handle.close()
+    }
+  } catch {
+    return null
   }
+}
+
+function fingerprint(candidate: SourceCandidate, profile: Profile): string {
+  return createHash('sha256')
+    .update(`${path.relative(profile.directory, candidate.file)}\0${candidate.modifiedAt}\0${candidate.size}`)
+    .digest('hex')
+}
+
+function indexFile(profile: Profile): string {
+  return path.join(profile.directory, '.pisankus', 'crash-index.json')
+}
+
+async function readIndex(profile: Profile): Promise<CrashIndex> {
+  try {
+    const parsed = JSON.parse(await fsp.readFile(indexFile(profile), 'utf8')) as CrashIndex
+    if (parsed.schemaVersion === INDEX_VERSION && Array.isArray(parsed.processed)) return parsed
+  } catch {
+    // A missing/corrupt index is safely rebuilt from reports discovered below.
+  }
+  const existing = await listCrashReports(profile)
+  return {
+    schemaVersion: INDEX_VERSION,
+    processed: existing.map((report) => report.sourceFingerprint).filter((value): value is string => Boolean(value))
+  }
+}
+
+async function writeIndex(profile: Profile, index: CrashIndex): Promise<void> {
+  const file = indexFile(profile)
+  const temporary = `${file}.${process.pid}.tmp`
+  await fsp.mkdir(path.dirname(file), { recursive: true })
+  await fsp.writeFile(temporary, JSON.stringify({ ...index, processed: index.processed.slice(-2_000) }, null, 2), {
+    mode: 0o600
+  })
+  await fsp.rename(temporary, file)
+}
+
+async function markProcessed(profile: Profile, fingerprints: string[]): Promise<void> {
+  if (fingerprints.length === 0) return
+  const index = await readIndex(profile)
+  index.processed = [...new Set([...index.processed, ...fingerprints])]
+  await writeIndex(profile, index)
+}
+
+async function writeReport(
+  profile: Profile,
+  report: Omit<CrashReport, 'logFile' | 'reportFile'>,
+  sourceText: string
+): Promise<CrashReport> {
+  const crashDir = path.join(profile.directory, 'crash-reports')
+  const stem = `pisankus-${report.createdAt}-${report.id.slice(0, 8)}`
+  const logFile = path.join(crashDir, `${stem}.log`)
+  const reportFile = path.join(crashDir, `${stem}.json`)
+  const complete: CrashReport = { ...report, logFile, reportFile }
+  await fsp.mkdir(crashDir, { recursive: true })
+  await fsp.writeFile(logFile, redactSensitiveText(sourceText, { profileDirectory: profile.directory }), {
+    mode: 0o600
+  })
+  const temporaryReport = `${reportFile}.${process.pid}.tmp`
+  await fsp.writeFile(temporaryReport, JSON.stringify(complete, null, 2), { mode: 0o600 })
+  await fsp.rename(temporaryReport, reportFile)
+  return complete
+}
+
+async function analyzeSources(
+  profile: Profile,
+  sources: CrashTextSource[],
+  state: GameState,
+  detectedWhileLauncherClosed: boolean,
+  sourceFingerprint?: string,
+  runtime: RuntimeSnapshotInfo = {}
+): Promise<CrashReport> {
+  const previous = await loadSuccessfulRunSnapshot(profile)
+  const changes = compareSuccessfulRunSnapshot(previous, profile, runtime)
+  const analysis = analyzeCrashText(sources.map((source) => source.text).join('\n'), {
+    profile,
+    sources,
+    changesSinceLastSuccess: changes
+  })
+  const createdAt = Date.now()
+  return writeReport(
+    profile,
+    {
+      id: randomUUID(),
+      profileId: profile.id,
+      profileName: profile.name,
+      createdAt,
+      exitCode: state.exitCode,
+      signal: state.signal,
+      detectedWhileLauncherClosed,
+      sourceFingerprint,
+      ...analysis
+    },
+    sources.map((source) => `===== ${source.path} =====\n${source.text}`).join('\n\n')
+  )
 }
 
 /** Writes a live sanitized log and creates a structured report only on failure. */
@@ -170,6 +203,9 @@ export class GameDiagnostics {
   private readonly lines: string[] = []
   private readonly latestLog: string
   private readonly stream: fs.WriteStream
+  private readonly startedAt = Date.now()
+  private runtime: RuntimeSnapshotInfo = {}
+  private observedRunning = false
   private finishPromise?: Promise<CrashReport | null>
 
   constructor(profile: Profile) {
@@ -178,13 +214,21 @@ export class GameDiagnostics {
     fs.mkdirSync(logDir, { recursive: true })
     this.latestLog = path.join(logDir, 'pisankus-latest.log')
     this.stream = fs.createWriteStream(this.latestLog, { flags: 'w', mode: 0o600 })
-    // A full disk should not crash the launcher while it is trying to report a
-    // different failure. The in-memory report can still be shown for the run.
     this.stream.on('error', () => undefined)
   }
 
+  setRuntime(runtime: RuntimeSnapshotInfo): void {
+    this.runtime = { ...this.runtime, ...runtime }
+  }
+
+  markRunning(): void {
+    this.observedRunning = true
+  }
+
   record(line: GameLogLine): void {
-    const rendered = `${new Date(line.at).toISOString()} [${line.stream}] ${redactLogLine(line.line)}`
+    const rendered = `${new Date(line.at).toISOString()} [${line.stream}] ${redactSensitiveText(line.line, {
+      profileDirectory: this.profile.directory
+    }).slice(0, 8_000)}`
     this.lines.push(rendered)
     if (this.lines.length > MAX_BUFFERED_LINES) this.lines.splice(0, this.lines.length - MAX_BUFFERED_LINES)
     this.stream.write(`${rendered}\n`)
@@ -198,32 +242,69 @@ export class GameDiagnostics {
   private async finishRun(state: GameState): Promise<CrashReport | null> {
     this.stream.end()
     await finished(this.stream).catch(() => undefined)
-    if (state.status !== 'crashed') return null
 
-    const createdAt = Date.now()
-    const crashDir = path.join(this.profile.directory, 'crash-reports')
-    const stem = `pisankus-${createdAt}`
-    const logFile = path.join(crashDir, `${stem}.log`)
-    const reportFile = path.join(crashDir, `${stem}.json`)
-    const analysis = analyzeCrash(this.lines.join('\n'))
-    const report: CrashReport = {
-      id: randomUUID(),
-      profileId: this.profile.id,
-      profileName: this.profile.name,
-      createdAt,
-      exitCode: state.exitCode,
-      ...analysis,
-      logFile,
-      reportFile
+    if (state.status !== 'crashed') {
+      if (this.observedRunning && state.status === 'exited') {
+        await saveSuccessfulRunSnapshot(this.profile, this.runtime).catch(() => undefined)
+      }
+      return null
     }
 
-    await fsp.mkdir(crashDir, { recursive: true })
-    await fsp.copyFile(this.latestLog, logFile).catch(async () => {
-      await fsp.writeFile(logFile, `${this.lines.join('\n')}\n`, { mode: 0o600 })
-    })
-    await fsp.writeFile(reportFile, JSON.stringify(report, null, 2), { mode: 0o600 })
+    const candidates = (await sourceCandidates(this.profile))
+      .filter((candidate) => candidate.modifiedAt >= this.startedAt - SOURCE_CLOCK_SLOP_MS)
+      .sort((left, right) => right.modifiedAt - left.modifiedAt)
+    const selected: SourceCandidate[] = []
+    for (const kind of ['minecraft-crash', 'jvm-crash', 'latest-log'] as const) {
+      const candidate = candidates.find((item) => item.kind === kind)
+      if (candidate) selected.push(candidate)
+    }
+    const diskSources = (await Promise.all(selected.map((candidate) => readSource(candidate, this.profile))))
+      .filter((source): source is CrashTextSource => source !== null)
+    const liveSource: CrashTextSource = {
+      kind: 'launcher-log',
+      path: '<PROFILE>/logs/pisankus-latest.log',
+      modifiedAt: Date.now(),
+      text: this.lines.join('\n')
+    }
+    const fingerprints = selected.map((candidate) => fingerprint(candidate, this.profile))
+    const report = await analyzeSources(this.profile, [...diskSources, liveSource], state, false, fingerprints[0], this.runtime)
+    await markProcessed(this.profile, fingerprints).catch(() => undefined)
     return report
   }
+}
+
+/** Imports crash/JVM reports written while the detached game outlived the launcher. */
+export async function detectUnprocessedCrashes(profile: Profile): Promise<CrashReport[]> {
+  const index = await readIndex(profile)
+  const processed = new Set(index.processed)
+  const candidates = (await sourceCandidates(profile))
+    .filter((candidate) => candidate.kind === 'minecraft-crash' || candidate.kind === 'jvm-crash')
+    .sort((left, right) => left.modifiedAt - right.modifiedAt)
+  const reports: CrashReport[] = []
+
+  for (const candidate of candidates) {
+    const sourceFingerprint = fingerprint(candidate, profile)
+    if (processed.has(sourceFingerprint)) continue
+    const primary = await readSource(candidate, profile)
+    if (!primary) continue
+
+    const latestCandidate = (await sourceCandidates(profile))
+      .filter((item) => item.kind === 'latest-log' && Math.abs(item.modifiedAt - candidate.modifiedAt) < 10 * 60_000)
+      .sort((left, right) => right.modifiedAt - left.modifiedAt)[0]
+    const latest = latestCandidate ? await readSource(latestCandidate, profile) : null
+    const report = await analyzeSources(
+      profile,
+      latest ? [primary, latest] : [primary],
+      { profileId: profile.id, status: 'crashed' },
+      true,
+      sourceFingerprint
+    )
+    reports.push(report)
+    processed.add(sourceFingerprint)
+  }
+
+  if (reports.length > 0) await writeIndex(profile, { schemaVersion: INDEX_VERSION, processed: [...processed] })
+  return reports
 }
 
 export async function listCrashReports(profile: Profile): Promise<CrashReport[]> {
@@ -231,9 +312,7 @@ export async function listCrashReports(profile: Profile): Promise<CrashReport[]>
   const files = await fsp.readdir(crashDir).catch(() => [])
   const reports = await Promise.all(
     files
-      // `opbay-` is the old brand's prefix. Reports written before the rename
-      // are still perfectly good crash reports, so they stay listed.
-      .filter((file) => /^(?:pisankus|opbay)-\d+\.json$/.test(file))
+      .filter((file) => /^(?:pisankus|opbay)-\d+(?:-[a-f0-9]{8})?\.json$/.test(file))
       .map(async (file): Promise<CrashReport | null> => {
         try {
           const reportFile = path.join(crashDir, file)
@@ -243,7 +322,7 @@ export async function listCrashReports(profile: Profile): Promise<CrashReport[]>
             profileId: profile.id,
             profileName: profile.name,
             reportFile,
-            logFile: path.join(crashDir, path.basename(parsed.logFile))
+            logFile: path.join(crashDir, path.basename(parsed.logFile ?? file.replace(/\.json$/, '.log')))
           }
         } catch {
           return null

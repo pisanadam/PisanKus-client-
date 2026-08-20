@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import { t } from '../../shared/i18n'
 
 export function TaskTray(): JSX.Element | null {
-  const { tasks, dismissTask, signIn, signingIn } = useApp()
+  const { tasks, dismissTask, signIn, signingIn, openCrashAnalysis } = useApp()
   if (tasks.length === 0) return null
 
   return (
@@ -41,6 +41,20 @@ export function TaskTray(): JSX.Element | null {
               >
                 {signingIn ? <div className="spinner" /> : <Icon name="user" size={15} />}
                 {t('Tekrar oturum aç')}
+              </button>
+            )}
+
+            {task.action === 'openCrash' && task.actionProfileId && (
+              <button
+                className="btn btn--primary btn--sm btn--block"
+                style={{ marginTop: 4 }}
+                onClick={() => {
+                  openCrashAnalysis(task.actionProfileId!)
+                  dismissTask(task.id)
+                }}
+              >
+                <Icon name="terminal" size={15} />
+                {t('Analizi aç')}
               </button>
             )}
 

@@ -1,5 +1,7 @@
 package net.kdt.pojavlaunch;
 
+import android.system.Os;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -139,12 +141,23 @@ public class PisanKusModrinth {
         String downloadUrl = chosen.optString("url", null);
         if (downloadUrl == null) throw new IOException(PisanKusText.get(R.string.pisan_modrinth_no_download_url));
 
+        File destination = new File(targetDir, fileName);
+        File temporary = new File(targetDir, fileName + ".pisankus-download");
         HttpURLConnection connection = open(downloadUrl);
         try (InputStream in = connection.getInputStream();
-             FileOutputStream out = new FileOutputStream(new File(targetDir, fileName))) {
+             FileOutputStream out = new FileOutputStream(temporary)) {
             copy(in, out);
+            out.getFD().sync();
         } finally {
             connection.disconnect();
+        }
+        try {
+            // Atomic replacement: the installed jar is not truncated while a
+            // newer one is still downloading.
+            Os.rename(temporary.getAbsolutePath(), destination.getAbsolutePath());
+        } catch (Exception error) {
+            temporary.delete();
+            throw new IOException(PisanKusText.get(R.string.pisan_modrinth_replace_failed), error);
         }
         return fileName;
     }
