@@ -205,7 +205,7 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       auth_player_name: account.name,
       auth_uuid: account.id,
       auth_access_token: offline ? '0' : account.accessToken,
-      auth_xuid: account.id,
+      auth_xuid: account.xuid ?? '',
       auth_session: `token:${offline ? '0' : account.accessToken}:${account.id}`,
       user_type: 'msa',
       user_properties: '{}',
@@ -301,6 +301,17 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     const args = [...jvmArgs, version.mainClass, ...gameArgs]
 
     log(`Başlatılıyor: ${path.basename(javaPath)} ${version.mainClass}`)
+    // The game arguments, without the JVM block: a session that starts fine but
+    // is refused by servers is almost always one of these being wrong, and
+    // without them in the log there is nothing to compare against a launcher
+    // that works. The token is masked here rather than on the way to disk,
+    // because this line is also shown live in the launcher's own log tab — and
+    // that is exactly the text a player copies when asking for help.
+    log(
+      `Oyun argümanları: ${gameArgs
+        .map((arg, index) => (gameArgs[index - 1] === '--accessToken' ? '[gizlendi]' : arg))
+        .join(' ')}`
+    )
     onProgress({ id: taskId, label: 'Oyun başlatıldı', progress: 1, state: 'done' })
 
     // Detached, so the game keeps running when the launcher is closed. Without

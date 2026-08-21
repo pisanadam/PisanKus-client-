@@ -51,7 +51,11 @@ interface MsToken {
 
 interface XboxResponse {
   Token: string
-  DisplayClaims: { xui: { uhs: string }[] }
+  /**
+   * `uhs` is the user hash the Minecraft login needs; `xid` is the Xbox user id
+   * the game itself is launched with. Only the XSTS response carries `xid`.
+   */
+  DisplayClaims: { xui: { uhs: string; xid?: string }[] }
 }
 
 interface McLoginResponse {
@@ -218,7 +222,7 @@ async function xboxLive(msAccessToken: string, mode: AuthMode): Promise<{ token:
   return { token: xbl.Token, uhs: xbl.DisplayClaims.xui[0].uhs }
 }
 
-async function xsts(xblToken: string): Promise<string> {
+async function xsts(xblToken: string): Promise<{ token: string; xuid: string | undefined }> {
   const response = await fetch(XSTS_AUTH, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -244,13 +248,14 @@ async function xsts(xblToken: string): Promise<string> {
     )
   }
   if (!response.ok) throw new AuthError('XSTS doğrulaması başarısız.', 'xsts_failed')
-  return ((await response.json()) as XboxResponse).Token
+  const xsts = (await response.json()) as XboxResponse
+  return { token: xsts.Token, xuid: xsts.DisplayClaims?.xui?.[0]?.xid }
 }
 
 /** Runs the Xbox → Minecraft half of the chain and returns a ready-to-store account. */
 async function completeMinecraftLogin(msToken: MsToken, mode: AuthMode): Promise<Account> {
   const { token: xblToken, uhs } = await xboxLive(msToken.access_token, mode)
-  const xstsToken = await xsts(xblToken)
+  const { token: xstsToken, xuid } = await xsts(xblToken)
 
   const mcLogin = await fetchJson<McLoginResponse>(MC_LOGIN, {
     method: 'POST',
@@ -275,6 +280,7 @@ async function completeMinecraftLogin(msToken: MsToken, mode: AuthMode): Promise
   return {
     id: profile.id,
     name: profile.name,
+    xuid,
     accessToken: mcLogin.access_token,
     expiresAt: Date.now() + mcLogin.expires_in * 1000,
     refreshToken: msToken.refresh_token,

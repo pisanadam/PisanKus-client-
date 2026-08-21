@@ -50,6 +50,15 @@ export interface Account {
   /** Minecraft profile UUID (dashless). */
   id: string
   name: string
+  /**
+   * Xbox user id, from the XSTS response.
+   *
+   * The game is launched with it, and it is not the Minecraft UUID: passing the
+   * UUID here made the client report an Xbox identity that does not exist.
+   * Missing on accounts stored before this was read; the next token refresh
+   * fills it in.
+   */
+  xuid?: string
   /** Minecraft access token — never leaves the main process except for launch. */
   accessToken: string
   /** Unix ms at which `accessToken` stops being valid. */

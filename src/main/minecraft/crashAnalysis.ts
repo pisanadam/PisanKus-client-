@@ -156,6 +156,12 @@ const RULES: ScoreRule[] = [
   { category: 'native', pattern: /A fatal error has been detected by the Java Runtime Environment/i, points: 70 },
   { category: 'authentication', pattern: /Invalid session|Failed to verify username/i, points: 80 },
   { category: 'authentication', pattern: /AuthenticationException|Not authenticated with Minecraft/i, points: 80 },
+  // How a server words the same refusal when it turns a join away.
+  {
+    category: 'authentication',
+    pattern: /multiplayer\.disconnect\.(?:unverified_username|authservers_down)|disconnect\.loginFailedInfo/i,
+    points: 80
+  },
   { category: 'network', pattern: /fetch failed|ENOTFOUND|ECONNRESET|ETIMEDOUT/i, points: 65 },
   { category: 'network', pattern: /İstek başarısız|dosya indirilemedi|UnknownHostException/i, points: 65 }
 ]
