@@ -547,4 +547,11 @@
     <string name="pisan_skin_rate_limited">Mojang skin değiştirme sınırına takıldınız. Bir süre sonra tekrar deneyin.</string>
     <string name="pisan_skin_service_rejected">Minecraft servisleri isteği reddetti (%1$d). %2$s</string>
     <string name="pisan_skin_response_unreadable">Sunucu yanıtı okunamadı.</string>
+    <string name="pisan_mods_toggle_content">Kurulu içeriği etkinleştir veya devre dışı bırak</string>
+    <string name="pisan_mods_enabled">%1$s etkinleştirildi</string>
+    <string name="pisan_mods_disabled">%1$s dosyası silinmeden devre dışı bırakıldı</string>
+    <string name="pisan_profile_memory_hint">Profile özel RAM, MB (boş: genel ayar)</string>
+    <string name="pisan_profile_resolution_hint">Profile özel çözünürlük ölçeği %25–100 (boş: genel)</string>
+    <string name="pisan_profile_button_hint">Profile özel tuş ölçeği %50–200 (boş: genel)</string>
+    <string name="pisan_profile_mouse_hint">Profile özel fare ölçeği %50–200 (boş: genel)</string>
 </resources>

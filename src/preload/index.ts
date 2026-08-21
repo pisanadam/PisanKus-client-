@@ -7,8 +7,12 @@ import type {
   InstalledContent,
   LoaderId,
   Profile,
+  ProfileHistoryEntry,
   ProfileHealthFix,
   ProfileHealthReport,
+  ProfileSafeModeState,
+  ProfileStorageCategory,
+  ProfileStorageReport,
   ProjectVersion,
   SavedSkin,
   SearchQuery,
@@ -175,6 +179,12 @@ const api = {
     exportBackup: (id: string): Promise<string | null> => ipcRenderer.invoke('profiles:export', id),
     /** Opens a portable PisanKus profile backup and creates a new isolated profile. */
     importBackup: (): Promise<Profile | null> => ipcRenderer.invoke('profiles:import'),
+    safeMode: (id: string, enabled?: boolean): Promise<ProfileSafeModeState> =>
+      ipcRenderer.invoke('profiles:safeMode', id, enabled),
+    history: (id: string): Promise<ProfileHistoryEntry[]> => ipcRenderer.invoke('profiles:history', id),
+    storage: (id: string): Promise<ProfileStorageReport> => ipcRenderer.invoke('profiles:storage', id),
+    cleanStorage: (id: string, categories: ProfileStorageCategory[]): Promise<ProfileStorageReport> =>
+      ipcRenderer.invoke('profiles:cleanStorage', id, categories),
     /** Fires whenever the main process changes the profile list on its own. */
     onChanged: (listener: () => void): Unsubscribe => subscribe('profiles:changed', listener)
   },
@@ -232,6 +242,8 @@ const api = {
       ipcRenderer.invoke('content:remove', profileId, contentId),
     toggle: (profileId: string, contentId: string, enabled: boolean): Promise<InstalledContent> =>
       ipcRenderer.invoke('content:toggle', profileId, contentId, enabled),
+    toggleMany: (profileId: string, contentIds: string[], enabled: boolean): Promise<InstalledContent[]> =>
+      ipcRenderer.invoke('content:toggleMany', profileId, contentIds, enabled),
     pin: (profileId: string, contentId: string, pinned: boolean): Promise<InstalledContent> =>
       ipcRenderer.invoke('content:pin', profileId, contentId, pinned),
     update: (profileId: string, contentId: string): Promise<InstalledContent[]> =>

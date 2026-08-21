@@ -132,16 +132,46 @@ export async function downloadFile(item: DownloadItem, signal?: AbortSignal): Pr
   let lastError: unknown
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const response = await fetch(item.url, { headers: { 'User-Agent': USER_AGENT }, signal })
+      const partialSize = await fsp.stat(temp).then((stat) => stat.size, () => 0)
+      const headers: Record<string, string> = { 'User-Agent': USER_AGENT }
+      if (partialSize > 0) headers.Range = `bytes=${partialSize}-`
+      const response = await fetch(item.url, { headers, signal })
+      if (response.status === 416 && partialSize > 0) {
+        const expected = expectedHash(item)
+        const complete = item.size != null
+          ? partialSize === item.size
+          : expected != null && (await fileHash(temp, expected.algorithm)) === expected.value
+        if (complete) {
+          await fsp.rename(temp, item.destination)
+          return
+        }
+        await fsp.rm(temp, { force: true })
+        throw new Error(`İndirme kaldığı yerden devam ettirilemedi: ${path.basename(item.destination)}`)
+      }
       if (!response.ok || !response.body) {
         throw new Error(`İndirme başarısız (${response.status}): ${item.url}`)
       }
-      await pipeline(Readable.fromWeb(response.body as never), fs.createWriteStream(temp))
+      // A server that understands Range returns 206. If it ignores the header
+      // and returns 200, start over instead of appending a second full copy.
+      const append = partialSize > 0 && response.status === 206
+      await pipeline(
+        Readable.fromWeb(response.body as never),
+        fs.createWriteStream(temp, { flags: append ? 'a' : 'w' })
+      )
+
+      const downloadedSize = await fsp.stat(temp).then((stat) => stat.size)
+      if (item.size != null && downloadedSize !== item.size) {
+        // A short response is useful partial data and stays for the next retry;
+        // an oversized response cannot become valid by resuming.
+        if (downloadedSize > item.size) await fsp.rm(temp, { force: true })
+        throw new Error(`İndirilen dosya boyutu uyuşmuyor: ${path.basename(item.destination)}`)
+      }
 
       const expected = expectedHash(item)
       if (expected) {
         const actual = await fileHash(temp, expected.algorithm)
         if (actual !== expected.value) {
+          await fsp.rm(temp, { force: true })
           throw new Error(
             `Sağlama toplamı uyuşmuyor: ${path.basename(item.destination)} ` +
               `(beklenen ${expected.algorithm} ${expected.value.slice(0, 12)}…, gelen ${actual.slice(0, 12)}…)`
@@ -156,7 +186,9 @@ export async function downloadFile(item: DownloadItem, signal?: AbortSignal): Pr
       await new Promise((resolve) => setTimeout(resolve, 400 * 2 ** attempt))
     }
   }
-  await fsp.rm(temp, { force: true })
+  // Keep a partial file after network loss so the user's next retry resumes it.
+  // Abort is different: cancellation is an explicit request to stop and clean up.
+  if (signal?.aborted) await fsp.rm(temp, { force: true })
   throw lastError instanceof Error ? lastError : new Error(String(lastError))
 }
 

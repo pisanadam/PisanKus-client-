@@ -23,6 +23,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -601,8 +602,15 @@ public class PisanModsFragment extends Fragment {
                 );
                 // The working file survives until the replacement has fully
                 // downloaded and the registry has been saved.
-                if (previous != null && !previous.fileName.equals(fileName)) {
-                    new File(target, previous.fileName).delete();
+                if (previous != null) {
+                    String previousDiskName = previous.enabled
+                            ? previous.fileName
+                            : previous.fileName + ".disabled";
+                    if (!previous.enabled || !previous.fileName.equals(fileName)) {
+                        new File(target, previousDiskName).delete();
+                    }
+                    // Updating a disabled mod must not silently enable it.
+                    if (!previous.enabled) mInstalled.setEnabled(hit.projectId, false);
                 }
                 // Sodium alone does not start on this launcher; it needs the
                 // patch mod and a renderer that can carry it. A player who
@@ -761,6 +769,7 @@ public class PisanModsFragment extends Fragment {
             private final TextView mTitle;
             private final TextView mDescription;
             private final TextView mUpdate;
+            private final SwitchCompat mEnabled;
 
             Holder(@NonNull View itemView) {
                 super(itemView);
@@ -768,6 +777,7 @@ public class PisanModsFragment extends Fragment {
                 mTitle = itemView.findViewById(R.id.pk_mod_title);
                 mDescription = itemView.findViewById(R.id.pk_mod_description);
                 mUpdate = itemView.findViewById(R.id.pk_mod_update);
+                mEnabled = itemView.findViewById(R.id.pk_mod_enabled);
             }
 
             void bind(Hit hit) {
@@ -782,6 +792,35 @@ public class PisanModsFragment extends Fragment {
                         && !hit.latestVersionNumber.isEmpty()
                         && !hit.latestVersionNumber.equals(installed.versionNumber);
                 mUpdate.setVisibility(update ? View.VISIBLE : View.GONE);
+                mEnabled.setOnCheckedChangeListener(null);
+                mEnabled.setVisibility(installed != null && hit.kind != Kind.MODPACK ? View.VISIBLE : View.GONE);
+                mEnabled.setChecked(installed != null && installed.enabled);
+                mEnabled.setEnabled(true);
+                if (installed != null && hit.kind != Kind.MODPACK) {
+                    mEnabled.setOnCheckedChangeListener((button, enabled) -> {
+                        button.setEnabled(false);
+                        PojavApplication.sExecutorService.execute(() -> {
+                            try {
+                                mInstalled.setEnabled(hit.projectId, enabled);
+                                Tools.runOnUiThread(() -> {
+                                    if (!isAdded()) return;
+                                    button.setEnabled(true);
+                                    mStatus.setText(enabled
+                                            ? getString(R.string.pisan_mods_enabled, hit.title)
+                                            : getString(R.string.pisan_mods_disabled, hit.title));
+                                });
+                            } catch (Exception error) {
+                                Tools.runOnUiThread(() -> {
+                                    if (!isAdded()) return;
+                                    button.setOnCheckedChangeListener(null);
+                                    button.setChecked(!enabled);
+                                    button.setEnabled(true);
+                                    showError(error);
+                                });
+                            }
+                        });
+                    });
+                }
                 itemView.setOnClickListener(v -> confirmInstall(hit));
                 loadIcon(hit);
             }

@@ -7,7 +7,7 @@ static def getDate() { return new Date().format('yyyyMMdd') }
 def getVersionName = {
     // Get the last version tag, as well as the short head of the last commit
     String TAG = ""
-    String semVer = "1.1.7"
+    String semVer = "1.2.0"
     // Used by the fallback for github actions
     String TAG_PART_COMMIT = ""
     String TAG_STRING
@@ -121,11 +121,11 @@ android {
         // old constant as a floor makes every published build sort above every
         // build that came before the change, and above each other.
         versionCode 10000000 + pisanKusBuild
-        versionName "1.1." + pisanKusBuild
+        versionName "1.2." + pisanKusBuild
 
         // Exposed as a resource so the settings screen can show it without any
         // code to look it up.
-        resValue "string", "pisankus_version", "1.1." + pisanKusBuild
+        resValue "string", "pisankus_version", "1.2." + pisanKusBuild
         multiDexEnabled true //important
         resValue 'string', 'curseforge_api_key', getCFApiKey()
         externalNativeBuild {

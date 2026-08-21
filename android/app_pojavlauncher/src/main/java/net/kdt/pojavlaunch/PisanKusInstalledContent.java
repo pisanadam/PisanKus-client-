@@ -24,21 +24,25 @@ public final class PisanKusInstalledContent {
         public final String versionNumber;
         public final String fileName;
         public final String kind;
+        public final boolean enabled;
 
         private Entry(String projectId, String versionId, String versionNumber,
-                      String fileName, String kind) {
+                      String fileName, String kind, boolean enabled) {
             this.projectId = projectId;
             this.versionId = versionId;
             this.versionNumber = versionNumber;
             this.fileName = fileName;
             this.kind = kind;
+            this.enabled = enabled;
         }
     }
 
+    private final File profileDirectory;
     private final File file;
     private final JSONObject entries;
 
     public PisanKusInstalledContent(File profileDirectory) {
+        this.profileDirectory = profileDirectory;
         file = new File(profileDirectory, FILE_NAME);
         JSONObject loaded = new JSONObject();
         try {
@@ -63,7 +67,8 @@ public final class PisanKusInstalledContent {
                 versionId,
                 value.optString("versionNumber", versionId),
                 new File(fileName).getName(),
-                value.optString("kind", "mod")
+                value.optString("kind", "mod"),
+                value.optBoolean("enabled", true)
         );
     }
 
@@ -74,9 +79,39 @@ public final class PisanKusInstalledContent {
         value.put("versionNumber", versionNumber);
         value.put("fileName", new File(fileName).getName());
         value.put("kind", kind);
+        value.put("enabled", true);
         value.put("installedAt", System.currentTimeMillis());
         entries.put(projectId, value);
         save();
+    }
+
+    private File directoryFor(String kind) {
+        if ("resourcepack".equals(kind)) return new File(profileDirectory, "resourcepacks");
+        if ("shader".equals(kind)) return new File(profileDirectory, "shaderpacks");
+        if ("datapack".equals(kind)) return new File(profileDirectory, "datapacks");
+        return new File(profileDirectory, "mods");
+    }
+
+    /** Renames the installed file instead of deleting it, matching desktop. */
+    public synchronized Entry setEnabled(String projectId, boolean enabled) throws Exception {
+        Entry entry = get(projectId);
+        if (entry == null || "modpack".equals(entry.kind) || entry.enabled == enabled) return entry;
+
+        File directory = directoryFor(entry.kind);
+        File active = new File(directory, entry.fileName);
+        File disabled = new File(directory, entry.fileName + ".disabled");
+        File source = entry.enabled ? active : disabled;
+        File destination = enabled ? active : disabled;
+        if (!source.isFile()) {
+            if (!destination.isFile()) throw new IllegalStateException("Installed content file is missing");
+        } else if (!source.renameTo(destination)) {
+            throw new IllegalStateException("Installed content could not be renamed");
+        }
+
+        JSONObject value = entries.getJSONObject(projectId);
+        value.put("enabled", enabled);
+        save();
+        return get(projectId);
     }
 
     private void save() throws Exception {
