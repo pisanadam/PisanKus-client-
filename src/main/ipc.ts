@@ -10,6 +10,7 @@ import type {
   LoaderId,
   Profile,
   ProfileHealthFix,
+  ProfileStorageCategory,
   ProjectVersion,
   SearchQuery,
   Settings,
@@ -42,6 +43,16 @@ import * as profileArchive from './profileArchive'
 import { withProfileRollback } from './profileTransaction'
 import { fixProfileHealth, inspectProfileHealth } from './profileHealth'
 import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
+import {
+  cleanProfileStorage,
+  enableSafeMode,
+  getSafeModeState,
+  inspectProfileStorage,
+  listProfileHistory,
+  recordProfileHistory,
+  restoreSafeMode,
+  setManyContentEnabled
+} from './profileMaintenance'
 
 /** Account shape safe to hand to the renderer — tokens stay in the main process. */
 export type PublicAccount = Omit<Account, 'accessToken' | 'refreshToken'> & { expired: boolean }
@@ -298,7 +309,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     createProfile(input)
   )
 
-  handle('profiles:update', (id: string, patch: Partial<Profile>) => {
+  handle('profiles:update', async (id: string, patch: Partial<Profile>) => {
     const allowed: Partial<Profile> = {}
     const owns = (key: keyof Profile): boolean => Object.prototype.hasOwnProperty.call(patch, key)
     if (typeof patch.name === 'string') allowed.name = patch.name.slice(0, 120)
@@ -329,7 +340,44 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       }
     }
     if (typeof patch.autoBackupWorlds === 'boolean') allowed.autoBackupWorlds = patch.autoBackupWorlds
-    return store.updateProfile(id, allowed)
+    const updated = store.updateProfile(id, allowed)
+    if (Object.keys(allowed).length > 0) {
+      await recordProfileHistory(
+        updated,
+        'profile-settings',
+        'Profil ayarları değiştirildi',
+        Object.keys(allowed).join(', ')
+      )
+    }
+    return updated
+  })
+
+  handle('profiles:safeMode', async (id: string, enabled?: boolean) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    if (enabled === true) await enableSafeMode(id)
+    if (enabled === false) await restoreSafeMode(id)
+    profilesChanged()
+    return getSafeModeState(store.profile(id)!)
+  })
+
+  handle('profiles:history', async (id: string) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return listProfileHistory(profile)
+  })
+
+  handle('profiles:storage', async (id: string) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return inspectProfileStorage(profile)
+  })
+
+  handle('profiles:cleanStorage', async (id: string, categories: ProfileStorageCategory[]) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    if (!Array.isArray(categories) || categories.length > 3) throw new Error('Geçersiz temizlik isteği.')
+    return cleanProfileStorage(profile, categories, (target) => shell.trashItem(target))
   })
 
   handle('profiles:duplicate', async (id: string) => {
@@ -561,29 +609,58 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('content:project', (projectId: string) => modrinth.getProject(projectId))
 
-  handle('content:install', (request: install.InstallRequest) =>
-    withProfileRollback(
+  handle('content:install', async (request: install.InstallRequest) => {
+    const result = await withProfileRollback(
       request.profileId,
       request.name,
       () => install.installContent(request, onProgress),
       onProgress
     )
-  )
-  handle('content:remove', (profileId: string, contentId: string) => install.removeContent(profileId, contentId))
-  handle('content:toggle', (profileId: string, contentId: string, enabled: boolean) =>
-    install.setContentEnabled(profileId, contentId, enabled)
-  )
+    const profile = store.profile(request.profileId)
+    if (profile) await recordProfileHistory(profile, 'content-installed', `${request.name} kuruldu`)
+    return result
+  })
+  handle('content:remove', async (profileId: string, contentId: string) => {
+    const profile = store.profile(profileId)
+    const entry = profile?.content.find((item) => item.id === contentId)
+    await install.removeContent(profileId, contentId)
+    if (profile && entry) await recordProfileHistory(profile, 'content-removed', `${entry.name} kaldırıldı`, undefined, contentId)
+  })
+  handle('content:toggle', async (profileId: string, contentId: string, enabled: boolean) => {
+    const entry = await install.setContentEnabled(profileId, contentId, enabled)
+    const profile = store.profile(profileId)
+    if (profile) {
+      await recordProfileHistory(
+        profile,
+        enabled ? 'content-enabled' : 'content-disabled',
+        enabled ? `${entry.name} etkinleştirildi` : `${entry.name} devre dışı bırakıldı`,
+        undefined,
+        contentId
+      )
+    }
+    return entry
+  })
+  handle('content:toggleMany', async (profileId: string, contentIds: string[], enabled: boolean) => {
+    if (!Array.isArray(contentIds) || contentIds.length > 1_000) throw new Error('Geçersiz toplu işlem.')
+    await setManyContentEnabled(profileId, contentIds, enabled)
+    profilesChanged()
+    return store.profile(profileId)?.content ?? []
+  })
   handle('content:pin', (profileId: string, contentId: string, pinned: boolean) =>
     install.setContentPinned(profileId, contentId, pinned)
   )
-  handle('content:update', (profileId: string, contentId: string) =>
-    withProfileRollback(
+  handle('content:update', async (profileId: string, contentId: string) => {
+    const before = store.profile(profileId)?.content.find((item) => item.id === contentId)
+    const result = await withProfileRollback(
       profileId,
       'İçerik güncellemesi',
       () => install.updateContent(profileId, contentId, onProgress),
       onProgress
     )
-  )
+    const profile = store.profile(profileId)
+    if (profile && before) await recordProfileHistory(profile, 'content-updated', `${before.name} güncellendi`, undefined, contentId)
+    return result
+  })
   handle('content:checkUpdates', (profileId: string) => install.checkForUpdates(profileId))
 
   /** Reconciles the recorded content list with what is really in the folders. */
@@ -595,7 +672,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
    * dropped together and each still lands in the right folder.
    */
   handle('content:importPaths', async (profileId: string, filePaths: string[]) => {
-    return withProfileRollback(
+    const result = await withProfileRollback(
       profileId,
       `${filePaths.length} yerel dosya`,
       async () => {
@@ -607,6 +684,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       },
       onProgress
     )
+    const profile = store.profile(profileId)
+    if (profile && filePaths.length > 0) {
+      await recordProfileHistory(profile, 'content-installed', `${filePaths.length} yerel içerik eklendi`)
+    }
+    return result
   })
 
   handle('content:import', async (profileId: string, kind: ContentKind) => {
@@ -623,7 +705,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     const result = await dialog.showOpenDialog(window, { properties: ['openFile', 'multiSelections'], filters })
     if (result.canceled) return []
 
-    return withProfileRollback(
+    const imported = await withProfileRollback(
       profileId,
       `${result.filePaths.length} yerel dosya`,
       async () => {
@@ -635,6 +717,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       },
       onProgress
     )
+    const profile = store.profile(profileId)
+    if (profile && imported.length > 0) {
+      await recordProfileHistory(profile, 'content-installed', `${imported.length} yerel içerik eklendi`)
+    }
+    return imported
   })
 
   handle('worlds:list', (profileId: string) => install.listWorlds(profileId))

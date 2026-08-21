@@ -648,4 +648,11 @@
     <string name="pisan_skin_rate_limited">You have hit Mojang\'s limit on skin changes. Try again in a while.</string>
     <string name="pisan_skin_service_rejected">Minecraft services refused the request (%1$d). %2$s</string>
     <string name="pisan_skin_response_unreadable">The server\'s answer could not be read.</string>
+    <string name="pisan_mods_toggle_content">Enable or disable installed content</string>
+    <string name="pisan_mods_enabled">%1$s enabled</string>
+    <string name="pisan_mods_disabled">%1$s disabled without deleting its file</string>
+    <string name="pisan_profile_memory_hint">Profile RAM in MB (empty: global)</string>
+    <string name="pisan_profile_resolution_hint">Profile resolution scale 25–100% (empty: global)</string>
+    <string name="pisan_profile_button_hint">Profile button scale 50–200% (empty: global)</string>
+    <string name="pisan_profile_mouse_hint">Profile mouse scale 50–200% (empty: global)</string>
 </resources>

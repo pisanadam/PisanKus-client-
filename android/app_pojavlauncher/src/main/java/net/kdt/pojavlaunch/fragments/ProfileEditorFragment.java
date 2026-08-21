@@ -52,7 +52,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private String mValueToConsume = "";
     private Button mSaveButton, mDeleteButton, mControlSelectButton, mGameDirButton, mVersionSelectButton;
     private Spinner mDefaultRuntime, mDefaultRenderer;
-    private EditText mDefaultName, mDefaultJvmArgument;
+    private EditText mDefaultName, mDefaultJvmArgument, mProfileMemory,
+            mProfileResolutionScale, mProfileButtonScale, mProfileMouseScale;
     private TextView mDefaultPath, mDefaultVersion, mDefaultControl;
     private ImageView mProfileIcon;
     private final ActivityResultLauncher<?> mCropperLauncher = CropperUtils.registerCropper(this, this);
@@ -196,6 +197,10 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mDefaultName.setText(mTempProfile.name);
         mDefaultPath.setText(mTempProfile.gameDir == null ? "" : mTempProfile.gameDir);
         mDefaultControl.setText(mTempProfile.controlFile == null ? "" : mTempProfile.controlFile);
+        mProfileMemory.setText(mTempProfile.memoryMb == null ? "" : String.valueOf(mTempProfile.memoryMb));
+        mProfileResolutionScale.setText(mTempProfile.resolutionScale == null ? "" : String.valueOf(mTempProfile.resolutionScale));
+        mProfileButtonScale.setText(mTempProfile.buttonScale == null ? "" : String.valueOf(mTempProfile.buttonScale));
+        mProfileMouseScale.setText(mTempProfile.mouseScale == null ? "" : String.valueOf(mTempProfile.mouseScale));
     }
 
     private MinecraftProfile getProfile(@NonNull String profile){
@@ -231,6 +236,10 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mDefaultPath = view.findViewById(R.id.vprof_editor_path);
         mDefaultName = view.findViewById(R.id.vprof_editor_profile_name);
         mDefaultJvmArgument = view.findViewById(R.id.vprof_editor_jre_args);
+        mProfileMemory = view.findViewById(R.id.vprof_editor_memory);
+        mProfileResolutionScale = view.findViewById(R.id.vprof_editor_resolution_scale);
+        mProfileButtonScale = view.findViewById(R.id.vprof_editor_button_scale);
+        mProfileMouseScale = view.findViewById(R.id.vprof_editor_mouse_scale);
 
         mSaveButton = view.findViewById(R.id.vprof_editor_save_button);
         mDeleteButton = view.findViewById(R.id.vprof_editor_delete_button);
@@ -254,6 +263,11 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         if(mTempProfile.javaArgs.isEmpty()) mTempProfile.javaArgs = null;
         if(mTempProfile.gameDir.isEmpty()) mTempProfile.gameDir = null;
 
+        mTempProfile.memoryMb = optionalNumber(mProfileMemory, 512, 16384);
+        mTempProfile.resolutionScale = optionalNumber(mProfileResolutionScale, 25, 100);
+        mTempProfile.buttonScale = optionalNumber(mProfileButtonScale, 50, 200);
+        mTempProfile.mouseScale = optionalNumber(mProfileMouseScale, 50, 200);
+
         Runtime selectedRuntime = (Runtime) mDefaultRuntime.getSelectedItem();
         mTempProfile.javaDir = (selectedRuntime.name.equals("<Default>") || selectedRuntime.versionString == null)
                 ? null : Tools.LAUNCHERPROFILES_RTPREFIX + selectedRuntime.name;
@@ -265,6 +279,16 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         LauncherProfiles.mainProfileJson.profiles.put(mProfileKey, mTempProfile);
         LauncherProfiles.write();
         ExtraCore.setValue(ExtraConstants.REFRESH_VERSION_SPINNER, mProfileKey);
+    }
+
+    private Integer optionalNumber(EditText input, int minimum, int maximum) {
+        String text = input.getText().toString().trim();
+        if (text.isEmpty()) return null;
+        try {
+            return Math.max(minimum, Math.min(maximum, Integer.parseInt(text)));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     @Override

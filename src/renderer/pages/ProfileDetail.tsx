@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ContentKind, CrashReport, InstalledContent, LoaderId, ProfileHealthReport } from '../../shared/types'
+import type {
+  ContentKind,
+  CrashReport,
+  InstalledContent,
+  LoaderId,
+  ProfileHealthReport,
+  ProfileHistoryEntry,
+  ProfileSafeModeState,
+  ProfileStorageCategory,
+  ProfileStorageReport
+} from '../../shared/types'
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
@@ -24,6 +34,13 @@ const TABS: { id: Tab; label: string; kind?: ContentKind }[] = [
   { id: 'logs', label: 'Günlük' },
   { id: 'settings', label: 'Ayarlar' }
 ]
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`
+}
 
 export function ProfileDetail({
   profileId,
@@ -52,6 +69,11 @@ export function ProfileDetail({
   }, [profileId, refreshProfiles])
   const [tab, setTab] = useState<Tab>(initialTab ?? 'mods')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [headerHealth, setHeaderHealth] = useState<ProfileHealthReport | null>(null)
+
+  useEffect(() => {
+    void api.profiles.health(profileId).then(setHeaderHealth).catch(() => setHeaderHealth(null))
+  }, [profileId, profile?.content, profile?.javaPath, profile?.memoryMb])
 
   useEffect(() => {
     setTab(initialTab ?? 'mods')
@@ -90,6 +112,14 @@ export function ProfileDetail({
               </span>
             )}
             {profile.name}
+            {headerHealth?.score != null && (
+              <span
+                className={headerHealth.status === 'healthy' ? 'badge badge--accent' : 'badge badge--warning'}
+                style={{ marginLeft: 9, verticalAlign: 'middle' }}
+              >
+                {t('Sağlık')} %{headerHealth.score}
+              </span>
+            )}
           </h1>
           <p className="page__subtitle">
             {profile.gameVersion} · {loaderLabel(profile.loader)}
@@ -117,6 +147,21 @@ export function ProfileDetail({
           </button>
         ) : (
           <>
+            <button
+              className="btn"
+              title={t('Modları, shaderları ve doku paketlerini silmeden geçici kapatıp başlatır')}
+              onClick={async () => {
+                try {
+                  await api.profiles.safeMode(profile.id, true)
+                  await refreshProfiles()
+                  await api.game.launch(profile.id)
+                } catch (error) {
+                  notify(error, 'error')
+                }
+              }}
+            >
+              {t('Güvenli başlat')}
+            </button>
             <button
               className="btn"
               title={t('Ağa bağlanmadan yalnızca önceden hazırlanmış dosyaları kullanır')}
@@ -227,8 +272,21 @@ function ContentTab({
   const [busyId, setBusyId] = useState<string | null>(null)
   const [dropping, setDropping] = useState(false)
   const [pendingUpdates, setPendingUpdates] = useState<InstalledContent[] | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [contentFilter, setContentFilter] = useState<'all' | 'enabled' | 'disabled' | 'updates' | 'recent'>('all')
+  const [contentQuery, setContentQuery] = useState('')
 
   const updatable = items.filter((item) => item.updateAvailable && !item.pinned)
+  const selectedItems = items.filter((item) => selected.has(item.id))
+  const visibleItems = items.filter((item) => {
+    const query = contentQuery.trim().toLocaleLowerCase()
+    if (query && !`${item.name} ${item.fileName}`.toLocaleLowerCase().includes(query)) return false
+    if (contentFilter === 'enabled') return item.enabled
+    if (contentFilter === 'disabled') return !item.enabled
+    if (contentFilter === 'updates') return Boolean(item.updateAvailable)
+    if (contentFilter === 'recent') return item.installedAt >= Date.now() - 7 * 24 * 60 * 60 * 1000
+    return true
+  })
 
   /**
    * Takes files dropped anywhere on the tab. What each one is gets decided in
@@ -305,6 +363,75 @@ function ContentTab({
           {t('Güncellemeleri denetle')}
         </button>
 
+        {visibleItems.length > 0 && (
+          <label className="row faint" style={{ gap: 7 }}>
+            <input
+              type="checkbox"
+              checked={visibleItems.every((item) => selected.has(item.id))}
+              ref={(node) => {
+                if (node) {
+                  node.indeterminate =
+                    visibleItems.some((item) => selected.has(item.id)) &&
+                    !visibleItems.every((item) => selected.has(item.id))
+                }
+              }}
+              onChange={(event) => setSelected(event.target.checked ? new Set(visibleItems.map((item) => item.id)) : new Set())}
+            />
+            {selected.size > 0 ? t('{count} seçili', { count: selected.size }) : t('Tümünü seç')}
+          </label>
+        )}
+
+        {selectedItems.length > 0 && (
+          <>
+            <button
+              className="btn btn--sm"
+              disabled={busyId !== null}
+              onClick={() => void run('bulk-enable', async () => {
+                await api.content.toggleMany(profileId, selectedItems.map((item) => item.id), true)
+                setSelected(new Set())
+              })}
+            >
+              {t('Etkinleştir')}
+            </button>
+            <button
+              className="btn btn--sm"
+              disabled={busyId !== null}
+              onClick={() => void run('bulk-disable', async () => {
+                await api.content.toggleMany(profileId, selectedItems.map((item) => item.id), false)
+                setSelected(new Set())
+              })}
+            >
+              {t('Devre dışı bırak')}
+            </button>
+          </>
+        )}
+
+        <input
+          className="input input--compact"
+          value={contentQuery}
+          placeholder={t('İçerikte ara')}
+          aria-label={t('İçerikte ara')}
+          onChange={(event) => {
+            setContentQuery(event.target.value)
+            setSelected(new Set())
+          }}
+        />
+        <select
+          className="select"
+          value={contentFilter}
+          aria-label={t('İçerik filtresi')}
+          onChange={(event) => {
+            setContentFilter(event.target.value as typeof contentFilter)
+            setSelected(new Set())
+          }}
+        >
+          <option value="all">{t('Tümü')}</option>
+          <option value="enabled">{t('Etkin')}</option>
+          <option value="disabled">{t('Devre dışı')}</option>
+          <option value="updates">{t('Güncellemesi olanlar')}</option>
+          <option value="recent">{t('Son 7 günde eklenenler')}</option>
+        </select>
+
         <div className="topbar__spacer" />
 
         {updatable.length > 0 && (
@@ -331,10 +458,26 @@ function ContentTab({
             )}
           </p>
         </div>
+      ) : visibleItems.length === 0 ? (
+        <div className="empty">
+          <div className="empty__title">{t('Filtreye uyan içerik yok')}</div>
+          <p>{t('Aramayı veya seçili filtreyi değiştirin.')}</p>
+        </div>
       ) : (
         <div className="list">
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <div key={item.id} className={item.enabled ? 'list__row' : 'list__row list__row--disabled'}>
+              <input
+                type="checkbox"
+                checked={selected.has(item.id)}
+                aria-label={t('{name} seç', { name: item.name })}
+                onChange={(event) => setSelected((current) => {
+                  const next = new Set(current)
+                  if (event.target.checked) next.add(item.id)
+                  else next.delete(item.id)
+                  return next
+                })}
+              />
               {item.iconUrl ? (
                 <img className="list__icon" src={item.iconUrl} alt="" loading="lazy" />
               ) : (
@@ -357,6 +500,11 @@ function ContentTab({
                   {item.pinned && (
                     <span className="badge" style={{ marginLeft: 8 }}>
                       {t('Sürüm sabit')}
+                    </span>
+                  )}
+                  {!item.enabled && (
+                    <span className="badge" style={{ marginLeft: 8 }}>
+                      {t('Devre dışı')}
                     </span>
                   )}
                 </div>
@@ -974,6 +1122,10 @@ function ProfileSettingsTab({
   const [editingOptions, setEditingOptions] = useState(false)
   const [health, setHealth] = useState<ProfileHealthReport | null>(null)
   const [healthBusy, setHealthBusy] = useState<string | null>(null)
+  const [safeMode, setSafeMode] = useState<ProfileSafeModeState | null>(null)
+  const [storage, setStorage] = useState<ProfileStorageReport | null>(null)
+  const [history, setHistory] = useState<ProfileHistoryEntry[]>([])
+  const [maintenanceBusy, setMaintenanceBusy] = useState<string | null>(null)
 
   // Read straight from the profile's folder rather than from the global
   // template: what matters here is the file the game will actually load.
@@ -998,6 +1150,23 @@ function ProfileSettingsTab({
 
   useEffect(() => {
     void api.versions.java().then(setJavaOptions).catch(() => setJavaOptions([]))
+  }, [profileId])
+
+  const refreshMaintenance = async (): Promise<void> => {
+    const [nextHealth, nextSafeMode, nextStorage, nextHistory] = await Promise.all([
+      api.profiles.health(profileId),
+      api.profiles.safeMode(profileId),
+      api.profiles.storage(profileId),
+      api.profiles.history(profileId)
+    ])
+    setHealth(nextHealth)
+    setSafeMode(nextSafeMode)
+    setStorage(nextStorage)
+    setHistory(nextHistory)
+  }
+
+  useEffect(() => {
+    void refreshMaintenance().catch(() => undefined)
   }, [profileId])
 
   const width = Number(resolutionWidth)
@@ -1252,10 +1421,99 @@ function ProfileSettingsTab({
 
       <div className="settings-group">
         <div className="section-title">{t('Bakım')}</div>
+        <div className="notice notice--warning" style={{ marginBottom: 14 }}>
+          <Icon name="package" size={20} />
+          <div style={{ flex: 1 }}>
+            <strong>{safeMode?.active ? t('Güvenli mod açık') : t('Güvenli mod')}</strong>
+            <span>
+              {safeMode?.active
+                ? t('{count} içerik geçici olarak kapalı. İstediğinizde önceki duruma dönebilirsiniz.', {
+                    count: safeMode.disabledContentIds.length
+                  })
+                : t('Modları, shaderları ve doku paketlerini silmeden geçici olarak kapatır.')}
+            </span>
+          </div>
+          <button
+            className="btn btn--sm"
+            disabled={maintenanceBusy !== null}
+            onClick={async () => {
+              setMaintenanceBusy('safe-mode')
+              try {
+                await api.profiles.safeMode(profileId, !safeMode?.active)
+                await refreshProfiles()
+                await refreshMaintenance()
+                notify(safeMode?.active ? t('Güvenli mod geri alındı.') : t('Güvenli mod açıldı.'))
+              } catch (error) {
+                notify(error, 'error')
+              } finally {
+                setMaintenanceBusy(null)
+              }
+            }}
+          >
+            {safeMode?.active ? t('Önceki duruma dön') : t('Güvenli modu aç')}
+          </button>
+        </div>
+
+        {storage && (
+          <div className="stack" style={{ marginBottom: 18 }}>
+            <div className="row">
+              <div>
+                <div className="settings-row__label">{t('Depolama kullanımı')}</div>
+                <div className="faint">{t('Bu profil toplam {size} kullanıyor', { size: formatBytes(storage.totalBytes) })}</div>
+              </div>
+              <div className="topbar__spacer" />
+              <button
+                className="btn btn--sm"
+                disabled={maintenanceBusy !== null}
+                onClick={() => void api.profiles.storage(profileId).then(setStorage).catch((error) => notify(error, 'error'))}
+              >
+                <Icon name="refresh" size={14} />
+                {t('Yenile')}
+              </button>
+            </div>
+            <div className="maintenance-grid">
+              {storage.entries.map((entry) => (
+                <div className="maintenance-card" key={entry.category}>
+                  <div>
+                    <strong>{t(entry.category)}</strong>
+                    <div className="faint">{formatBytes(entry.bytes)} · {t('{count} dosya', { count: entry.fileCount })}</div>
+                  </div>
+                  {entry.cleanable && entry.bytes > 0 && (
+                    <button
+                      className="btn btn--sm"
+                      disabled={maintenanceBusy !== null}
+                      onClick={async () => {
+                        setMaintenanceBusy(`clean-${entry.category}`)
+                        try {
+                          setStorage(await api.profiles.cleanStorage(profileId, [entry.category as ProfileStorageCategory]))
+                          setHistory(await api.profiles.history(profileId))
+                          notify(t('Dosyalar çöp kutusuna taşındı.'))
+                        } catch (error) {
+                          notify(error, 'error')
+                        } finally {
+                          setMaintenanceBusy(null)
+                        }
+                      }}
+                    >
+                      {t('Temizle')}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="stack" style={{ marginBottom: 14 }}>
           <div className="row">
             <div>
-              <div className="settings-row__label">{t('Profil sağlık kontrolü')}</div>
+              <div className="settings-row__label">
+                {t('Profil sağlık kontrolü')}
+                {health?.score != null && (
+                  <span className={health.status === 'healthy' ? 'badge badge--accent' : 'badge badge--warning'} style={{ marginLeft: 8 }}>
+                    %{health.score}
+                  </span>
+                )}
+              </div>
               <div className="faint">{t('Eksik dosya, Java ve riskli profil ayarlarını denetler')}</div>
             </div>
             <div className="topbar__spacer" />
@@ -1316,6 +1574,24 @@ function ProfileSettingsTab({
               )}
             </div>
           ))}
+        </div>
+        <div className="stack" style={{ marginBottom: 18 }}>
+          <div className="settings-row__label">{t('Değişiklik geçmişi')}</div>
+          {history.length === 0 ? (
+            <div className="faint">{t('Henüz kaydedilmiş bir değişiklik yok.')}</div>
+          ) : (
+            <div className="history-list">
+              {history.slice(0, 12).map((entry) => (
+                <div className="history-row" key={entry.id}>
+                  <div>
+                    <strong>{t(entry.title)}</strong>
+                    {entry.detail && <div className="faint">{t(entry.detail)}</div>}
+                  </div>
+                  <span className="faint">{formatRelative(entry.at)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="row" style={{ flexWrap: 'wrap' }}>
           <button

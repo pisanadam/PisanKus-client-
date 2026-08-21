@@ -89,9 +89,9 @@ export function App(): JSX.Element {
     return (
       <Welcome
         soundEnabled={settings.soundEffects}
-        onDone={() => {
+        onDone={(patch) => {
           setWelcomed(true)
-          void saveSettings({ welcomeSeen: true })
+          void saveSettings({ ...patch, welcomeSeen: true })
         }}
       />
     )

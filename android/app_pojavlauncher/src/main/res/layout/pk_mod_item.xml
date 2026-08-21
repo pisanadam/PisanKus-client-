@@ -51,4 +51,12 @@
             android:maxLines="2"
             android:textColor="@color/secondary_text" />
     </LinearLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/pk_mod_enabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/padding_medium"
+        android:contentDescription="@string/pisan_mods_toggle_content"
+        android:visibility="gone" />
 </LinearLayout>

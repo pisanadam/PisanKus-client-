@@ -215,6 +215,17 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     }
 
     protected void initLayout(int resId) {
+        // Profile values override global Android settings only for this launch.
+        // Null keeps older profiles fully backward-compatible.
+        LauncherPreferences.loadPreferences(getApplicationContext());
+        if (minecraftProfile.memoryMb != null && minecraftProfile.memoryMb >= 512)
+            LauncherPreferences.PREF_RAM_ALLOCATION = minecraftProfile.memoryMb;
+        if (minecraftProfile.resolutionScale != null && minecraftProfile.resolutionScale >= 25)
+            LauncherPreferences.PREF_SCALE_FACTOR = minecraftProfile.resolutionScale / 100f;
+        if (minecraftProfile.buttonScale != null && minecraftProfile.buttonScale >= 50)
+            LauncherPreferences.PREF_BUTTONSIZE = minecraftProfile.buttonScale;
+        if (minecraftProfile.mouseScale != null && minecraftProfile.mouseScale >= 50)
+            LauncherPreferences.PREF_MOUSESCALE = minecraftProfile.mouseScale / 100f;
         setContentView(resId);
         bindValues();
         mControlLayout.setMenuListener(this);

@@ -82,7 +82,14 @@ export async function inspectProfileHealth(profile: Profile): Promise<ProfileHea
     })
   }
 
-  return { checkedAt: Date.now(), issues }
+  const penalty = issues.reduce((sum, issue) => sum + (issue.severity === 'error' ? 35 : 15), 0)
+  const score = Math.max(0, 100 - penalty)
+  return {
+    checkedAt: Date.now(),
+    issues,
+    score,
+    status: score >= 85 ? 'healthy' : score >= 50 ? 'attention' : 'critical'
+  }
 }
 
 export async function fixProfileHealth(profileId: string, fix: ProfileHealthFix): Promise<ProfileHealthReport> {

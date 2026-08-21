@@ -37,8 +37,35 @@ test('Android keeps the installed jar until its replacement is complete and reco
   )
   const download = fragment.indexOf('downloadPrimaryFile(version, target)')
   const record = fragment.indexOf('mInstalled.put(')
-  const removeOld = fragment.indexOf('new File(target, previous.fileName).delete()')
+  const removeOld = fragment.indexOf('new File(target, previousDiskName).delete()')
   assert.ok(download >= 0 && record > download && removeOld > record)
   assert.match(modrinth, /\.pisankus-download/)
   assert.match(modrinth, /Os\.rename\(temporary\.getAbsolutePath\(\), destination\.getAbsolutePath\(\)\)/)
+})
+
+test('Android can disable an installed mod by renaming it instead of deleting it', async () => {
+  const registry = await fsp.readFile(
+    path.join(root, 'java/net/kdt/pojavlaunch/PisanKusInstalledContent.java'),
+    'utf8'
+  )
+  const fragment = await fsp.readFile(
+    path.join(root, 'java/net/kdt/pojavlaunch/fragments/PisanModsFragment.java'),
+    'utf8'
+  )
+  assert.match(registry, /entry\.fileName \+ "\.disabled"/)
+  assert.match(registry, /setEnabled\(String projectId, boolean enabled\)/)
+  assert.match(fragment, /mInstalled\.setEnabled\(hit\.projectId, enabled\)/)
+})
+
+test('Android profile editor stores per-profile RAM, resolution and control scales', async () => {
+  const profile = await fsp.readFile(
+    path.join(root, 'java/net/kdt/pojavlaunch/value/launcherprofiles/MinecraftProfile.java'),
+    'utf8'
+  )
+  const activity = await fsp.readFile(path.join(root, 'java/net/kdt/pojavlaunch/MainActivity.java'), 'utf8')
+  assert.match(profile, /Integer memoryMb/)
+  assert.match(profile, /Integer resolutionScale/)
+  assert.match(profile, /Integer buttonScale/)
+  assert.match(activity, /minecraftProfile\.memoryMb/)
+  assert.match(activity, /minecraftProfile\.resolutionScale/)
 })

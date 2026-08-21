@@ -21,6 +21,11 @@ public class MinecraftProfile {
 	public boolean logConfigIsXML;
 	public String pojavRendererName;
 	public String controlFile;
+	/** Optional per-profile Android performance/control overrides. */
+	public Integer memoryMb;
+	public Integer resolutionScale;
+	public Integer buttonScale;
+	public Integer mouseScale;
 	public MinecraftResolution[] resolution;
 
 
@@ -54,6 +59,10 @@ public class MinecraftProfile {
 		logConfigIsXML = profile.logConfigIsXML;
 		pojavRendererName = profile.pojavRendererName;
 		controlFile = profile.controlFile;
+		memoryMb = profile.memoryMb;
+		resolutionScale = profile.resolutionScale;
+		buttonScale = profile.buttonScale;
+		mouseScale = profile.mouseScale;
 		resolution = profile.resolution;
 	}
 }

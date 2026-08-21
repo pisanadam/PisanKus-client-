@@ -148,6 +148,59 @@ export interface ProfileHealthIssue {
 export interface ProfileHealthReport {
   checkedAt: number
   issues: ProfileHealthIssue[]
+  /** 0..100 summary used by the library/profile header. */
+  score?: number
+  status?: 'healthy' | 'attention' | 'critical'
+}
+
+export type ProfileStorageCategory =
+  | 'mods'
+  | 'resourcepacks'
+  | 'shaders'
+  | 'worlds'
+  | 'screenshots'
+  | 'logs'
+  | 'crashes'
+  | 'cache'
+
+export interface ProfileStorageEntry {
+  category: ProfileStorageCategory
+  bytes: number
+  fileCount: number
+  /** Only disposable categories expose cleanup. */
+  cleanable: boolean
+}
+
+export interface ProfileStorageReport {
+  checkedAt: number
+  totalBytes: number
+  entries: ProfileStorageEntry[]
+}
+
+export type ProfileHistoryKind =
+  | 'content-installed'
+  | 'content-removed'
+  | 'content-enabled'
+  | 'content-disabled'
+  | 'content-updated'
+  | 'profile-settings'
+  | 'safe-mode-enabled'
+  | 'safe-mode-restored'
+  | 'storage-cleaned'
+
+export interface ProfileHistoryEntry {
+  id: string
+  at: number
+  kind: ProfileHistoryKind
+  title: string
+  detail?: string
+  contentId?: string
+}
+
+export interface ProfileSafeModeState {
+  active: boolean
+  enabledAt?: number
+  disabledContentIds: string[]
 }
 
 export interface Settings {
