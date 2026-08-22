@@ -149,23 +149,10 @@ export function ProfileDetail({
           </button>
         ) : (
           <>
-            {/* Safe mode lives in the profile's own settings, next to the rest of the
-                maintenance tools. It belongs there: it is a state the profile is left
-                in, not a way of starting it, and a second launch button beside Play
-                made the header read as a choice to be made every time. */}
-            <button
-              className="btn"
-              title={t('Ağa bağlanmadan yalnızca önceden hazırlanmış dosyaları kullanır')}
-              onClick={async () => {
-                try {
-                  await api.game.launch(profile.id, { offline: true })
-                } catch (error) {
-                  notify(error, 'error')
-                }
-              }}
-            >
-              {t('Çevrimdışı')}
-            </button>
+            {/* One button. Safe mode is a state the profile is left in, offered in its
+                own settings; an offline launch is not a choice at all — the launcher
+                sees there is no network and starts that way by itself. Both used to
+                stand here and made starting the game read as a decision. */}
             <button
               className="btn btn--primary"
               onClick={async () => {

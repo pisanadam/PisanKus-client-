@@ -632,7 +632,8 @@ const table: Dictionary = {
   'Bu tuşu varsayılana döndür': 'Restore this key to its default',
   'Varsayılan: {key}': 'Default: {key}',
   'Durdur': 'Stop',
-  'Oyna': 'Play'
+  'Oyna': 'Play',
+  'Paket hâlâ indiriliyor': 'The pack is still downloading'
 }
 
 export default table

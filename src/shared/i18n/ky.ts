@@ -632,7 +632,8 @@ const table: Dictionary = {
   'Bu tuşu varsayılana döndür': 'Бул баскычты демейкиге кайтаруу',
   'Varsayılan: {key}': 'Демейки: {key}',
   'Durdur': 'Токтотуу',
-  'Oyna': 'Ойноо'
+  'Oyna': 'Ойноо',
+  'Paket hâlâ indiriliyor': 'Топтом дагы эле жүктөлүүдө'
 }
 
 export default table

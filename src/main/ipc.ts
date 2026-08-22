@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, net, shell } from 'electron'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
@@ -43,6 +43,7 @@ import { requireLeafName, requireProfileDirectory, resolveInside } from './pathS
 import * as profileArchive from './profileArchive'
 import { withProfileRollback } from './profileTransaction'
 import { fixProfileHealth, inspectProfileHealth } from './profileHealth'
+import { isNetworkFailure } from './network.ts'
 import { ICON_BACKGROUNDS, ICON_SYMBOLS, type IconRecipe } from '../shared/profileIcon'
 import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
 import {
@@ -107,6 +108,23 @@ async function createProfile(input: {
 
 const sessions = new Map<string, GameSession>()
 const launchAborts = new Map<string, AbortController>()
+
+/**
+ * Whether the machine has a network at all.
+ *
+ * Chromium only reports false when it is sure, so a true here still means very
+ * little — a captive portal answers this the same way a real connection does.
+ * It is a cheap first look; anything it misses is caught when a request
+ * actually fails.
+ */
+function looksOnline(): boolean {
+  try {
+    return net.isOnline()
+  } catch {
+    // Called before the app is ready: assume online and let the request decide.
+    return true
+  }
+}
 
 export function registerIpc(getWindow: () => BrowserWindow | null): void {
   const send = (channel: string, payload: unknown): void => {
@@ -472,7 +490,15 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       )
     }
 
-    const offline = options?.offline === true
+    /**
+     * Offline is no longer something the player picks.
+     *
+     * There used to be a second launch button for it, which asked them to
+     * diagnose their own network before pressing anything. The launcher can see
+     * that for itself: no network means an offline launch, and that is the only
+     * thing the button ever did.
+     */
+    let offline = options?.offline === true || !looksOnline()
     const serverAddress = options?.serverAddress?.trim()
     if (serverAddress && (serverAddress.length > 255 || /[\s\0]/.test(serverAddress))) {
       throw new Error('Sunucu adresi geçersiz.')
@@ -507,17 +533,39 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       void diagnostics.finish(state).then(publishCrash).catch(() => undefined)
     }
 
+    if (offline) {
+      recordedLog({
+        profileId,
+        stream: 'launcher',
+        line: 'Ağa ulaşılamadı; çevrimdışı başlatılıyor.',
+        at: Date.now()
+      })
+    }
+
     let valid = account
     if (!offline) {
       try {
         valid = await auth.ensureValid(account, store.settings.msClientId)
         if (valid !== account) store.upsertAccount(valid)
       } catch (error) {
-        recordLauncherError(error)
-        const state: GameState = { profileId, status: 'crashed' }
-        onState(state)
-        finishDiagnostics(state)
-        throw error
+        // A refused token is a refusal and must still be reported: starting the
+        // game without a session would turn a fixable sign-in problem into one
+        // that only shows up as "cannot join any server". Only an unreachable
+        // network becomes an offline launch.
+        if (!isNetworkFailure(error)) {
+          recordLauncherError(error)
+          const state: GameState = { profileId, status: 'crashed' }
+          onState(state)
+          finishDiagnostics(state)
+          throw error
+        }
+        offline = true
+        recordedLog({
+          profileId,
+          stream: 'launcher',
+          line: 'Oturum yenilenemedi (ağ yok); çevrimdışı başlatılıyor.',
+          at: Date.now()
+        })
       }
     }
 

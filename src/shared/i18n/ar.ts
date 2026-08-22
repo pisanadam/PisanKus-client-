@@ -632,7 +632,8 @@ const table: Dictionary = {
   'Bu tuşu varsayılana döndür': 'أعِد هذا المفتاح إلى الافتراضي',
   'Varsayılan: {key}': 'الافتراضي: {key}',
   'Durdur': 'إيقاف',
-  'Oyna': 'العب'
+  'Oyna': 'العب',
+  'Paket hâlâ indiriliyor': 'ما زالت الحزمة قيد التنزيل'
 }
 
 export default table

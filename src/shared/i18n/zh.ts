@@ -632,7 +632,8 @@ const table: Dictionary = {
   'Bu tuşu varsayılana döndür': '把这个按键恢复为默认',
   'Varsayılan: {key}': '默认：{key}',
   'Durdur': '停止',
-  'Oyna': '开始游戏'
+  'Oyna': '开始游戏',
+  'Paket hâlâ indiriliyor': '整合包仍在下载'
 }
 
 export default table

@@ -28,10 +28,10 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
     return [...matching].sort((a, b) => (b.lastPlayed ?? b.createdAt) - (a.lastPlayed ?? a.createdAt))
   }, [profiles, query])
 
-  const launch = async (profile: Profile, offline = false): Promise<void> => {
+  const launch = async (profile: Profile): Promise<void> => {
     setBusyId(profile.id)
     try {
-      await api.game.launch(profile.id, { offline })
+      await api.game.launch(profile.id)
     } catch (error) {
       notify(error, 'error')
     } finally {
@@ -165,27 +165,17 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
                       Durdur
                     </button>
                   ) : (
-                    <>
-                      <button
-                        className="btn btn--primary btn--sm"
-                        onClick={() => void launch(profile)}
-                        // Half a pack on disk cannot be launched, and the version
-                        // is not even known until the pack declares it.
-                        disabled={busyId === profile.id || profile.preparing}
-                        title={profile.preparing ? 'Paket hâlâ indiriliyor' : undefined}
-                      >
-                        <Icon name="play" size={15} />
-                        Oyna
-                      </button>
-                      <button
-                        className="btn btn--sm"
-                        onClick={() => void launch(profile, true)}
-                        disabled={busyId === profile.id || profile.preparing}
-                        title={t('Yalnızca önceden indirilmiş dosyalarla başlat')}
-                      >
-                        {t('Çevrimdışı')}
-                      </button>
-                    </>
+                    <button
+                      className="btn btn--primary btn--sm"
+                      onClick={() => void launch(profile)}
+                      // Half a pack on disk cannot be launched, and the version
+                      // is not even known until the pack declares it.
+                      disabled={busyId === profile.id || profile.preparing}
+                      title={profile.preparing ? t('Paket hâlâ indiriliyor') : undefined}
+                    >
+                      <Icon name="play" size={15} />
+                      {t('Oyna')}
+                    </button>
                   )}
                   <button className="btn btn--sm" onClick={() => onOpenProfile(profile.id)}>
                     {t('Yönet')}
