@@ -355,10 +355,44 @@ export function serialiseOptions(lines: OptionLine[]): string {
   return lines.map((line) => ('raw' in line ? line.raw : `${line.key}:${line.value}`)).join('\n') + '\n'
 }
 
-/** Reads a single key out of parsed lines. */
+/**
+ * Reads a single key out of parsed lines.
+ *
+ * The last occurrence wins, because that is the one Minecraft uses: it loads
+ * the file into a map one line at a time, so a repeated key overwrites the
+ * earlier value. Reading the first instead would show the player a number the
+ * game is going to ignore — and a file with a repeated key is not exotic, it is
+ * what a hand-edit or a modpack's own options.txt can easily leave behind.
+ */
 export function readOption(lines: OptionLine[], key: string): string | undefined {
-  for (const line of lines) if (!('raw' in line) && line.key === key) return line.value
-  return undefined
+  let found: string | undefined
+  for (const line of lines) if (!('raw' in line) && line.key === key) found = line.value
+  return found
+}
+
+/**
+ * Collapses a repeated key down to one line, keeping the value the game would
+ * have used.
+ *
+ * Leaving duplicates in place means the launcher and the game can be looking at
+ * different values in the same file, with nothing on screen to say so.
+ */
+export function dedupeOptions(lines: OptionLine[]): OptionLine[] {
+  const last = new Map<string, string>()
+  for (const line of lines) if (!('raw' in line)) last.set(line.key, line.value)
+
+  const written = new Set<string>()
+  const output: OptionLine[] = []
+  for (const line of lines) {
+    if ('raw' in line) {
+      output.push(line)
+      continue
+    }
+    if (written.has(line.key)) continue
+    written.add(line.key)
+    output.push({ key: line.key, value: last.get(line.key)! })
+  }
+  return output
 }
 
 /** Sets a key in place, appending it if the file does not have it yet. */

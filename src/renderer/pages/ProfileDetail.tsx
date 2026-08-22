@@ -1081,7 +1081,7 @@ function ProfileSettingsTab({
   profileId: string
   onDeleteRequested: () => void
 }): JSX.Element {
-  const { profiles, refreshProfiles, notify, settings, saveSettings } = useApp()
+  const { profiles, refreshProfiles, notify, settings, saveSettings, gameStates } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)!
 
   const [name, setName] = useState(profile.name)
@@ -1115,6 +1115,21 @@ function ProfileSettingsTab({
       .catch(() => setOptions(null))
   }
   useEffect(loadOptions, [profileId])
+
+  /**
+   * Read again whenever the game stops holding the file.
+   *
+   * Minecraft writes the whole of options.txt when it quits, so anything read
+   * when this page was first drawn is out of date the moment a session ends.
+   * The editor was opening on that stale copy: it showed the values the
+   * launcher last wrote while the file on disk said something else, and saving
+   * pushed the stale document back over what the game had just written.
+   */
+  const gameStatus = gameStates[profileId]
+  useEffect(() => {
+    if (gameStatus === undefined || gameStatus === 'exited' || gameStatus === 'crashed') loadOptions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameStatus, profileId])
 
   useEffect(() => {
     if (profile.loader === 'vanilla') return
@@ -1318,7 +1333,21 @@ function ProfileSettingsTab({
                   : t('Bu profilde henüz options.txt yok — kaydedince oluşturulur')}
             </div>
           </div>
-          <button className="btn btn--sm" disabled={options === null} onClick={() => setEditingOptions(true)}>
+          <button
+            className="btn btn--sm"
+            disabled={options === null}
+            // Re-read on the way in as well: the file can change under the
+            // launcher at any time, and an editor showing anything other than
+            // the file the game will read is worse than no editor at all.
+            onClick={() => {
+              // Cleared first so the editor, which is only rendered once
+              // `options` is there, waits for the fresh read instead of
+              // mounting on the copy this page happened to be holding.
+              setOptions(null)
+              loadOptions()
+              setEditingOptions(true)
+            }}
+          >
             <Icon name="settings" size={15} />
             {t('Düzenle')}
           </button>

@@ -1,7 +1,13 @@
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
-import { parseOptions, readOption, serialiseOptions, writeOption } from '../../shared/options.ts'
+import {
+  dedupeOptions,
+  parseOptions,
+  readOption,
+  serialiseOptions,
+  writeOption
+} from '../../shared/options.ts'
 import { extractZip } from '../archive.ts'
 
 /**
@@ -141,7 +147,9 @@ function merge(existing: string, template: string): string {
     if ('raw' in line) continue
     lines = writeOption(lines, line.key, line.value)
   }
-  return serialiseOptions(lines)
+  // Any key the file repeated is collapsed on the way out. Otherwise the
+  // launcher and the game can read different values from the same file.
+  return serialiseOptions(dedupeOptions(lines))
 }
 
 /**

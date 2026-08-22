@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import { readFileSync } from 'node:fs'
+import { parseOptions, readOption } from '../src/shared/options.ts'
 import {
   applyManagedOptions,
   changedOptions,
@@ -192,4 +193,44 @@ test('saving records the change and clearing gives the file back', () => {
   // Nothing is claimed from a profile that has no file yet: that would hand the
   // launcher every key in the template at once.
   assert.match(ipc, /if \(existing === null\) return/)
+})
+
+/**
+ * Minecraft loads options.txt into a map one line at a time, so a repeated key
+ * ends up with the value of its *last* occurrence. Reading the first showed the
+ * player a number the game was going to ignore — the file said one thing, the
+ * editor said another, and neither was wrong about its own half.
+ */
+test('a repeated key reads the way the game reads it', () => {
+  const lines = parseOptions('renderDistance:18\nfov:0.0\nrenderDistance:16\n')
+  assert.equal(readOption(lines, 'renderDistance'), '16')
+  assert.equal(readOption(lines, 'fov'), '0.0')
+  assert.equal(readOption(lines, 'guiScale'), undefined)
+})
+
+test('saving collapses a repeated key instead of leaving both', async () => {
+  const directory = await profileDir()
+  await fsp.writeFile(
+    path.join(directory, 'options.txt'),
+    'renderDistance:18\nfov:0.0\nrenderDistance:16\nguiScale:3\n',
+    'utf8'
+  )
+
+  await writeProfileOptions(directory, 'fov:0.5\n', true)
+
+  const text = await read(directory)
+  assert.equal(text.match(/^renderDistance:/gm)?.length, 1)
+  assert.match(text, /^renderDistance:16$/m)
+  assert.match(text, /^fov:0\.5$/m)
+  assert.match(text, /^guiScale:3$/m)
+})
+
+test('the editor is re-read when the game stops holding the file', () => {
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+
+  // Opening the editor clears the cached copy first, so it mounts on the file
+  // rather than on whatever this page was holding.
+  assert.match(detail, /setOptions\(null\)\s*\n\s*loadOptions\(\)\s*\n\s*setEditingOptions\(true\)/)
+  // And a finished session triggers a fresh read.
+  assert.match(detail, /gameStatus === 'exited' \|\| gameStatus === 'crashed'/)
 })
