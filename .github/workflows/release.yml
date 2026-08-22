@@ -286,8 +286,21 @@ jobs:
       # Those downloads still fail outright now and then — a dropped connection
       # mid-transfer aborts the whole build. Retrying costs a few minutes; not
       # retrying leaves one platform's package stale on the rolling release.
+      # Signing credentials are read from secrets and never written to a file in
+      # the workspace. When the repository has none of them the step below runs
+      # unchanged and produces an unsigned package, so a fork or a first-time
+      # clone still builds.
       - name: Build installers
         shell: bash
+        env:
+          # A normal OV/EV certificate: base64 of the .pfx, plus its password.
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          # Azure Trusted Signing, which is what satisfies Smart App Control
+          # without a certificate costing hundreds a year.
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         run: |
           for attempt in 1 2 3; do
             if npm run ${{ matrix.script }}; then
