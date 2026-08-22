@@ -51,6 +51,14 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
   // a profile the target is already settled, so the dialog only appears to carry
   // an incompatibility warning.
   const [installing, setInstalling] = useState<{ result: SearchResult; version?: ProjectVersion } | null>(null)
+  /**
+   * Projects installed since this page was opened.
+   *
+   * Kept here rather than on each card because an install can also finish in the
+   * dialog, which the card knows nothing about — and a card that still says
+   * "Install" after installing invites a second, pointless click.
+   */
+  const [installed, setInstalled] = useState<Set<string>>(() => new Set())
   const locked = Boolean(lockedProfileId)
   // Off by default: pinned to a profile's exact version this hides almost
   // everything (a snapshot profile cut a 98-result search down to 1), and the
@@ -78,13 +86,13 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
    * content goes straight in — unless it looks incompatible, which is the one
    * case still worth interrupting for.
    */
-  const startInstall = async (result: SearchResult, version?: ProjectVersion): Promise<void> => {
+  const startInstall = async (result: SearchResult, version?: ProjectVersion): Promise<boolean> => {
     // A modpack always asks, even from inside a profile: it would rewrite that
     // profile's version and loader, and installing it as its own profile is
     // usually what was meant.
     if (!locked || !profile || result.kind === 'modpack') {
       setInstalling({ result, version })
-      return
+      return false
     }
 
     const supports = version
@@ -97,7 +105,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
 
     if (supports && !checkCompatibility(result.kind, supports, profile).ok) {
       setInstalling({ result, version })
-      return
+      return false
     }
 
     try {
@@ -111,9 +119,12 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
       })
       await refreshProfiles()
       setSelected(null)
-      notify(`${result.title} · ${profile.name} profiline kuruldu.`)
+      setInstalled((current) => new Set(current).add(result.projectId))
+      notify(t('{name} · {profile} profiline kuruldu.', { name: result.title, profile: profile.name }))
+      return true
     } catch (caught) {
       notify(caught, 'error')
+      return false
     }
   }
 
@@ -390,6 +401,7 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
             key={`${result.source}-${result.projectId}`}
             result={result}
             canInstall={profiles.length > 0}
+            installed={installed.has(result.projectId)}
             onOpen={() => setSelected(result)}
             onQuickInstall={() => startInstall(result)}
           />
@@ -455,7 +467,8 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
           onInstalled={async () => {
             await refreshProfiles()
             setSelected(null)
-            notify(`${installing.result.title} kuruldu.`)
+            setInstalled((current) => new Set(current).add(installing.result.projectId))
+            notify(t('{name} kuruldu.', { name: installing.result.title }))
           }}
         />
       )}
@@ -466,13 +479,16 @@ export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX
 function ResultCard({
   result,
   canInstall,
+  installed,
   onOpen,
   onQuickInstall
 }: {
   result: SearchResult
   canInstall: boolean
+  /** Already installed from this page; the button says so instead of offering again. */
+  installed: boolean
   onOpen: () => void
-  onQuickInstall: () => Promise<void>
+  onQuickInstall: () => Promise<boolean>
 }): JSX.Element {
   const [installing, setInstalling] = useState(false)
 
@@ -500,16 +516,23 @@ function ResultCard({
 
       <div className="content-card__aside">
         <button
-          className="btn btn--primary btn--sm"
-          disabled={!canInstall || installing}
+          className={installed ? 'btn btn--sm' : 'btn btn--primary btn--sm'}
+          disabled={!canInstall || installing || installed}
           onClick={async () => {
             setInstalling(true)
-            await onQuickInstall()
-            setInstalling(false)
+            try {
+              await onQuickInstall()
+            } finally {
+              setInstalling(false)
+            }
           }}
         >
-          {installing ? <div className="spinner" /> : <Icon name="download" size={15} />}
-          Kur
+          {installing ? (
+            <div className="spinner" />
+          ) : (
+            <Icon name={installed ? 'check' : 'download'} size={15} />
+          )}
+          {installing ? t('Kuruluyor…') : installed ? t('Kuruldu') : t('Kur')}
         </button>
       </div>
     </div>

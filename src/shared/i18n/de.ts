@@ -624,7 +624,11 @@ const table: Dictionary = {
   'PisanKus kapalıyken Minecraft\'ın çöktüğü tespit edildi.': 'Es wurde festgestellt, dass Minecraft abgestürzt ist, während PisanKus geschlossen war.',
   'Muhtemel mod: {name}': 'Vermutlicher Mod: {name}',
   'Minecraft çöktü': 'Minecraft ist abgestürzt',
-  'Ekran görüntüleri': 'Bildschirmfotos'
+  'Ekran görüntüleri': 'Bildschirmfotos',
+  '{name} · {profile} profiline kuruldu.': '{name} wurde ins Profil {profile} installiert.',
+  '{name} kuruldu.': '{name} installiert.',
+  'Kuruluyor…': 'Wird installiert…',
+  'Kuruldu': 'Installiert'
 }
 
 export default table

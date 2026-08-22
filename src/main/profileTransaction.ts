@@ -11,7 +11,20 @@ interface TransactionManifest {
   hadFiles: boolean
 }
 
-const activeProfiles = new Set<string>()
+/**
+ * The operation currently running on each profile, so the next one can wait for
+ * it instead of being turned away.
+ *
+ * Two mutations of the same folder cannot overlap — the snapshot one of them
+ * takes would contain the other one's half-written files. That is a reason to
+ * put them in order, not a reason to refuse the second: the player clicked
+ * Install, and "another install is still running" is a sentence about the
+ * launcher's internals that leaves them with nothing to do but click again.
+ */
+const queues = new Map<string, Promise<unknown>>()
+
+/** Only to keep queued task entries apart in the tray. */
+let queueTicket = 0
 
 function transactionsRoot(): string {
   return path.join(store.settings.dataDir, '.pisankus-transactions')
@@ -59,13 +72,38 @@ export async function withProfileRollback<T>(
   operation: () => Promise<T>,
   onProgress?: (task: TaskProgress) => void
 ): Promise<T> {
-  if (activeProfiles.has(profileId)) {
-    throw new Error('Bu profilde başka bir kurulum işlemi hâlâ devam ediyor.')
-  }
+  const previous = queues.get(profileId)
+  const run = (async (): Promise<T> => {
+    if (previous) {
+      // Said out loud, because from the outside a queued click looks like a
+      // click that did nothing.
+      const waitId = `queued-${profileId}-${(queueTicket += 1)}`
+      onProgress?.({ id: waitId, label: 'Sırada bekliyor', progress: -1, detail: label, state: 'running' })
+      // A failure ahead in the queue is that operation's business, not this
+      // one's; either way the profile is free once it settles.
+      await previous.catch(() => undefined)
+      onProgress?.({ id: waitId, label: 'Sırada bekliyor', progress: 1, detail: label, state: 'done' })
+    }
+    return runExclusive(profileId, label, operation, onProgress)
+  })()
 
+  queues.set(profileId, run)
+  try {
+    return await run
+  } finally {
+    // Only if nothing queued behind this one in the meantime.
+    if (queues.get(profileId) === run) queues.delete(profileId)
+  }
+}
+
+async function runExclusive<T>(
+  profileId: string,
+  label: string,
+  operation: () => Promise<T>,
+  onProgress?: (task: TaskProgress) => void
+): Promise<T> {
   const profile = store.profile(profileId)
   if (!profile) throw new Error('Profil bulunamadı.')
-  activeProfiles.add(profileId)
 
   const taskId = `rollback-${profileId}`
   let root: string | undefined
@@ -126,7 +164,6 @@ export async function withProfileRollback<T>(
     )
     throw new Error(rolledBack ? `${message} Profil işlem öncesi hâline geri alındı.` : message)
   } finally {
-    activeProfiles.delete(profileId)
     if (root && cleanupRoot) await fsp.rm(root, { recursive: true, force: true }).catch(() => undefined)
   }
 }
