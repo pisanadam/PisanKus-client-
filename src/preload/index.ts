@@ -181,6 +181,9 @@ const api = {
      */
     writeOptions: (id: string, text: string): Promise<{ deferred: boolean }> =>
       ipcRenderer.invoke('profiles:writeOptions', id, text),
+    /** Stops re-applying the launcher's game settings before each launch. */
+    clearManagedOptions: (id: string): Promise<boolean> =>
+      ipcRenderer.invoke('profiles:clearManagedOptions', id),
     remove: (id: string, deleteFiles: boolean): Promise<Profile[]> =>
       ipcRenderer.invoke('profiles:delete', id, deleteFiles),
     openFolder: (id: string): Promise<void> => ipcRenderer.invoke('profiles:openFolder', id),

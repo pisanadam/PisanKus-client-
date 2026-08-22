@@ -19,7 +19,7 @@ import type {
 } from '../shared/types'
 import { reauthError } from '../shared/authErrors'
 import { packById } from '../shared/curatedPack'
-import { defaultOptionsText } from '../shared/options'
+import { defaultOptionsText, parseOptions, readOption } from '../shared/options'
 import * as auth from './auth/microsoft'
 import * as curated from './content/curated'
 import * as install from './content/install'
@@ -38,7 +38,7 @@ import { listVersions as listGameVersions } from './minecraft/versions'
 import * as skins from './skins'
 import { store } from './store'
 import * as updater from './updater'
-import { writeProfileOptions } from './minecraft/options'
+import { changedOptions, writeProfileOptions } from './minecraft/options'
 import { requireLeafName, requireProfileDirectory, resolveInside } from './pathSafety'
 import * as profileArchive from './profileArchive'
 import { withProfileRollback } from './profileTransaction'
@@ -120,6 +120,40 @@ const sessions = new Map<string, GameSession>()
  */
 const pendingOptions = new Map<string, string>()
 
+/**
+ * Remembers the keys this save actually changes, so they can be put back before
+ * every launch.
+ *
+ * Only the difference is recorded. The rest of the text the editor sends back is
+ * just the file it was shown, and claiming all of it would mean the launcher
+ * overwriting settings the player later changes in-game.
+ */
+async function recordManagedOptions(profileId: string, directory: string, text: string): Promise<void> {
+  const file = path.join(directory, 'options.txt')
+  const existing = await fsp.readFile(file, 'utf8').catch(() => null)
+  // With no file yet there is nothing to compare against, and treating the whole
+  // template as a deliberate choice would hand the launcher every key at once.
+  if (existing === null) return
+
+  const changed = changedOptions(existing, text)
+  const profile = store.profile(profileId)
+  const managed = { ...profile?.managedOptions }
+
+  // A key already managed takes the value this save carries, even when that is
+  // what the file already said: the player just looked at that number and kept
+  // it, so it is their answer now. Without this, setting something back in the
+  // editor would leave the launcher stamping the old value at every launch.
+  const saved = parseOptions(text)
+  for (const key of Object.keys(managed)) {
+    const value = readOption(saved, key)
+    if (value !== undefined) managed[key] = value
+  }
+  Object.assign(managed, changed)
+
+  if (Object.keys(managed).length === 0) return
+  store.updateProfile(profileId, { managedOptions: managed })
+}
+
 /** Writes a deferred save now that the game is no longer holding the file. */
 async function flushPendingOptions(profileId: string): Promise<void> {
   const text = pendingOptions.get(profileId)
@@ -128,6 +162,7 @@ async function flushPendingOptions(profileId: string): Promise<void> {
 
   const profile = store.profile(profileId)
   if (!profile) return
+  await recordManagedOptions(profileId, profile.directory, text).catch(() => undefined)
   await writeProfileOptions(profile.directory, text, true).catch(() => undefined)
 }
 
@@ -372,8 +407,25 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       pendingOptions.set(id, text)
       return { deferred: true }
     }
+    await recordManagedOptions(id, profile.directory, text)
     await writeProfileOptions(profile.directory, text, true)
     return { deferred: false }
+  })
+
+  /**
+   * Hands options.txt back to the game.
+   *
+   * The launcher stamping a value at every launch is the right default for a
+   * setting the player chose here, but it has to be possible to stop — otherwise
+   * a setting changed in-game would keep springing back with nothing on screen
+   * to explain it.
+   */
+  handle('profiles:clearManagedOptions', (id: string) => {
+    const profile = store.profile(id)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    store.updateProfile(id, { managedOptions: {} })
+    profilesChanged()
+    return true
   })
 
   handle('profiles:create', (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) =>
@@ -1162,6 +1214,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         deferred += 1
         continue
       }
+      await recordManagedOptions(id, profile.directory, store.settings.minecraftOptions)
       await writeProfileOptions(profile.directory, store.settings.minecraftOptions, true)
       applied += 1
     }

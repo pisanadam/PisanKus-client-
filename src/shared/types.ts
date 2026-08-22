@@ -125,6 +125,22 @@ export interface Profile {
   resolution?: { width: number; height: number }
   /** Copies each world before launch and keeps a short local history. */
   autoBackupWorlds?: boolean
+  /**
+   * Game options the player set through the launcher, re-applied before every
+   * launch.
+   *
+   * Writing options.txt once is not enough to make a setting stick. Minecraft
+   * rewrites the whole file when it quits, so anything the launcher wrote is
+   * gone by the next start unless the game happened to read it first — and if
+   * the file is ever rejected, the game replaces it with its own defaults and
+   * the player's choice is lost with no trace. Keeping the handful of keys the
+   * player actually changed here, and stamping them back on just before the
+   * game reads the file, is what makes "I set this in the launcher" true.
+   *
+   * Only keys the player changed in the launcher are in here; everything else
+   * in options.txt belongs to the game and is never touched.
+   */
+  managedOptions?: Record<string, string>
   content: InstalledContent[]
   /**
    * Set while a pack is still downloading into this profile.

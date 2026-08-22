@@ -1199,6 +1199,7 @@ function ProfileSettingsTab({
     void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
   }, [])
 
+  const managedCount = Object.keys(profile.managedOptions ?? {}).length
   const optionCount = options ? parseOptions(options.text).filter((line) => !('raw' in line)).length : 0
 
   /**
@@ -1322,6 +1323,35 @@ function ProfileSettingsTab({
             {t('Düzenle')}
           </button>
         </div>
+
+        {/* Shown only once the launcher is holding something. Otherwise it is a
+            line explaining a mechanism nobody has met yet. */}
+        {managedCount > 0 && (
+          <div className="settings-row">
+            <div>
+              <div className="faint">
+                {t(
+                  'Burada değiştirdiğiniz {count} ayar her başlatmadan önce yeniden uygulanıyor; oyun dosyayı sıfırlasa bile geri geliyor.',
+                  { count: managedCount }
+                )}
+              </div>
+            </div>
+            <button
+              className="btn btn--sm"
+              onClick={async () => {
+                try {
+                  await api.profiles.clearManagedOptions(profileId)
+                  await refreshProfiles()
+                  notify(t('Oyun ayarları artık oyuna bırakıldı.'))
+                } catch (error) {
+                  notify(error, 'error')
+                }
+              }}
+            >
+              {t('Oyuna bırak')}
+            </button>
+          </div>
+        )}
 
         <div className="settings-row">
           <div>

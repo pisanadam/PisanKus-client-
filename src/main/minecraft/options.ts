@@ -160,3 +160,71 @@ export async function describeProfileOptions(directory: string): Promise<string>
   const keys = lines.filter((line) => !('raw' in line)).length
   return `options.txt: ${keys} anahtar, version:${readOption(lines, 'version') ?? 'yok'}`
 }
+
+/**
+ * The keys whose value `next` changes, relative to `existing`.
+ *
+ * This is what the player actually asked for when they saved the editor: the
+ * rest of the text they saved is simply the file they were shown. Recording
+ * only the difference keeps the launcher's claim over the file down to the
+ * handful of settings the player deliberately touched, so everything they
+ * change in-game afterwards stays theirs.
+ */
+export function changedOptions(existing: string, next: string): Record<string, string> {
+  const before = parseOptions(existing)
+  const changed: Record<string, string> = {}
+
+  for (const line of parseOptions(next)) {
+    if ('raw' in line) continue
+    if (readOption(before, line.key) === line.value) continue
+    changed[line.key] = line.value
+  }
+  return changed
+}
+
+/**
+ * Stamps the launcher-managed keys back onto options.txt, just before the game
+ * reads it.
+ *
+ * One write when the player pressed save is not enough. Minecraft rewrites the
+ * whole file when it quits, so the launcher's values only survive if the game
+ * read them first — and a file the game rejects is replaced by its own defaults
+ * outright. Re-applying here means the settings the player chose in the
+ * launcher are the ones the game starts with, every time, whatever happened to
+ * the file in between.
+ *
+ * Returns the number of keys that had to be corrected, which the launch log
+ * reports: a number that stays above zero every launch is the game rejecting
+ * the file, and says so out loud instead of looking like nothing happened.
+ */
+export async function applyManagedOptions(
+  directory: string,
+  managed: Record<string, string> | undefined,
+  dataVersion: number | undefined
+): Promise<number> {
+  const entries = Object.entries(managed ?? {})
+  if (entries.length === 0) return 0
+
+  const file = path.join(directory, 'options.txt')
+  const existing = await fsp.readFile(file, 'utf8').catch(() => null)
+  let lines = parseOptions(existing ?? '')
+
+  let corrected = 0
+  for (const [key, value] of entries) {
+    if (readOption(lines, key) === value) continue
+    lines = writeOption(lines, key, value)
+    corrected += 1
+  }
+
+  // A file with no version line is one Minecraft runs its whole upgrade path
+  // over; stamping the number the client actually reports keeps it out of that.
+  if (dataVersion !== undefined && readOption(lines, 'version') === undefined) {
+    lines = writeOption(lines, 'version', String(dataVersion))
+    corrected += 1
+  }
+
+  if (corrected === 0) return 0
+  await fsp.mkdir(directory, { recursive: true })
+  await fsp.writeFile(file, serialiseOptions(lines), 'utf8')
+  return corrected
+}

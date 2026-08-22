@@ -8,7 +8,12 @@ import { assertLocalFiles, downloadAll, type DownloadItem } from './downloader'
 import { ensureJava, requireInstalledJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
-import { clientDataVersion, describeProfileOptions, seedProfileOptions } from './options'
+import {
+  applyManagedOptions,
+  clientDataVersion,
+  describeProfileOptions,
+  seedProfileOptions
+} from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 import { classifyGameExit } from './gameLifecycle'
 
@@ -194,12 +199,15 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     // stamps the data version onto a file that was written before the game had
     // ever run. Neither can be done when the profile is created: the number
     // lives inside the client jar, and without it Minecraft discards the file.
-    await seedProfileOptions(
-      profile.directory,
-      settings.minecraftOptions,
-      await clientDataVersion(clientJar)
-    )
+    const dataVersion = await clientDataVersion(clientJar)
+    await seedProfileOptions(profile.directory, settings.minecraftOptions, dataVersion)
+
+    // The settings the player chose in the launcher go on last, after anything
+    // the game wrote when it last quit. One write at save time does not survive
+    // that; this is what makes them the settings the game actually starts with.
+    const corrected = await applyManagedOptions(profile.directory, profile.managedOptions, dataVersion)
     log(await describeProfileOptions(profile.directory))
+    if (corrected > 0) log(`Launcher ayarları yeniden uygulandı: ${corrected} anahtar`)
 
     const classpath = [...libraries.classpath, clientJar]
     const values: Record<string, string> = {
