@@ -20,6 +20,8 @@ import type { AutoWorldBackupSummary, JavaInfo, ScreenshotSummary, WorldSummary 
 import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
+import { IconEditor } from '../components/IconEditor'
+import type { IconRecipe } from '../../shared/profileIcon'
 import { t } from '../../shared/i18n'
 
 type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'screenshots' | 'servers' | 'logs' | 'settings'
@@ -1103,7 +1105,7 @@ function ProfileSettingsTab({
   profileId: string
   onDeleteRequested: () => void
 }): JSX.Element {
-  const { profiles, refreshProfiles, notify, settings } = useApp()
+  const { profiles, refreshProfiles, notify, settings, saveSettings } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)!
 
   const [name, setName] = useState(profile.name)
@@ -1120,6 +1122,7 @@ function ProfileSettingsTab({
   const [exportingProfile, setExportingProfile] = useState(false)
   const [options, setOptions] = useState<{ text: string; onDisk: boolean } | null>(null)
   const [editingOptions, setEditingOptions] = useState(false)
+  const [editingIcon, setEditingIcon] = useState(false)
   const [health, setHealth] = useState<ProfileHealthReport | null>(null)
   const [healthBusy, setHealthBusy] = useState<string | null>(null)
   const [safeMode, setSafeMode] = useState<ProfileSafeModeState | null>(null)
@@ -1212,8 +1215,39 @@ function ProfileSettingsTab({
 
   const optionCount = options ? parseOptions(options.text).filter((line) => !('raw' in line)).length : 0
 
+  /**
+   * Keeps the newest eight choices, newest first and without repeats — a row of
+   * the same icon four times is not a shortcut to anything.
+   */
+  const rememberIcon = async (recipe: IconRecipe): Promise<void> => {
+    const previous = settings?.recentIcons ?? []
+    const rest = previous.filter(
+      (entry) => entry.background !== recipe.background || entry.symbol !== recipe.symbol
+    )
+    await saveSettings({ recentIcons: [recipe, ...rest].slice(0, 8) })
+  }
+
   return (
     <div className="stack-lg" style={{ maxWidth: 760 }}>
+      {editingIcon && (
+        <IconEditor
+          name={profile.name}
+          initial={profile.iconRecipe}
+          recents={settings?.recentIcons ?? []}
+          onCancel={() => setEditingIcon(false)}
+          onSave={async (dataUrl, recipe) => {
+            try {
+              await api.profiles.setDrawnIcon(profileId, dataUrl, recipe)
+              await rememberIcon(recipe)
+              await refreshProfiles()
+              setEditingIcon(false)
+            } catch (error) {
+              notify(error, 'error')
+            }
+          }}
+        />
+      )}
+
       {editingOptions && options && (
         <OptionsEditor
           value={options.text}
@@ -1239,13 +1273,17 @@ function ProfileSettingsTab({
 
         <div className="settings-row">
           <div>
-            <div className="settings-row__label">Simge</div>
+            <div className="settings-row__label">{t('Simge')}</div>
             <div className="faint">
-              {profile.iconImage ? t('Kendi görseliniz kullanılıyor') : t('PNG veya JPG yükleyebilirsiniz')}
+              {profile.iconImage ? t('Kendi görseliniz kullanılıyor') : t('Simge oluşturabilir ya da PNG/JPG yükleyebilirsiniz')}
             </div>
           </div>
           <div className="row" style={{ gap: 8 }}>
             <ProfileIcon profile={profile} size={34} />
+            <button className="btn btn--sm btn--primary" onClick={() => setEditingIcon(true)}>
+              <Icon name="sparkle" size={15} />
+              {t('Simge oluştur')}
+            </button>
             <button
               className="btn btn--sm"
               onClick={async () => {

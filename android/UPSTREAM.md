@@ -154,7 +154,24 @@ Keşfet'in karşılığı:
 Profil ne yükleyicisini ne de sürümünü saklıyor; ikisi de sürüm kimliğinin
 biçiminden ve sürüm json'ındaki `inheritsFrom` alanından okunuyor.
 
-### 10. Diller
+### 10. Simge düzenleyici
+
+`PisanKusProfileIcon.java`, `PisanKusIconEditor.java`,
+`res/layout/pk_dialog_icon_editor.xml`
+
+Üst kaynakta profil simgesi yalnızca galeriden kırpılan bir fotoğraf olabiliyordu.
+Artık bir arka plan ve bir simge seçilerek de yapılabiliyor; simgeye dokununca
+hangisi olduğu soruluyor.
+
+Şekiller görsel dosyası değil, birim karedeki geometri. Böylece tek tablo her
+boyutta çizebiliyor ve masaüstündekiyle (`src/shared/profileIcon.ts`) birebir
+aynı olabiliyor — telefonda yapılan simge bilgisayarda da aynı resim.
+
+Yuvarlak köşe kırpılarak değil çizilerek yapılıyor: Android'de `clipPath` kenar
+yumuşatma yapmıyor ve 18 piksellik bir simgede tırtıklı köşe ilk göze çarpan şey
+oluyor.
+
+### 11. Diller
 
 `res/values/strings.xml` (varsayılan) + `res/values-*/strings.xml`
 

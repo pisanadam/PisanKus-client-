@@ -13,6 +13,15 @@ public class MinecraftProfile {
 	public String created;
 	public String lastUsed;
 	public String icon;
+	/**
+	 * The background and symbol the icon editor was set to.
+	 *
+	 * The picture cannot be taken apart again, so the two ids are kept beside it
+	 * and the editor reopens where the player left it. Null for icons that came
+	 * from a cropped photo, or from before this existed.
+	 */
+	public String pisanIconBackground;
+	public String pisanIconSymbol;
 	public String lastVersionId;
 	public String gameDir;
 	public String javaDir;
@@ -51,6 +60,8 @@ public class MinecraftProfile {
 		created = profile.created;
 		lastUsed = profile.lastUsed;
 		icon = profile.icon;
+		pisanIconBackground = profile.pisanIconBackground;
+		pisanIconSymbol = profile.pisanIconSymbol;
 		lastVersionId = profile.lastVersionId;
 		gameDir = profile.gameDir;
 		javaDir = profile.javaDir;

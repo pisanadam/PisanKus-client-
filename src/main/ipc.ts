@@ -42,6 +42,7 @@ import { requireLeafName, requireProfileDirectory, resolveInside } from './pathS
 import * as profileArchive from './profileArchive'
 import { withProfileRollback } from './profileTransaction'
 import { fixProfileHealth, inspectProfileHealth } from './profileHealth'
+import { ICON_BACKGROUNDS, ICON_SYMBOLS, type IconRecipe } from '../shared/profileIcon'
 import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
 import {
   cleanProfileStorage,
@@ -278,7 +279,29 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     return store.updateProfile(id, { iconImage: scaled.toDataURL() })
   })
 
-  handle('profiles:clearIcon', (id: string) => store.updateProfile(id, { iconImage: undefined }))
+  /**
+   * Stores an icon drawn by the editor.
+   *
+   * The picture arrives already rendered, because only the renderer has a canvas
+   * — but it is checked here all the same: main is where the database is, and
+   * "the renderer sent it" is not a reason to write anything into it.
+   */
+  handle('profiles:setDrawnIcon', (id: string, dataUrl: string, recipe: IconRecipe) => {
+    if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(dataUrl) || dataUrl.length > 200_000) {
+      throw new Error('Simge görseli okunamadı.')
+    }
+    if (
+      !ICON_BACKGROUNDS.some((entry) => entry.id === recipe?.background) ||
+      !ICON_SYMBOLS.some((entry) => entry.id === recipe?.symbol)
+    ) {
+      throw new Error('Simge seçimi tanınmadı.')
+    }
+    return store.updateProfile(id, { iconImage: dataUrl, iconRecipe: recipe })
+  })
+
+  handle('profiles:clearIcon', (id: string) =>
+    store.updateProfile(id, { iconImage: undefined, iconRecipe: undefined })
+  )
 
   /**
    * That profile's own options.txt, read from its folder.

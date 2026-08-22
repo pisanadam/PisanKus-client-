@@ -2216,3 +2216,91 @@ button.update--ready:hover {
   left: 50%;
   transform: translateX(-34px);
 }
+
+/* Icon editor
+   ------------------------------------------------------------------ */
+
+.icon-editor {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.icon-editor__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+}
+
+.icon-editor__hero {
+  border-radius: 26px;
+}
+
+/* The same icon at the sizes it is actually used at, so a symbol that turns to
+   mush in the sidebar is visible here rather than after saving. */
+.icon-editor__sizes {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-height: 46px;
+}
+
+.icon-editor__heading {
+  align-self: stretch;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.icon-editor__recents,
+.icon-editor__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.icon-editor__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 6px;
+}
+
+.icon-editor__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.icon-editor__cell {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  transition: border-color 0.14s, background 0.14s;
+}
+
+.icon-editor__cell:hover {
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+}
+
+.icon-editor__cell[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft, rgba(20, 184, 184, 0.16));
+}
+
+@media (max-width: 720px) {
+  .icon-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

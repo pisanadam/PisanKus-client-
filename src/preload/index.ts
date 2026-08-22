@@ -22,6 +22,7 @@ import type {
   UpdateStatus,
   VersionSummary
 } from '../shared/types'
+import type { IconRecipe } from '../shared/profileIcon'
 
 type Unsubscribe = () => void
 
@@ -166,6 +167,8 @@ const api = {
       ipcRenderer.invoke('profiles:healthFix', id, fix),
     /** Opens a picker and stores the chosen png/jpg as the profile's icon. */
     pickIcon: (id: string): Promise<Profile | null> => ipcRenderer.invoke('profiles:pickIcon', id),
+    setDrawnIcon: (id: string, dataUrl: string, recipe: IconRecipe): Promise<Profile> =>
+      ipcRenderer.invoke('profiles:setDrawnIcon', id, dataUrl, recipe),
     clearIcon: (id: string): Promise<Profile> => ipcRenderer.invoke('profiles:clearIcon', id),
     /** That profile's options.txt, and whether it already exists on disk. */
     readOptions: (id: string): Promise<{ text: string; onDisk: boolean }> =>

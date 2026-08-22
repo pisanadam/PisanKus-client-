@@ -19,6 +19,9 @@ profillerine kurar, skin ve pelerin yönetimi sunar, Microsoft oturumunu zorunlu
 - **Mod paketi kurulumu** — Modrinth `.mrpack` paketleri açılır, `overrides` içeriği uygulanır, profilin sürümü
   ve yükleyicisi pakete göre ayarlanır.
 - **Yerel içe aktarma** — Elindeki `.jar` / `.zip` dosyalarını ve dünya arşivlerini profile aktar.
+- **Simge düzenleyici** — Profil simgesini bir arka plan ve bir simge seçerek oluşturun. Şekiller görsel
+  dosyası değil, birim karedeki geometri; aynı tablo Android'de de duruyor, yani telefonda yapılan simge
+  bilgisayarda aynı resim.
 - **3B skin değiştirici** — Skin yükle, bağlantıdan uygula, klasik/ince model seç, pelerin değiştir. Model saf
   CSS 3D ile çizilir, sürüklenerek döndürülebilir.
 - **Otomatik Java** — Sistemdeki JVM'leri tarar; sürümün gerektirdiği Java yoksa Eclipse Temurin runtime'ını

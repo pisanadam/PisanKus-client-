@@ -28,6 +28,7 @@ function defaultSettings(): Settings {
     msClientId: process.env.PISANKUS_MS_CLIENT_ID || DEFAULT_CLIENT_ID,
     concurrentDownloads: 8,
     searchPageSize: 30,
+    recentIcons: [],
     keepLauncherOpen: true,
     theme: 'dark',
     language: 'system',

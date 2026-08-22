@@ -1,5 +1,6 @@
 package net.kdt.pojavlaunch.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -30,6 +31,8 @@ import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.RTSpinnerAdapter;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
+import net.kdt.pojavlaunch.PisanKusIconEditor;
+import net.kdt.pojavlaunch.PisanKusProfileIcon;
 import net.kdt.pojavlaunch.profiles.ProfileIconCache;
 import net.kdt.pojavlaunch.profiles.VersionSelectorDialog;
 import net.kdt.pojavlaunch.utils.CropperUtils;
@@ -122,8 +125,21 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mVersionSelectButton.setOnClickListener(versionSelectListener);
         mDefaultVersion.setOnClickListener(versionSelectListener);
 
-        // Set up the icon change click listener
-        mProfileIcon.setOnClickListener(v -> CropperUtils.startCropper(mCropperLauncher));
+        // Set up the icon change click listener. Two ways in: build one from a
+        // background and a symbol, or crop a picture of your own. Tapping the
+        // icon asks which, rather than picking one of them for the player.
+        mProfileIcon.setOnClickListener(v -> new AlertDialog.Builder(v.getContext())
+                .setTitle(R.string.pisan_icon_choose_title)
+                .setItems(
+                        new CharSequence[] {
+                                getString(R.string.pisan_icon_build),
+                                getString(R.string.pisan_icon_from_gallery)
+                        },
+                        (dialog, which) -> {
+                            if (which == 0) openIconEditor(v.getContext());
+                            else CropperUtils.startCropper(mCropperLauncher);
+                        })
+                .show());
 
         loadValues(LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, ""), view.getContext());
     }
@@ -289,6 +305,28 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         } catch (NumberFormatException ignored) {
             return null;
         }
+    }
+
+    /**
+     * Opens the icon editor on whatever this profile last chose.
+     *
+     * The name comes from the field rather than from the saved profile: the
+     * initials symbol should follow what is being typed, not what was saved.
+     */
+    private void openIconEditor(Context context) {
+        String name = mDefaultName.getText().toString().trim();
+        new PisanKusIconEditor(
+                context,
+                name.isEmpty() ? getString(R.string.pisan_icon_editor_title) : name,
+                mTempProfile.pisanIconBackground,
+                mTempProfile.pisanIconSymbol,
+                (bitmap, backgroundId, symbolId) -> {
+                    mProfileIcon.setImageBitmap(bitmap);
+                    mTempProfile.icon = PisanKusProfileIcon.toDataUrl(bitmap);
+                    mTempProfile.pisanIconBackground = backgroundId;
+                    mTempProfile.pisanIconSymbol = symbolId;
+                    ProfileIconCache.dropIcon(mProfileKey);
+                }).show();
     }
 
     @Override

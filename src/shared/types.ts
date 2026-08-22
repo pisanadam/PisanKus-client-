@@ -1,5 +1,7 @@
 /** Types shared between the Electron main process and the React renderer. */
 
+import type { IconRecipe } from './profileIcon'
+
 export type LoaderId = 'vanilla' | 'fabric' | 'quilt' | 'forge' | 'neoforge' | 'optifine'
 
 export type ContentKind = 'mod' | 'resourcepack' | 'shader' | 'datapack' | 'world' | 'modpack'
@@ -108,6 +110,13 @@ export interface Profile {
    * image is downscaled before it lands here, so the database stays small.
    */
   iconImage?: string
+  /**
+   * What the icon editor was set to when `iconImage` was made.
+   *
+   * The picture alone cannot be edited back into its parts, so the recipe is
+   * kept beside it and the editor reopens where the player left it.
+   */
+  iconRecipe?: IconRecipe
   /** Absolute path to the isolated game directory. */
   directory: string
   memoryMb: number
@@ -216,6 +225,13 @@ export interface Settings {
   concurrentDownloads: number
   /** Results fetched per search page in Keşfet. Modrinth caps this at 100. */
   searchPageSize: number
+  /**
+   * The last few icon-editor choices, newest first.
+   *
+   * The recipe is kept rather than the picture: it is two short strings instead
+   * of a data url, and it redraws at whatever size and name it is asked for.
+   */
+  recentIcons: IconRecipe[]
   keepLauncherOpen: boolean
   theme: 'dark' | 'light' | 'system'
   /** UI language code, or `system` to follow the operating system. */
