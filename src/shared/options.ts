@@ -10,7 +10,7 @@
  * this build has never heard of.
  */
 
-import { KEY_BINDS, KEY_BIND_DEFAULTS } from './keys'
+import { KEY_BINDS, KEY_BIND_DEFAULTS } from './keys.ts'
 
 export type OptionKind =
   | { kind: 'bool' }

@@ -14,10 +14,11 @@ import { Settings } from './pages/Settings'
 import { Skins } from './pages/Skins'
 import { useApp } from './state/AppContext'
 import { t } from '../shared/i18n'
+import type { ContentKind } from '../shared/types'
 
 type Route =
   | { page: 'library' }
-  | { page: 'discover'; profileId?: string }
+  | { page: 'discover'; profileId?: string; kind?: ContentKind }
   | { page: 'skins' }
   | { page: 'accounts' }
   | { page: 'settings' }
@@ -184,7 +185,9 @@ export function App(): JSX.Element {
 
         {/* A profileId on the route means the store was opened from inside that
             profile, so it is the fixed install target rather than a suggestion. */}
-        {route.page === 'discover' && <Discover lockedProfileId={route.profileId} />}
+        {route.page === 'discover' && (
+          <Discover lockedProfileId={route.profileId} initialKind={route.kind} />
+        )}
 
         {route.page === 'profile' && (
           <ProfileDetail
@@ -192,7 +195,7 @@ export function App(): JSX.Element {
             initialTab={route.tab}
             initialTabRequestKey={route.tabRequestKey}
             onBack={() => setRoute({ page: 'library' })}
-            onBrowse={(profileId) => setRoute({ page: 'discover', profileId })}
+            onBrowse={(profileId, kind) => setRoute({ page: 'discover', profileId, kind })}
           />
         )}
 

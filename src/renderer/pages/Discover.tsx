@@ -33,11 +33,18 @@ const SORTS: { id: NonNullable<SearchQuery['sort']>; label: string }[] = [
   { id: 'newest', label: 'Yeni' }
 ]
 
-export function Discover({ lockedProfileId }: { lockedProfileId?: string }): JSX.Element {
+export function Discover({
+  lockedProfileId,
+  initialKind
+}: {
+  lockedProfileId?: string
+  /** Which shelf to open on, when the store was reached from a content tab. */
+  initialKind?: ContentKind
+}): JSX.Element {
   const { profiles, notify, refreshProfiles, settings } = useApp()
   const pageSize = settings?.searchPageSize ?? 30
 
-  const [kind, setKind] = useState<ContentKind>('mod')
+  const [kind, setKind] = useState<ContentKind>(initialKind ?? 'mod')
   /** `author` swaps the Modrinth search out for one publisher's project list. */
   const [tab, setTab] = useState<'search' | 'author'>('search')
   const [openPack, setOpenPack] = useState<CuratedPack | null>(null)

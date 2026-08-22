@@ -367,6 +367,7 @@ const api = {
 
   app: {
     version: (): Promise<string> => ipcRenderer.invoke('app:version'),
+    totalMemoryMb: (): Promise<number> => ipcRenderer.invoke('app:totalMemoryMb'),
     /** Where the launcher's tokens are encrypted, for the security note. */
     tokenStorage: (): Promise<{ available: boolean; backend: string }> =>
       ipcRenderer.invoke('app:tokenStorage'),

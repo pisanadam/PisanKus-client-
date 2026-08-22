@@ -24,6 +24,7 @@ export function Settings(): JSX.Element {
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
   const [jvmDraft, setJvmDraft] = useState('')
+  const [totalMemoryMb, setTotalMemoryMb] = useState(32768)
 
   useEffect(() => {
     if (!settings) return
@@ -32,6 +33,7 @@ export function Settings(): JSX.Element {
 
   useEffect(() => {
     void api.app.version().then(setAppVersion).catch(() => undefined)
+    void api.app.totalMemoryMb().then(setTotalMemoryMb).catch(() => undefined)
     void api.app.tokenStorage().then(setTokenStorage).catch(() => undefined)
     void api.updates.status().then(setUpdateStatus).catch(() => undefined)
     return api.updates.onStatus(setUpdateStatus)
@@ -381,7 +383,7 @@ export function Settings(): JSX.Element {
             <input
               type="range"
               min={1024}
-              max={32768}
+              max={totalMemoryMb}
               step={512}
               value={settings.defaultMemoryMb}
               onChange={(event) => void saveSettings({ defaultMemoryMb: Number(event.target.value) })}

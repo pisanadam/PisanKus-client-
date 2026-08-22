@@ -9,7 +9,7 @@
  * knows as `w`.
  */
 
-import { t } from './i18n'
+import { t } from './i18n/index.ts'
 
 /** Minecraft's name for "nothing bound". */
 export const UNBOUND = 'key.keyboard.unknown'

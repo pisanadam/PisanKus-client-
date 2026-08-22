@@ -630,7 +630,9 @@ const table: Dictionary = {
   'Kuruluyor…': 'Орнатылуда…',
   'Kuruldu': 'Орнатылды',
   'Bu tuşu varsayılana döndür': 'Бұл пернені әдепкі күйіне қайтару',
-  'Varsayılan: {key}': 'Әдепкі: {key}'
+  'Varsayılan: {key}': 'Әдепкі: {key}',
+  'Durdur': 'Тоқтату',
+  'Oyna': 'Ойнау'
 }
 
 export default table

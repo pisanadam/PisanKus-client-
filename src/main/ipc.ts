@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
+import os from 'node:os'
 import type {
   Account,
   CrashReport,
@@ -1076,6 +1077,17 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   })
 
   handle('app:version', () => app.getVersion())
+
+  /**
+   * Physical memory, in MB, for the memory sliders.
+   *
+   * The maximum used to be a flat 32 GB, so on an 8 GB machine three quarters
+   * of the slider promised memory the JVM would refuse to reserve — and a
+   * profile set that way fails at launch, not while the slider is dragged.
+   * Half a gigabyte is kept back for the machine itself; a Minecraft that owns
+   * every last byte still cannot run alone.
+   */
+  handle('app:totalMemoryMb', () => Math.max(1024, Math.floor(os.totalmem() / 1024 / 1024) - 512))
   handle('app:tokenStorage', () => store.encryption)
 
   // -------------------------------------------------------------- updates

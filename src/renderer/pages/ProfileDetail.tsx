@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type {
   ContentKind,
   CrashReport,
@@ -55,7 +55,7 @@ export function ProfileDetail({
   initialTab?: Tab
   initialTabRequestKey?: number
   onBack: () => void
-  onBrowse: (profileId: string) => void
+  onBrowse: (profileId: string, kind?: ContentKind) => void
 }): JSX.Element {
   const { profiles, refreshProfiles, gameStates, notify } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)
@@ -145,25 +145,14 @@ export function ProfileDetail({
         {running ? (
           <button className="btn btn--danger" onClick={() => void api.game.kill(profile.id)}>
             <Icon name="stop" size={16} />
-            Durdur
+            {t('Durdur')}
           </button>
         ) : (
           <>
-            <button
-              className="btn"
-              title={t('Modları, shaderları ve doku paketlerini silmeden geçici kapatıp başlatır')}
-              onClick={async () => {
-                try {
-                  await api.profiles.safeMode(profile.id, true)
-                  await refreshProfiles()
-                  await api.game.launch(profile.id)
-                } catch (error) {
-                  notify(error, 'error')
-                }
-              }}
-            >
-              {t('Güvenli başlat')}
-            </button>
+            {/* Safe mode lives in the profile's own settings, next to the rest of the
+                maintenance tools. It belongs there: it is a state the profile is left
+                in, not a way of starting it, and a second launch button beside Play
+                made the header read as a choice to be made every time. */}
             <button
               className="btn"
               title={t('Ağa bağlanmadan yalnızca önceden hazırlanmış dosyaları kullanır')}
@@ -188,7 +177,7 @@ export function ProfileDetail({
               }}
             >
               <Icon name="play" size={16} />
-              Oyna
+              {t('Oyna')}
             </button>
           </>
         )}
@@ -221,7 +210,7 @@ export function ProfileDetail({
           kind={contentKind}
           items={profile.content.filter((item) => item.kind === contentKind)}
           onChanged={refreshProfiles}
-          onBrowse={() => onBrowse(profile.id)}
+          onBrowse={() => onBrowse(profile.id, contentKind)}
         />
       )}
 
@@ -1211,7 +1200,17 @@ function ProfileSettingsTab({
     }
   }
 
-  const totalMemory = useMemo(() => 32768, [])
+  /**
+   * How far the slider goes: what the machine actually has, less a little for
+   * the machine itself. A flat maximum let a profile be set to memory the JVM
+   * would then refuse to reserve — and that shows up as a failed launch, not as
+   * a slider that stops.
+   */
+  const [totalMemory, setTotalMemory] = useState(32768)
+
+  useEffect(() => {
+    void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
+  }, [])
 
   const optionCount = options ? parseOptions(options.text).filter((line) => !('raw' in line)).length : 0
 

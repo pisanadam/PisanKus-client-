@@ -630,7 +630,9 @@ const table: Dictionary = {
   'Kuruluyor…': '導入中…',
   'Kuruldu': '導入済み',
   'Bu tuşu varsayılana döndür': 'このキーを既定に戻す',
-  'Varsayılan: {key}': '既定: {key}'
+  'Varsayılan: {key}': '既定: {key}',
+  'Durdur': '停止',
+  'Oyna': 'プレイ'
 }
 
 export default table

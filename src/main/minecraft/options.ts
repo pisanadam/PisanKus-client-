@@ -1,8 +1,8 @@
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
-import { parseOptions, serialiseOptions, writeOption } from '../../shared/options'
-import { extractZip } from '../archive'
+import { parseOptions, serialiseOptions, writeOption } from '../../shared/options.ts'
+import { extractZip } from '../archive.ts'
 
 /**
  * Writes the configured options.txt into a profile directory.
@@ -71,14 +71,29 @@ export async function seedProfileOptions(
   template: string,
   dataVersion: number | undefined
 ): Promise<boolean> {
-  if (!template.trim() || dataVersion === undefined) return false
+  if (dataVersion === undefined) return false
 
   const file = path.join(directory, 'options.txt')
-  if (await fsp.readFile(file, 'utf8').then(() => true).catch(() => false)) return false
+  const existing = await fsp.readFile(file, 'utf8').catch(() => null)
 
-  const lines = writeOption(parseOptions(template), 'version', String(dataVersion))
-  await fsp.mkdir(directory, { recursive: true })
-  await fsp.writeFile(file, serialiseOptions(lines), 'utf8')
+  if (existing === null) {
+    if (!template.trim()) return false
+    const lines = writeOption(parseOptions(template), 'version', String(dataVersion))
+    await fsp.mkdir(directory, { recursive: true })
+    await fsp.writeFile(file, serialiseOptions(lines), 'utf8')
+    return true
+  }
+
+  // A file the launcher wrote before this profile had ever been launched has no
+  // `version` line, because the number only exists inside a client jar that had
+  // not been downloaded yet. Minecraft throws such a file away and starts from
+  // its own defaults — which is what "my settings do not apply" looks like from
+  // the outside. The number is known by the time the game is about to start, so
+  // it is stamped in here rather than the settings being lost.
+  const lines = parseOptions(existing)
+  if (lines.some((line) => !('raw' in line) && line.key === 'version')) return false
+
+  await fsp.writeFile(file, serialiseOptions(writeOption(lines, 'version', String(dataVersion))), 'utf8')
   return true
 }
 

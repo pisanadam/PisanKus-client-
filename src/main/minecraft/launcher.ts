@@ -191,9 +191,9 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     await fsp.mkdir(profile.directory, { recursive: true })
 
     // Seeds the configured template the first time a profile is launched, and
-    // never again. It cannot be done when the profile is created because the
-    // file is worthless without the game's data version, and that number only
-    // exists inside the client jar — which is on disk by now.
+    // stamps the data version onto a file that was written before the game had
+    // ever run. Neither can be done when the profile is created: the number
+    // lives inside the client jar, and without it Minecraft discards the file.
     await seedProfileOptions(
       profile.directory,
       settings.minecraftOptions,

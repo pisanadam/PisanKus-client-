@@ -12,6 +12,9 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Shared modules spell out the `.ts` extension so the node test runner can
+    // load them without a bundler; the main-process config already allows it.
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "baseUrl": ".",
     "paths": {

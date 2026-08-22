@@ -47,7 +47,10 @@ test('safe mode, storage manager, history and bulk content controls are wired en
   assert.match(maintenance, /cleanProfileStorage/)
   assert.match(maintenance, /recordProfileHistory/)
   assert.match(preload, /content:toggleMany/)
-  assert.match(renderer, /Güvenli başlat/)
+  // Safe mode is a state the profile is left in, so it is offered in the
+  // profile's own maintenance section rather than as a second launch button.
+  assert.match(renderer, /Güvenli modu aç/)
+  assert.doesNotMatch(renderer, /Güvenli başlat/)
   assert.match(renderer, /Değişiklik geçmişi/)
   assert.match(renderer, /Depolama kullanımı/)
   assert.match(renderer, /Güncellemesi olanlar/)
