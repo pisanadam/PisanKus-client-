@@ -766,8 +766,17 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             return;
         }
 
+        // How much of the keyboard actually covers this frame. A device that
+        // resized the window anyway — some OEM builds still do, whatever the
+        // soft-input mode says — already ends the frame above the keyboard, and
+        // translating it again would push the game off the top of the screen.
+        int[] location = new int[2];
+        contentFrame.getLocationOnScreen(location);
+        int belowFrame = getWindow().getDecorView().getHeight() - (location[1] + contentFrame.getHeight());
+        int coveredByIme = Math.max(imeHeight - Math.max(belowFrame, 0), 0);
+
         int bottomDistance = contentFrame.getHeight() - inputAreaBottom;
-        int bottomPadding = Math.max(imeHeight - bottomDistance, 0);
+        int bottomPadding = Math.max(coveredByIme - bottomDistance, 0);
 
         contentFrame.setTranslationY(-bottomPadding);
     }
