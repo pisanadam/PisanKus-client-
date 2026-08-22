@@ -466,6 +466,12 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+/* Holds its place so the unbind buttons stay in a column; hidden rather than
+   removed, which also takes it out of the tab order. */
+.keybind__revert--idle {
+  visibility: hidden;
+}
+
 .keybind__key--listening {
   border-color: var(--accent);
   background: var(--accent-soft);

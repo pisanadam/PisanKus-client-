@@ -234,7 +234,11 @@ function OptionRow({
         {type.kind === 'keybind' && (
           /* A key the file does not mention is not unbound — the game falls back
              to its own default, so the editor shows that rather than "Atanmadı". */
-          <KeyBindButton value={value ?? KEY_BIND_DEFAULTS[spec.key]} onChange={onChange} />
+          <KeyBindButton
+            value={value ?? KEY_BIND_DEFAULTS[spec.key]}
+            defaultValue={KEY_BIND_DEFAULTS[spec.key]}
+            onChange={onChange}
+          />
         )}
 
         {type.kind === 'text' && (
@@ -256,9 +260,12 @@ function OptionRow({
  */
 function KeyBindButton({
   value,
+  defaultValue,
   onChange
 }: {
   value: string | undefined
+  /** What the game binds this action to out of the box. */
+  defaultValue: string | undefined
   onChange: (next: string) => void
 }): JSX.Element {
   const [listening, setListening] = useState(false)
@@ -298,6 +305,10 @@ function KeyBindButton({
   }, [listening, onChange])
 
   const unbound = !value || value === UNBOUND
+  // Only this one key, and only when it is not already what the game ships
+  // with: a button that would do nothing is a button that has to be read
+  // before it can be dismissed, on every row.
+  const changed = defaultValue != null && value !== defaultValue
 
   return (
     <div className="keybind">
@@ -308,6 +319,18 @@ function KeyBindButton({
         onClick={() => setListening((current) => !current)}
       >
         {listening ? t('Bir tuşa basın…') : keyLabel(value)}
+      </button>
+      {/* Kept in the layout even when there is nothing to undo, so the row of
+          unbind buttons stays in one column down the list instead of stepping
+          left and right as keys are changed. */}
+      <button
+        className={changed ? 'btn btn--sm btn--ghost btn--icon' : 'btn btn--sm btn--ghost btn--icon keybind__revert--idle'}
+        aria-label={t('Bu tuşu varsayılana döndür')}
+        title={changed ? t('Varsayılan: {key}', { key: keyLabel(defaultValue) }) : undefined}
+        disabled={!changed}
+        onClick={() => defaultValue && onChange(defaultValue)}
+      >
+        <Icon name="refresh" size={14} />
       </button>
       <button
         className="btn btn--sm btn--ghost btn--icon"

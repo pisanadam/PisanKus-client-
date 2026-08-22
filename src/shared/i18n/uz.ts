@@ -628,7 +628,9 @@ const table: Dictionary = {
   '{name} · {profile} profiline kuruldu.': '{name} {profile} profiliga o\'rnatildi.',
   '{name} kuruldu.': '{name} o\'rnatildi.',
   'Kuruluyor…': 'O\'rnatilmoqda…',
-  'Kuruldu': 'O\'rnatildi'
+  'Kuruldu': 'O\'rnatildi',
+  'Bu tuşu varsayılana döndür': 'Bu tugmani standart holatiga qaytarish',
+  'Varsayılan: {key}': 'Standart: {key}'
 }
 
 export default table

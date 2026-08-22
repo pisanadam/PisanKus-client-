@@ -628,7 +628,9 @@ const table: Dictionary = {
   '{name} · {profile} profiline kuruldu.': '{name}을(를) 프로필 {profile}에 설치했습니다.',
   '{name} kuruldu.': '{name}을(를) 설치했습니다.',
   'Kuruluyor…': '설치 중…',
-  'Kuruldu': '설치됨'
+  'Kuruldu': '설치됨',
+  'Bu tuşu varsayılana döndür': '이 키를 기본값으로 되돌리기',
+  'Varsayılan: {key}': '기본값: {key}'
 }
 
 export default table
