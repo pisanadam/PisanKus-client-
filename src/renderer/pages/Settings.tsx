@@ -10,6 +10,11 @@ import { LANGUAGES, t } from '../../shared/i18n'
 
 const ACCENTS = ['#14b8b8', '#2fb6c8', '#3fb98a', '#d9b23c', '#5b8cff', '#7c5cff', '#e0567a']
 
+/** What the installer's icon was rendered with; see resources/icon.svg. */
+const DEFAULT_ACCENT = ACCENTS[0]
+/** The badge's second gradient stop, so a swatch previews the real mark. */
+const ACCENT_HIGHLIGHT = '#ffe17a'
+
 /** Minecraft's own launcher client id, paired with the legacy sign-in flow. */
 const DEFAULT_CLIENT_ID = '00000000402b5328'
 
@@ -133,8 +138,8 @@ export function Settings(): JSX.Element {
 
           <div className="settings-row">
             <div>
-              <div className="settings-row__label">Vurgu rengi</div>
-              <div className="faint">{t('Düğmeler ve seçili öğelerde kullanılır')}</div>
+              <div className="settings-row__label">{t('Vurgu rengi')}</div>
+              <div className="faint">{t('Düğmeler, seçili öğeler ve uygulama simgesinde kullanılır')}</div>
             </div>
             <div className="chips">
               {ACCENTS.map((color) => (
@@ -143,12 +148,27 @@ export function Settings(): JSX.Element {
                   className="chip"
                   aria-pressed={settings.accentColor === color}
                   aria-label={t('Vurgu rengi {color}', { color })}
-                  style={{ background: color, width: 30, height: 30, padding: 0, borderRadius: 8 }}
+                  style={{
+                    background: `linear-gradient(135deg, ${color}, ${ACCENT_HIGHLIGHT})`,
+                    width: 30,
+                    height: 30,
+                    padding: 0,
+                    borderRadius: 8
+                  }}
                   onClick={() => void saveSettings({ accentColor: color })}
                 />
               ))}
             </div>
           </div>
+
+          {/* Only once the colour has been moved off the one the app was built with:
+              until then the icon on disk and the icon on screen are the same picture and
+              there is nothing to warn about. */}
+          {settings.accentColor !== DEFAULT_ACCENT && (
+            <p className="faint" style={{ marginTop: -6 }}>
+              {t('Simge değişikliği bazı yerlerde (görev çubuğuna sabitlenmiş kısayol, uygulama listesi) ancak launcher yeniden başlatıldıktan sonra görünür.')}
+            </p>
+          )}
 
           <div className="settings-row">
             <div>
@@ -332,8 +352,17 @@ export function Settings(): JSX.Element {
                 onClick={async () => {
                   setApplying(true)
                   try {
-                    const count = await api.options.applyToProfiles(profiles.map((p) => p.id))
-                    notify(t('{count} profile uygulandı.', { count }))
+                    const { applied, deferred } = await api.options.applyToProfiles(
+                      profiles.map((p) => p.id)
+                    )
+                    notify(
+                      deferred > 0
+                        ? t(
+                            '{applied} profile uygulandı. {deferred} profilde Minecraft açık; oyun kapandığında yazılacak.',
+                            { applied, deferred }
+                          )
+                        : t('{count} profile uygulandı.', { count: applied })
+                    )
                   } catch (error) {
                     notify(error, 'error')
                   } finally {

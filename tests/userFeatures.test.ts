@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import fsp from 'node:fs/promises'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 
@@ -63,4 +64,34 @@ test('first-run wizard saves a selected play preset', async () => {
   assert.match(welcome, /balanced/)
   assert.match(welcome, /visuals/)
   assert.match(welcome, /defaultMemoryMb/)
+})
+
+/**
+ * Adding a second account used to be impossible: the sign-in window shared one
+ * persistent cookie jar and never asked which account to use, so Microsoft
+ * signed it straight back in as whoever it saw last and redirected before the
+ * page was drawn — the window opened and shut itself. Trying again repeated the
+ * same silent sign-in until Microsoft answered "too many requests".
+ */
+test('each sign-in gets its own cookie jar and asks which account', () => {
+  const auth = readFileSync('src/main/auth/microsoft.ts', 'utf8')
+
+  assert.doesNotMatch(auth, /persist:msa/)
+  assert.match(auth, /const partition = `msa-\$\{randomBytes\(8\)\.toString\('hex'\)\}`/)
+  assert.match(auth, /partition\s*\}\s*\n\s*\}\)/)
+
+  // The prompt is set for both platforms, not only the one that uses PKCE.
+  const prompt = auth.indexOf("params.set('prompt', 'select_account')")
+  assert.ok(prompt > 0)
+  assert.ok(prompt > auth.indexOf('if (pkce) {'))
+  assert.equal(auth.split("params.set('prompt', 'select_account')").length - 1, 1)
+})
+
+test('the profile icon controls stay inside the settings column', () => {
+  const css = readFileSync('src/renderer/styles/global.css', 'utf8')
+  assert.match(css, /\.settings-row > \*\s*\{\s*min-width:\s*0;/)
+  assert.match(css, /\.settings-row__controls\s*\{\s*flex-wrap:\s*wrap;/)
+
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  assert.match(detail, /className="row settings-row__controls"/)
 })

@@ -12,6 +12,7 @@ import type { CrashReport, GameLogLine, GameState, Profile, Settings, TaskProgre
 import '../../shared/i18n/tables'
 import { detectLanguage, isRtl, setLanguage, t } from '../../shared/i18n'
 import { api } from '../lib/api'
+import { appMarkDataUrl } from '../lib/appMark'
 import { errorMessage, isSignInError } from '../lib/format'
 import type { PublicAccount } from '../../preload'
 
@@ -167,6 +168,12 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     root.dir = isRtl(language) ? 'rtl' : 'ltr'
     root.style.setProperty('--accent', settings.accentColor)
     root.style.setProperty('--on-accent', onAccent(settings.accentColor))
+    // The badge in the sidebar is the app's icon, so the icon follows the accent
+    // the same way the badge does. Best effort: a launcher that cannot repaint its
+    // taskbar entry is still a working launcher.
+    void api.app
+      .setMark(appMarkDataUrl(settings.accentColor, onAccent(settings.accentColor)))
+      .catch(() => undefined)
     const theme =
       settings.theme === 'system'
         ? window.matchMedia('(prefers-color-scheme: light)').matches

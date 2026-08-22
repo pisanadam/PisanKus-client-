@@ -2177,6 +2177,21 @@ button.update--ready:hover {
   gap: 20px;
 }
 
+/* Grid items refuse to shrink past their content by default, so a row whose
+   controls are wider than the column pushes itself out over the card's edge
+   instead of being contained by it. */
+.settings-row > * {
+  min-width: 0;
+}
+
+/* The icon row carries up to four controls, which is more than the settings
+   column is wide. Wrapping keeps them inside the card at every language and
+   window width. */
+.settings-row__controls {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .settings-row__label {
   font-weight: 560;
 }

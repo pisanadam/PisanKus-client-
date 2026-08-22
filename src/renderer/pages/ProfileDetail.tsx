@@ -1240,10 +1240,14 @@ function ProfileSettingsTab({
           notify={notify}
           onClose={() => setEditingOptions(false)}
           onSave={async (text) => {
-            await api.profiles.writeOptions(profileId, text)
+            const { deferred } = await api.profiles.writeOptions(profileId, text)
             setOptions({ text, onDisk: true })
             setEditingOptions(false)
-            notify(t('Bu profilin oyun ayarları kaydedildi.'))
+            notify(
+              deferred
+                ? t('Minecraft açık. Ayarlar oyun kapandığında yazılacak.')
+                : t('Bu profilin oyun ayarları kaydedildi.')
+            )
           }}
         />
       )}
@@ -1264,7 +1268,7 @@ function ProfileSettingsTab({
               {profile.iconImage ? t('Kendi görseliniz kullanılıyor') : t('Simge oluşturabilir ya da PNG/JPG yükleyebilirsiniz')}
             </div>
           </div>
-          <div className="row" style={{ gap: 8 }}>
+          <div className="row settings-row__controls" style={{ gap: 8 }}>
             <ProfileIcon profile={profile} size={34} />
             <button className="btn btn--sm btn--primary" onClick={() => setEditingIcon(true)}>
               <Icon name="sparkle" size={15} />
@@ -1284,14 +1288,19 @@ function ProfileSettingsTab({
               {t('Görsel seç')}
             </button>
             {profile.iconImage && (
+              // Icon only: the four controls together are wider than the
+              // settings column, and this is the one whose meaning survives
+              // without a word next to it.
               <button
-                className="btn btn--sm"
+                className="btn btn--sm btn--icon"
+                title={t('Kaldır')}
+                aria-label={t('Kaldır')}
                 onClick={async () => {
                   await api.profiles.clearIcon(profileId)
                   await refreshProfiles()
                 }}
               >
-                {t('Kaldır')}
+                <Icon name="trash" size={15} />
               </button>
             )}
           </div>

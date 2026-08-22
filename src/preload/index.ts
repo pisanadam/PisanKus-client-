@@ -173,7 +173,13 @@ const api = {
     /** That profile's options.txt, and whether it already exists on disk. */
     readOptions: (id: string): Promise<{ text: string; onDisk: boolean }> =>
       ipcRenderer.invoke('profiles:readOptions', id),
-    writeOptions: (id: string, text: string): Promise<void> =>
+    /**
+     * Saves that profile's options.txt.
+     *
+     * `deferred` means the game is running and holds the file: the text is
+     * written once it exits, because Minecraft overwrites the file on quit.
+     */
+    writeOptions: (id: string, text: string): Promise<{ deferred: boolean }> =>
       ipcRenderer.invoke('profiles:writeOptions', id, text),
     remove: (id: string, deleteFiles: boolean): Promise<Profile[]> =>
       ipcRenderer.invoke('profiles:delete', id, deleteFiles),
@@ -348,7 +354,7 @@ const api = {
   options: {
     /** Opens a file picker and returns the file's text, or null if cancelled. */
     importFile: (): Promise<string | null> => ipcRenderer.invoke('options:importFile'),
-    applyToProfiles: (profileIds: string[]): Promise<number> =>
+    applyToProfiles: (profileIds: string[]): Promise<{ applied: number; deferred: number }> =>
       ipcRenderer.invoke('options:applyToProfiles', profileIds)
   },
 
@@ -366,6 +372,7 @@ const api = {
   },
 
   app: {
+    setMark: (dataUrl: string): Promise<void> => ipcRenderer.invoke('app:setMark', dataUrl),
     version: (): Promise<string> => ipcRenderer.invoke('app:version'),
     totalMemoryMb: (): Promise<number> => ipcRenderer.invoke('app:totalMemoryMb'),
     /** Where the launcher's tokens are encrypted, for the security note. */

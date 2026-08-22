@@ -1,7 +1,7 @@
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
-import { parseOptions, serialiseOptions, writeOption } from '../../shared/options.ts'
+import { parseOptions, readOption, serialiseOptions, writeOption } from '../../shared/options.ts'
 import { extractZip } from '../archive.ts'
 
 /**
@@ -71,18 +71,25 @@ export async function seedProfileOptions(
   template: string,
   dataVersion: number | undefined
 ): Promise<boolean> {
-  if (dataVersion === undefined) return false
-
   const file = path.join(directory, 'options.txt')
   const existing = await fsp.readFile(file, 'utf8').catch(() => null)
 
   if (existing === null) {
     if (!template.trim()) return false
-    const lines = writeOption(parseOptions(template), 'version', String(dataVersion))
+    // The version is stamped when it could be read. When it could not — an
+    // unreadable jar, a build old enough to ship no version.json — the file is
+    // still written: the game runs its own upgrade path over a file with no
+    // version, whereas a file that was never created leaves the player with
+    // stock settings and no way back to the template.
+    const parsed = parseOptions(template)
+    const lines =
+      dataVersion === undefined ? parsed : writeOption(parsed, 'version', String(dataVersion))
     await fsp.mkdir(directory, { recursive: true })
     await fsp.writeFile(file, serialiseOptions(lines), 'utf8')
     return true
   }
+
+  if (dataVersion === undefined) return false
 
   // A file the launcher wrote before this profile had ever been launched has no
   // `version` line, because the number only exists inside a client jar that had
@@ -135,4 +142,21 @@ function merge(existing: string, template: string): string {
     lines = writeOption(lines, line.key, line.value)
   }
   return serialiseOptions(lines)
+}
+
+/**
+ * One line for the launch log describing the file the game is about to read.
+ *
+ * "My settings do not apply" is impossible to tell apart from "the file never
+ * reached the profile" without seeing the file, and asking a player to find it
+ * on disk rarely works. The log already goes with every bug report, so the
+ * answer travels with it.
+ */
+export async function describeProfileOptions(directory: string): Promise<string> {
+  const text = await fsp.readFile(path.join(directory, 'options.txt'), 'utf8').catch(() => null)
+  if (text === null) return 'options.txt: yok'
+
+  const lines = parseOptions(text)
+  const keys = lines.filter((line) => !('raw' in line)).length
+  return `options.txt: ${keys} anahtar, version:${readOption(lines, 'version') ?? 'yok'}`
 }

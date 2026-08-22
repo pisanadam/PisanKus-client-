@@ -107,6 +107,30 @@ async function createProfile(input: {
 }
 
 const sessions = new Map<string, GameSession>()
+
+/**
+ * Option changes that arrived while the game was already running.
+ *
+ * Minecraft reads options.txt once, at startup, and writes the whole file back
+ * out when it quits. A change saved mid-session is therefore invisible in the
+ * running game and then flattened by it on exit — which from the outside looks
+ * exactly like "I applied the settings and nothing happened". Holding the text
+ * until the process is gone makes the save land on the file the next launch
+ * actually reads.
+ */
+const pendingOptions = new Map<string, string>()
+
+/** Writes a deferred save now that the game is no longer holding the file. */
+async function flushPendingOptions(profileId: string): Promise<void> {
+  const text = pendingOptions.get(profileId)
+  if (text === undefined) return
+  pendingOptions.delete(profileId)
+
+  const profile = store.profile(profileId)
+  if (!profile) return
+  await writeProfileOptions(profile.directory, text, true).catch(() => undefined)
+}
+
 const launchAborts = new Map<string, AbortController>()
 
 /**
@@ -344,7 +368,12 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('profiles:writeOptions', async (id: string, text: string) => {
     const profile = store.profile(id)
     if (!profile) throw new Error('Profil bulunamadı.')
+    if (sessions.has(id)) {
+      pendingOptions.set(id, text)
+      return { deferred: true }
+    }
     await writeProfileOptions(profile.directory, text, true)
+    return { deferred: false }
   })
 
   handle('profiles:create', (input: { name: string; gameVersion: string; loader: LoaderId; loaderVersion?: string; icon?: string }) =>
@@ -478,6 +507,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('game:launch', async (profileId: string, options?: { offline?: boolean; serverAddress?: string }) => {
     if (sessions.has(profileId)) throw new Error('Bu profil zaten çalışıyor.')
 
+    // A save made during the last session is written before the game reads the
+    // file, not after — if the launcher was closed before the game exited, this
+    // is the only place left to apply it.
+    await flushPendingOptions(profileId)
+
     const profile = store.profile(profileId)
     if (!profile) throw new Error('Profil bulunamadı.')
 
@@ -587,6 +621,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
             terminal = true
             sessions.delete(profileId)
             launchAborts.delete(profileId)
+            void flushPendingOptions(profileId)
             const current = store.profile(profileId)
             if (current) {
               store.updateProfile(profileId, {
@@ -1117,11 +1152,43 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   // Applying to existing profiles is a separate, explicit action: it replaces a
   // file the player may have spent time tuning in-game.
   handle('options:applyToProfiles', async (profileIds: string[]) => {
+    let applied = 0
+    let deferred = 0
     for (const id of profileIds) {
       const profile = store.profile(id)
-      if (profile) await writeProfileOptions(profile.directory, store.settings.minecraftOptions, true)
+      if (!profile) continue
+      if (sessions.has(id)) {
+        pendingOptions.set(id, store.settings.minecraftOptions)
+        deferred += 1
+        continue
+      }
+      await writeProfileOptions(profile.directory, store.settings.minecraftOptions, true)
+      applied += 1
     }
-    return profileIds.length
+    return { applied, deferred }
+  })
+
+  /**
+   * Uses the badge the renderer drew as the app's icon.
+   *
+   * It arrives already drawn because only the renderer has a canvas. What the
+   * operating system keeps for the *installed* app — the pinned shortcut, the
+   * bundle in Finder, the .desktop entry — is baked at build time and cannot be
+   * repainted from here; this changes the running window and its taskbar or
+   * dock entry, which is what the player is looking at when they pick a colour.
+   */
+  handle('app:setMark', (dataUrl: string) => {
+    if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(dataUrl) || dataUrl.length > 400_000) {
+      throw new Error('Simge görseli okunamadı.')
+    }
+    const image = nativeImage.createFromDataURL(dataUrl)
+    if (image.isEmpty()) throw new Error('Simge görseli okunamadı.')
+
+    const window = BrowserWindow.getAllWindows()[0]
+    window?.setIcon(image)
+    // Windows and Linux read the window's own icon; macOS has no per-window
+    // icon at all and takes it from the dock.
+    if (process.platform === 'darwin') app.dock?.setIcon(image)
   })
 
   handle('app:version', () => app.getVersion())

@@ -149,8 +149,20 @@ function requestAuthCode(clientId: string, mode: AuthMode): Promise<{ code: stri
   if (pkce) {
     params.set('code_challenge', pkce.challenge)
     params.set('code_challenge_method', 'S256')
-    params.set('prompt', 'select_account')
   }
+  // Always ask which account, on both platforms. Without it Microsoft signs the
+  // window straight back in as whoever it saw last and redirects before anything
+  // is drawn — the window appears and shuts itself, and a second account can
+  // never be added because the same one comes back every time.
+  params.set('prompt', 'select_account')
+
+  // A partition with no `persist:` prefix is an in-memory one, thrown away with
+  // the window, and a fresh name gives every attempt an empty cookie jar. The
+  // shared persistent jar this used to have was what made repeated tries hammer
+  // login.live.com with the same silent sign-in until it answered "too many
+  // requests". Nothing is lost by dropping the cookies: the account itself is
+  // kept as a refresh token, not as a browser session.
+  const partition = `msa-${randomBytes(8).toString('hex')}`
 
   return new Promise((resolve, reject) => {
     const window = new BrowserWindow({
@@ -158,7 +170,7 @@ function requestAuthCode(clientId: string, mode: AuthMode): Promise<{ code: stri
       height: 720,
       autoHideMenuBar: true,
       title: 'Microsoft ile oturum aç',
-      webPreferences: { nodeIntegration: false, contextIsolation: true, partition: 'persist:msa' }
+      webPreferences: { nodeIntegration: false, contextIsolation: true, partition }
     })
 
     let settled = false

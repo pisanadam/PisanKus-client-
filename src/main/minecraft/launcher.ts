@@ -8,7 +8,7 @@ import { assertLocalFiles, downloadAll, type DownloadItem } from './downloader'
 import { ensureJava, requireInstalledJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
-import { clientDataVersion, seedProfileOptions } from './options'
+import { clientDataVersion, describeProfileOptions, seedProfileOptions } from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 import { classifyGameExit } from './gameLifecycle'
 
@@ -199,6 +199,7 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       settings.minecraftOptions,
       await clientDataVersion(clientJar)
     )
+    log(await describeProfileOptions(profile.directory))
 
     const classpath = [...libraries.classpath, clientJar]
     const values: Record<string, string> = {
