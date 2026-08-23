@@ -1,4 +1,4 @@
-import { packById, type CuratedPack, type PackMod } from '../../shared/curatedPack'
+import { optimizationPack, packById, type CuratedPack, type PackMod } from '../../shared/curatedPack'
 import { store } from '../store'
 import { installContent, type ProgressReporter } from './install'
 import * as modrinth from './modrinth'
@@ -131,7 +131,44 @@ export async function installPackInto(
   profileId: string,
   onProgress: ProgressReporter
 ): Promise<PackReport> {
-  const pack = requirePack(packId)
+  return installPack(requirePack(packId), profileId, onProgress)
+}
+
+/**
+ * Adds the performance mods for this profile's loader.
+ *
+ * Aimed at a profile that already exists and runs badly — usually a big modpack,
+ * which is heavy because of everything it adds and which typically ships without
+ * any of these. Nothing is removed and no setting is touched; the pack's own
+ * mods stay exactly as they are.
+ */
+export async function installOptimizationInto(
+  profileId: string,
+  onProgress: ProgressReporter
+): Promise<PackReport> {
+  const profile = store.profile(profileId)
+  if (!profile) throw new Error('Profil bulunamadı.')
+
+  const pack = optimizationPack(profile.loader)
+  if (!pack) {
+    throw new Error('Bu yükleyici için performans modu listesi yok. Fabric, Quilt, Forge veya NeoForge gerekir.')
+  }
+
+  // Already-installed entries are skipped rather than reinstalled: this is
+  // meant to be safe to press twice, and on a profile that already has Sodium
+  // reinstalling it would only replace the build the player chose.
+  const present = new Set(profile.content.map((entry) => entry.name.toLowerCase()))
+  const wanted = pack.mods.filter((mod) => !present.has(mod.name.toLowerCase()))
+  if (wanted.length === 0) return { installed: [], skipped: [] }
+
+  return installPack({ ...pack, mods: wanted }, profileId, onProgress)
+}
+
+async function installPack(
+  pack: CuratedPack,
+  profileId: string,
+  onProgress: ProgressReporter
+): Promise<PackReport> {
   const profile = store.profile(profileId)
   if (!profile) throw new Error('Profil bulunamadı.')
 

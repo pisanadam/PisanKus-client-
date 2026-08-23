@@ -15,6 +15,7 @@ import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { ServersTab } from '../components/ServersTab'
 import { parseOptions, readOption } from '../../shared/options'
+import { optimizationPack } from '../../shared/curatedPack'
 import { Confirm, Modal } from '../components/Modal'
 import type { AutoWorldBackupSummary, JavaInfo, ScreenshotSummary, WorldSummary } from '../../preload'
 import { api } from '../lib/api'
@@ -182,6 +183,7 @@ export function ProfileDetail({
         <ContentTab
           profileId={profile.id}
           kind={contentKind}
+          loader={profile.loader}
           items={profile.content.filter((item) => item.kind === contentKind)}
           onChanged={refreshProfiles}
           onBrowse={() => onBrowse(profile.id, contentKind)}
@@ -222,12 +224,14 @@ export function ProfileDetail({
 function ContentTab({
   profileId,
   kind,
+  loader,
   items,
   onChanged,
   onBrowse
 }: {
   profileId: string
   kind: ContentKind
+  loader: LoaderId
   items: InstalledContent[]
   onChanged: () => Promise<void>
   onBrowse: () => void
@@ -327,6 +331,36 @@ function ContentTab({
           {checking ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
           {t('Güncellemeleri denetle')}
         </button>
+
+        {/* Mods only, and only for a loader there is a list for. Offering it on
+            the resource-pack tab, or on a vanilla profile, would be a button
+            that can only ever answer "not for this profile". */}
+        {kind === 'mod' && optimizationPack(loader) && (
+          <button
+            className="btn"
+            disabled={busyId === 'optimize'}
+            title={t('Kurulu modlara dokunmaz, yalnızca eksik olan performans modlarını ekler')}
+            onClick={async () => {
+              setBusyId('optimize')
+              try {
+                const report = await api.content.installOptimization(profileId)
+                await onChanged()
+                notify(
+                  report.installed.length === 0
+                    ? t('Eklenecek performans modu kalmamış.')
+                    : t('{count} performans modu kuruldu.', { count: report.installed.length })
+                )
+              } catch (error) {
+                notify(error, 'error')
+              } finally {
+                setBusyId(null)
+              }
+            }}
+          >
+            {busyId === 'optimize' ? <div className="spinner" /> : <Icon name="sparkle" size={16} />}
+            {t('Performans modlarını kur')}
+          </button>
+        )}
 
         {visibleItems.length > 0 && (
           <label className="row faint" style={{ gap: 7 }}>

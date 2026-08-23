@@ -88,6 +88,17 @@ export interface InstalledContent {
   updateAvailable?: string
   /** A user choice to keep this exact version until they unpin it. */
   pinned?: boolean
+  /**
+   * For a modpack: the profile-relative paths this version of the pack wrote.
+   *
+   * Kept so an update can delete what the new version no longer ships. Without
+   * it, updating a pack leaves the old build of every mod it replaced sitting in
+   * `mods/` beside the new one, and two builds of the same mod is a profile that
+   * does not start. Only the pack's own downloads are listed — files from
+   * `overrides/` are configs the player may have edited since, and are left
+   * alone.
+   */
+  packFiles?: string[]
   enabled: boolean
   installedAt: number
 }

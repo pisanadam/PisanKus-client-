@@ -247,8 +247,14 @@ async function applyMrPack(
   const gameVersion = index.dependencies.minecraft
   const { loader, loaderVersion } = loaderFromDependencies(index.dependencies)
 
-  const downloads = index.files
-    .filter((file) => file.env?.client !== 'unsupported')
+  const wanted = index.files.filter((file) => file.env?.client !== 'unsupported')
+
+  // What this version of the pack ships, as the profile sees it. Compared
+  // against the previous version's list further down so an update can take the
+  // old build of a replaced mod out of `mods/`.
+  const packFiles = wanted.map((file) => file.path.replace(/\\/g, '/'))
+
+  const downloads = wanted
     .map((file) => ({
       // Pack paths are untrusted input. Keep every download inside the profile
       // even if a malformed index contains `..`, an absolute path or a drive.
@@ -269,6 +275,16 @@ async function applyMrPack(
         state: 'running'
       })
   })
+
+  // Everything the previous version put here that this one does not. Deleted
+  // before the overrides land, so a pack that moved a file between its download
+  // list and its overrides does not lose it.
+  const previous = profile.content.find((entry) => entry.id === `modrinth:${request.projectId}`)
+  const keep = new Set(packFiles)
+  for (const stale of previous?.packFiles ?? []) {
+    if (keep.has(stale)) continue
+    await fsp.rm(resolveInside(profile.directory, stale, 'Mod paketi dosya yolu'), { force: true })
+  }
 
   // `overrides/` carries configs, keybinds and sometimes worlds shipped with the pack.
   for (const overrideDir of ['overrides', 'client-overrides']) {
@@ -294,6 +310,7 @@ async function applyMrPack(
     name: index.name,
     fileName: `${index.name}-${index.versionId}`,
     iconUrl: request.iconUrl,
+    packFiles,
     enabled: true,
     installedAt: Date.now()
   }
