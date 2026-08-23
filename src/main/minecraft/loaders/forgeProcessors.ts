@@ -2,9 +2,9 @@ import { spawn } from 'node:child_process'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { extractZip } from '../../archive'
-import { downloadFile } from '../downloader'
-import { mavenPath } from '../libraries'
+import { extractZip } from '../../archive.ts'
+import { downloadFile } from '../downloader.ts'
+import { mavenPath } from '../libraries.ts'
 
 /**
  * Runs the build steps Forge's and NeoForge's installers perform.

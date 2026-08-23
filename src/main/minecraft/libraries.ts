@@ -1,9 +1,9 @@
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import type { DownloadItem } from './downloader'
-import type { Artifact, Library, Rule, VersionJson } from './versions'
-import { extractZip } from '../archive'
+import type { DownloadItem } from './downloader.ts'
+import type { Artifact, Library, Rule, VersionJson } from './versions.ts'
+import { extractZip } from '../archive.ts'
 
 export type OsName = 'windows' | 'osx' | 'linux'
 
@@ -52,11 +52,22 @@ export function rulesAllow(rules: Rule[] | undefined, features: Record<string, b
 }
 
 /** Converts `group:artifact:version[:classifier]` into a maven-style relative path. */
+/**
+ * Where a `group:artifact:version[:classifier][@extension]` coordinate lives.
+ *
+ * The `@extension` suffix is not decoration. Forge's installer describes its
+ * inputs with coordinates like `de.oceanlabs.mcp:mcp_config:1.20.1-…@zip` and
+ * `net.minecraft:client:1.20.1-…:mappings@txt`, and treating the suffix as part
+ * of the version produced a directory named `…@zip` holding a `.jar` that
+ * nothing had written — which its tools reported as "Input does not exist" one
+ * step into the build.
+ */
 export function mavenPath(name: string): string {
-  const [group, artifact, version, classifier] = name.split(':')
+  const [coordinate, extension = 'jar'] = name.split('@')
+  const [group, artifact, version, classifier] = coordinate.split(':')
   const fileName = classifier
-    ? `${artifact}-${version}-${classifier}.jar`
-    : `${artifact}-${version}.jar`
+    ? `${artifact}-${version}-${classifier}.${extension}`
+    : `${artifact}-${version}.${extension}`
   return path.join(...group.split('.'), artifact, version, fileName)
 }
 

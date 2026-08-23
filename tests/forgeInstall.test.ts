@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { dropEmptyOptions } from '../src/main/minecraft/launchArgs.ts'
+import { mavenPath } from '../src/main/minecraft/libraries.ts'
 
 /**
  * Forge and NeoForge from 1.17 on do not ship a ready client. Their installer
@@ -64,4 +65,33 @@ test('an argument with no value is left out rather than passed empty', () => {
   const kept = ['--xuid', '2535428', '--server', '']
   assert.deepEqual(dropEmptyOptions(kept, ['--xuid']), [])
   assert.deepEqual(kept, ['--xuid', '2535428', '--server', ''])
+})
+
+/**
+ * A maven coordinate can name its file extension after an `@`, and Forge's
+ * installer relies on it: `de.oceanlabs.mcp:mcp_config:1.20.1-…@zip` and
+ * `net.minecraft:client:1.20.1-…:mappings@txt`. Treating the suffix as part of
+ * the version built a path into a directory named `…@zip` holding a `.jar`
+ * nothing had written, and the very first tool in the chain stopped with
+ * "Input does not exist".
+ */
+test('a maven coordinate may name its own extension', () => {
+  assert.equal(
+    mavenPath('de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip').replace(/\\/g, '/'),
+    'de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip'
+  )
+  assert.equal(
+    mavenPath('net.minecraft:client:1.20.1-20230612.114412:mappings@txt').replace(/\\/g, '/'),
+    'net/minecraft/client/1.20.1-20230612.114412/client-1.20.1-20230612.114412-mappings.txt'
+  )
+
+  // Everything without an `@` keeps the jar it always had.
+  assert.equal(
+    mavenPath('net.minecraftforge:forge:1.20.1-47.4.10:client').replace(/\\/g, '/'),
+    'net/minecraftforge/forge/1.20.1-47.4.10/forge-1.20.1-47.4.10-client.jar'
+  )
+  assert.equal(
+    mavenPath('org.ow2.asm:asm:9.8').replace(/\\/g, '/'),
+    'org/ow2/asm/asm/9.8/asm-9.8.jar'
+  )
 })
