@@ -1130,22 +1130,6 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     }
   })
 
-  /**
-   * Adds the performance mods for this profile's loader.
-   *
-   * Wrapped in the rollback transaction like every other write into a profile:
-   * a run that stops halfway through leaves a mods folder the game may refuse
-   * to start with, and putting it back is worth more than the seconds it costs.
-   */
-  handle('content:installOptimization', (profileId: string) =>
-    withProfileRollback(
-      profileId,
-      'Performans modları',
-      () => curated.installOptimizationInto(profileId, onProgress),
-      onProgress
-    )
-  )
-
   // ------------------------------------------------------------------ servers
 
   /** Every server call works on one profile's own `servers.dat`. */

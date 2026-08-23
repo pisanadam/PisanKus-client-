@@ -229,11 +229,6 @@ const api = {
   },
 
   content: {
-    /** Adds the performance mods for this profile's loader. */
-    installOptimization: (
-      profileId: string
-    ): Promise<{ installed: { name: string; role: string }[]; skipped: { name: string; reason: string }[] }> =>
-      ipcRenderer.invoke('content:installOptimization', profileId),
     search: (query: SearchQuery): Promise<SearchPage> => ipcRenderer.invoke('content:search', query),
     /** Every project published by one Modrinth author. */
     userProjects: (username: string): Promise<SearchResult[]> =>

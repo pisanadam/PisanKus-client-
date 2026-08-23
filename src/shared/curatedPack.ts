@@ -232,7 +232,6 @@ const SWEETIE: CuratedPack = {
 
     // Görsellik ve animasyon
     { slug: 'oculus', name: 'Oculus', role: 'Forge’da shader desteği' },
-    { slug: 'embeddium', name: 'Embeddium', role: 'Render motorunu hızlandırır' },
     { slug: 'playeranimator', name: 'playerAnimator', role: 'Modların oyuncu animasyonlarını çalıştırır' },
     { slug: 'not-enough-animations', name: 'Not Enough Animations', role: 'Vanilya hareketlerine animasyon' },
     { slug: '3dskinlayers', name: '3D Skin Layers', role: 'Skin’in üst katmanını üç boyutlu gösterir' },
@@ -240,9 +239,23 @@ const SWEETIE: CuratedPack = {
     { slug: 'vminus', name: 'VMinus', role: 'Vanilyayı sadeleştiren görsel dokunuşlar' },
 
     // Performans
+    //
+    // Yüzden fazla mod yükleyen bir paket, hiçbiri olmadan kurulduğunda ağır
+    // olur — ve öyle kuruluyordu: listede yalnızca üç tanesi vardı. Forge'un
+    // Sodium ve Lithium karşılıkları (Embeddium, Canary) ayrı projeler olduğu
+    // için adları da başka; Fabric listesinden kopyalanan bir ad burada hiçbir
+    // şeye çözümlenmez.
+    { slug: 'embeddium', name: 'Embeddium', role: 'Render motorunu baştan yazar — en büyük FPS kazancı' },
+    { slug: 'canary', name: 'Canary', role: 'Oyun mantığını hızlandırır, davranışı değiştirmeden' },
     { slug: 'modernfix', name: 'ModernFix', role: 'Açılışı kısaltır, bellek sızıntılarını kapatır' },
-    { slug: 'ai-improvements', name: 'AI Improvements', role: 'Yaratık yapay zekâsının yükünü azaltır' },
     { slug: 'ferrite-core', name: 'FerriteCore', role: 'Bellek kullanımını düşürür' },
+    { slug: 'memoryleakfix', name: 'Memory Leak Fix', role: 'Bilinen bellek sızıntılarını kapatır' },
+    { slug: 'saturn', name: 'Saturn', role: 'Bellek ayırmayı azaltır' },
+    { slug: 'entityculling', name: 'Entity Culling', role: 'Görünmeyen varlıkları hiç çizmez' },
+    { slug: 'moreculling', name: 'More Culling', role: 'Görünmeyen blok yüzeylerini eler' },
+    { slug: 'clumps', name: 'Clumps', role: 'Tecrübe küreciklerini birleştirir — kalabalık savaşlarda büyük fark' },
+    { slug: 'ai-improvements', name: 'AI Improvements', role: 'Yaratık yapay zekâsının yükünü azaltır' },
+    { slug: 'embeddiumplus', name: 'Embeddium++', role: 'Embeddium’a ek görsel/performans ayarları' },
     { slug: 'libipn', name: 'libIPN', role: 'Arayüz modlarının ortak kütüphanesi' },
 
     // Kütüphaneler
@@ -276,95 +289,3 @@ export function packById(id: string): CuratedPack | undefined {
   return PACKS.find((pack) => pack.id === id)
 }
 
-/**
- * Performance mods, per loader, for adding to a profile that already exists.
- *
- * A big modpack is heavy because of what it adds, and the usual answer is not to
- * remove any of it but to put the optimisation mods back in — most packs ship
- * with few or none. This is that list, kept apart from the packs above because
- * it is applied to whatever profile the player is looking at rather than used to
- * create one.
- *
- * Nothing here is marked essential. A profile that already runs must not be
- * refused a partial improvement because one entry has no build for its version:
- * whatever resolves is installed, and the rest is reported.
- *
- * The loader matters more than usual here. Sodium and Lithium are Fabric mods
- * and their Forge equivalents are separate projects under different names
- * (Embeddium, Canary), so a single list would resolve to nothing on half the
- * profiles it was offered for.
- */
-export const OPTIMIZATION_MODS: Partial<Record<LoaderId, PackMod[]>> = {
-  fabric: [
-    { slug: 'sodium', name: 'Sodium', role: 'Render motorunu baştan yazar — en büyük FPS kazancı' },
-    { slug: 'lithium', name: 'Lithium', role: 'Oyun mantığını hızlandırır, davranışı değiştirmeden' },
-    { slug: 'ferrite-core', name: 'FerriteCore', role: 'Bellek kullanımını ciddi ölçüde düşürür' },
-    { slug: 'modernfix', name: 'ModernFix', role: 'Açılışı kısaltır, bellek sızıntılarını kapatır' },
-    { slug: 'immediatelyfast', name: 'ImmediatelyFast', role: 'Arayüz ve HUD çizimini toplu hale getirir' },
-    { slug: 'entityculling', name: 'Entity Culling', role: 'Görünmeyen varlıkları hiç çizmez' },
-    { slug: 'moreculling', name: 'More Culling', role: 'Görünmeyen blok yüzeylerini eler' },
-    { slug: 'krypton', name: 'Krypton', role: 'Ağ katmanını hafifletir' },
-    { slug: 'c2me-fabric', name: 'C2ME', role: 'Chunk yüklemeyi çok çekirdeğe yayar' },
-    { slug: 'scalablelux', name: 'ScalableLux', role: 'Işık hesabını ayrı çekirdeklere taşır' },
-    { slug: 'noisium', name: 'Noisium', role: 'Dünya üretimini hızlandırır' },
-    { slug: 'threadtweak', name: 'ThreadTweak', role: 'İş parçacığı önceliklerini düzenler' },
-    { slug: 'dynamic-fps', name: 'Dynamic FPS', role: 'Pencere arkadayken güç harcamaz' },
-    { slug: 'sodium-extra', name: 'Sodium Extra', role: 'Sodium’a ek görsel/performans ayarları' }
-  ],
-  forge: [
-    { slug: 'embeddium', name: 'Embeddium', role: 'Render motorunu baştan yazar — en büyük FPS kazancı' },
-    { slug: 'canary', name: 'Canary', role: 'Oyun mantığını hızlandırır, davranışı değiştirmeden' },
-    { slug: 'ferrite-core', name: 'FerriteCore', role: 'Bellek kullanımını ciddi ölçüde düşürür' },
-    { slug: 'modernfix', name: 'ModernFix', role: 'Açılışı kısaltır, bellek sızıntılarını kapatır' },
-    { slug: 'entityculling', name: 'Entity Culling', role: 'Görünmeyen varlıkları hiç çizmez' },
-    { slug: 'moreculling', name: 'More Culling', role: 'Görünmeyen blok yüzeylerini eler' },
-    { slug: 'clumps', name: 'Clumps', role: 'Tecrübe küreciklerini birleştirir — kalabalık savaşlarda büyük fark' },
-    { slug: 'ai-improvements', name: 'AI Improvements', role: 'Yaratık yapay zekâsının yükünü azaltır' },
-    { slug: 'memoryleakfix', name: 'Memory Leak Fix', role: 'Bilinen bellek sızıntılarını kapatır' },
-    { slug: 'saturn', name: 'Saturn', role: 'Bellek ayırmayı azaltır' },
-    { slug: 'embeddiumplus', name: 'Embeddium++', role: 'Embeddium’a ek görsel/performans ayarları' }
-  ],
-  neoforge: [
-    { slug: 'embeddium', name: 'Embeddium', role: 'Render motorunu baştan yazar — en büyük FPS kazancı' },
-    { slug: 'canary', name: 'Canary', role: 'Oyun mantığını hızlandırır, davranışı değiştirmeden' },
-    { slug: 'ferrite-core', name: 'FerriteCore', role: 'Bellek kullanımını ciddi ölçüde düşürür' },
-    { slug: 'modernfix', name: 'ModernFix', role: 'Açılışı kısaltır, bellek sızıntılarını kapatır' },
-    { slug: 'immediatelyfast', name: 'ImmediatelyFast', role: 'Arayüz ve HUD çizimini toplu hale getirir' },
-    { slug: 'entityculling', name: 'Entity Culling', role: 'Görünmeyen varlıkları hiç çizmez' },
-    { slug: 'moreculling', name: 'More Culling', role: 'Görünmeyen blok yüzeylerini eler' },
-    { slug: 'clumps', name: 'Clumps', role: 'Tecrübe küreciklerini birleştirir' },
-    { slug: 'ai-improvements', name: 'AI Improvements', role: 'Yaratık yapay zekâsının yükünü azaltır' }
-  ]
-}
-
-/** Modrinth loader facets to try for a profile's loader, in order. */
-const LOADER_FACETS: Partial<Record<LoaderId, string[]>> = {
-  fabric: ['fabric'],
-  quilt: ['quilt', 'fabric'],
-  forge: ['forge'],
-  neoforge: ['neoforge']
-}
-
-/**
- * The optimisation list for a profile's loader, shaped as a pack so it goes
- * through the same resolver and installer as the curated ones.
- *
- * Quilt reads the Fabric list: Quilt runs Fabric mods, and every one of these
- * publishes under `fabric` rather than `quilt`.
- */
-export function optimizationPack(loader: LoaderId): CuratedPack | undefined {
-  const mods = OPTIMIZATION_MODS[loader === 'quilt' ? 'fabric' : loader]
-  const facets = LOADER_FACETS[loader]
-  if (!mods || !facets) return undefined
-
-  return {
-    id: `optimization-${loader}`,
-    name: 'Performans modları',
-    summary: 'Oyunu hızlandıran modlar. Oynanışa dokunmaz, yalnızca kare hızını ve bellek kullanımını iyileştirir.',
-    icon: '⚡',
-    loader,
-    modrinthLoaders: facets,
-    recommended: [],
-    mods
-  }
-}
