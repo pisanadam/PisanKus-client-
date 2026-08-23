@@ -173,9 +173,6 @@ export interface ProfileHealthIssue {
 export interface ProfileHealthReport {
   checkedAt: number
   issues: ProfileHealthIssue[]
-  /** 0..100 summary used by the library/profile header. */
-  score?: number
-  status?: 'healthy' | 'attention' | 'critical'
 }
 
 export type ProfileStorageCategory =

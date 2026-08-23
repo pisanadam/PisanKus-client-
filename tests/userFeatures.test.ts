@@ -36,7 +36,9 @@ test('profile health UI offers scanning and one-click fixes', async () => {
   assert.match(renderer, /api\.profiles\.fixHealth\(profileId/)
   assert.match(health, /remove-missing-content/)
   assert.match(health, /clear-custom-java/)
-  assert.match(health, /status: score >= 85 \? 'healthy'/)
+  // No invented percentage: the list of issues is the report.
+  assert.doesNotMatch(health, /\bscore\b\s*[,:=]/)
+  assert.doesNotMatch(renderer, /Sağlık/)
 })
 
 test('safe mode, storage manager, history and bulk content controls are wired end to end', async () => {

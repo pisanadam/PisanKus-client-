@@ -82,14 +82,10 @@ export async function inspectProfileHealth(profile: Profile): Promise<ProfileHea
     })
   }
 
-  const penalty = issues.reduce((sum, issue) => sum + (issue.severity === 'error' ? 35 : 15), 0)
-  const score = Math.max(0, 100 - penalty)
-  return {
-    checkedAt: Date.now(),
-    issues,
-    score,
-    status: score >= 85 ? 'healthy' : score >= 50 ? 'attention' : 'critical'
-  }
+  // No score. A percentage invented from a penalty table said nothing the list
+  // of issues does not say better, and a profile with nothing wrong wore a
+  // "100%" badge that only added noise to its name.
+  return { checkedAt: Date.now(), issues }
 }
 
 export async function fixProfileHealth(profileId: string, fix: ProfileHealthFix): Promise<ProfileHealthReport> {

@@ -71,11 +71,6 @@ export function ProfileDetail({
   }, [profileId, refreshProfiles])
   const [tab, setTab] = useState<Tab>(initialTab ?? 'mods')
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [headerHealth, setHeaderHealth] = useState<ProfileHealthReport | null>(null)
-
-  useEffect(() => {
-    void api.profiles.health(profileId).then(setHeaderHealth).catch(() => setHeaderHealth(null))
-  }, [profileId, profile?.content, profile?.javaPath, profile?.memoryMb])
 
   useEffect(() => {
     setTab(initialTab ?? 'mods')
@@ -114,14 +109,6 @@ export function ProfileDetail({
               </span>
             )}
             {profile.name}
-            {headerHealth?.score != null && (
-              <span
-                className={headerHealth.status === 'healthy' ? 'badge badge--accent' : 'badge badge--warning'}
-                style={{ marginLeft: 9, verticalAlign: 'middle' }}
-              >
-                {t('Sağlık')} %{headerHealth.score}
-              </span>
-            )}
           </h1>
           <p className="page__subtitle">
             {profile.gameVersion} · {loaderLabel(profile.loader)}
@@ -1630,14 +1617,7 @@ function ProfileSettingsTab({
         <div className="stack" style={{ marginBottom: 14 }}>
           <div className="row">
             <div>
-              <div className="settings-row__label">
-                {t('Profil sağlık kontrolü')}
-                {health?.score != null && (
-                  <span className={health.status === 'healthy' ? 'badge badge--accent' : 'badge badge--warning'} style={{ marginLeft: 8 }}>
-                    %{health.score}
-                  </span>
-                )}
-              </div>
+              <div className="settings-row__label">{t('Sorun denetimi')}</div>
               <div className="faint">{t('Eksik dosya, Java ve riskli profil ayarlarını denetler')}</div>
             </div>
             <div className="topbar__spacer" />
@@ -1662,7 +1642,7 @@ function ProfileSettingsTab({
 
           {health && health.issues.length === 0 && (
             <div className="notice notice--success">
-              <strong>{t('Profil sağlıklı')}</strong>
+              <strong>{t('Sorun yok')}</strong>
               <span>{t('Bilinen bir dosya veya ayar sorunu bulunamadı.')}</span>
             </div>
           )}
