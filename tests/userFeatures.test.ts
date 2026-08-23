@@ -97,3 +97,31 @@ test('the profile icon controls stay inside the settings column', () => {
   const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
   assert.match(detail, /className="row settings-row__controls"/)
 })
+
+/**
+ * A mod added by hand, imported from a file or inherited from a pack can sit
+ * there needing a library nobody installed — Sodium without Fabric API is the
+ * usual one. The game then fails at startup naming a mod the player never
+ * chose, while the launcher shows everything as correctly installed.
+ */
+test('missing required libraries can be installed from the profile settings', () => {
+  const install = readFileSync('src/main/content/install.ts', 'utf8')
+
+  // Only required dependencies. An optional one is a suggestion the player may
+  // decline, and following it would grow the profile on every press.
+  assert.match(install, /if \(!dependency\.required \|\| !dependency\.projectId\) continue/)
+  // Anything already present is not missing, matched by project id so a copy
+  // imported from disk counts too.
+  assert.match(install, /for \(const entry of profile\.content\) if \(entry\.projectId\) wanted\.delete\(entry\.projectId\)/)
+  // An install can bring its own dependencies, so the loop re-checks.
+  assert.match(install, /store\.profile\(profileId\)\?\.content\.some\(\(entry\) => entry\.projectId === projectId\)/)
+
+  // Wired through, and under the rollback transaction.
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  assert.match(ipc, /handle\('content:installMissingDependencies'/)
+  assert.match(ipc, /install\.installMissingDependencies\(profileId, onProgress\)/)
+
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  assert.match(detail, /api\.content\.installMissingDependencies\(profileId\)/)
+  assert.match(detail, /Gerekli kütüphaneler/)
+})

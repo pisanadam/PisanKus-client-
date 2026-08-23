@@ -1086,6 +1086,7 @@ function ProfileSettingsTab({
   const [options, setOptions] = useState<{ text: string; onDisk: boolean } | null>(null)
   const [editingOptions, setEditingOptions] = useState(false)
   const [editingIcon, setEditingIcon] = useState(false)
+  const [dependencyBusy, setDependencyBusy] = useState(false)
   const [health, setHealth] = useState<ProfileHealthReport | null>(null)
   const [healthBusy, setHealthBusy] = useState<string | null>(null)
   const [safeMode, setSafeMode] = useState<ProfileSafeModeState | null>(null)
@@ -1322,6 +1323,52 @@ function ProfileSettingsTab({
               </button>
             )}
           </div>
+        </div>
+
+        {/* Beside the other per-profile settings rather than in the mod list: it
+            is a repair, done once when something is wrong, not part of adding
+            content. */}
+        <div className="settings-row">
+          <div>
+            <div className="settings-row__label">{t('Gerekli kütüphaneler')}</div>
+            <div className="faint">
+              {t('Kurulu modların gerektirdiği ama eksik olan kütüphaneleri indirir (Sodium için Fabric API gibi)')}
+            </div>
+          </div>
+          <button
+            className="btn btn--sm"
+            disabled={dependencyBusy}
+            onClick={async () => {
+              setDependencyBusy(true)
+              try {
+                const report = await api.content.installMissingDependencies(profileId)
+                await refreshProfiles()
+                if (report.installed.length === 0 && report.unavailable.length === 0) {
+                  notify(t('Eksik kütüphane yok.'))
+                } else if (report.unavailable.length === 0) {
+                  notify(t('{count} kütüphane kuruldu: {list}', {
+                    count: report.installed.length,
+                    list: report.installed.map((item) => item.name).join(', ')
+                  }))
+                } else {
+                  notify(
+                    t('{count} kütüphane kuruldu. Bu sürüme yayınlanmamış olanlar: {list}', {
+                      count: report.installed.length,
+                      list: report.unavailable.map((item) => `${item.name} (${item.requiredBy})`).join(', ')
+                    }),
+                    'error'
+                  )
+                }
+              } catch (error) {
+                notify(error, 'error')
+              } finally {
+                setDependencyBusy(false)
+              }
+            }}
+          >
+            {dependencyBusy ? <div className="spinner" /> : <Icon name="download" size={15} />}
+            {t('Eksikleri indir')}
+          </button>
         </div>
 
         <div className="settings-row">

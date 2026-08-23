@@ -229,6 +229,18 @@ const api = {
   },
 
   content: {
+    /**
+     * Installs the libraries this profile's mods need and do not have.
+     *
+     * `unavailable` are the ones something here asks for but that have no build
+     * for this profile's version or loader.
+     */
+    installMissingDependencies: (
+      profileId: string
+    ): Promise<{
+      installed: { name: string; requiredBy: string }[]
+      unavailable: { name: string; requiredBy: string }[]
+    }> => ipcRenderer.invoke('content:installMissingDependencies', profileId),
     search: (query: SearchQuery): Promise<SearchPage> => ipcRenderer.invoke('content:search', query),
     /** Every project published by one Modrinth author. */
     userProjects: (username: string): Promise<SearchResult[]> =>

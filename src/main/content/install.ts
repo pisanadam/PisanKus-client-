@@ -440,6 +440,105 @@ export async function updateContent(
   return installed
 }
 
+export interface DependencyReport {
+  /** What was pulled in, with the mod that asked for it. */
+  installed: { name: string; requiredBy: string }[]
+  /** Wanted by something here but with no build for this profile. */
+  unavailable: { name: string; requiredBy: string }[]
+}
+
+/**
+ * Installs the libraries the profile's mods declare and do not have.
+ *
+ * A mod added by hand, imported from a file or inherited from a pack can sit
+ * there needing something nobody installed — Sodium without Fabric API is the
+ * usual one. The game then fails at startup naming a mod the player never chose
+ * and, from the launcher, everything looks correctly installed.
+ *
+ * Only *required* dependencies are followed. Optional ones are a suggestion the
+ * player is entitled to decline, and installing them would quietly grow the
+ * profile every time this is pressed.
+ */
+export async function installMissingDependencies(
+  profileId: string,
+  onProgress: ProgressReporter
+): Promise<DependencyReport> {
+  const profile = store.profile(profileId)
+  if (!profile) throw new Error('Profil bulunamadı.')
+
+  const taskId = `deps-${profileId}`
+  onProgress({ id: taskId, label: 'Gerekli modlar aranıyor', progress: -1, state: 'running' })
+
+  const mods = profile.content.filter(
+    (entry) => entry.kind === 'mod' && entry.source === 'modrinth' && entry.projectId && entry.versionId
+  )
+
+  // Wanted project ids, each remembering one mod that asked — enough to explain
+  // the result without listing every requester of a popular library.
+  const wanted = new Map<string, string>()
+  for (const [index, entry] of mods.entries()) {
+    onProgress({
+      id: taskId,
+      label: 'Gerekli modlar aranıyor',
+      progress: index / mods.length,
+      detail: entry.name,
+      state: 'running'
+    })
+    try {
+      const version = await modrinth.getVersion(entry.versionId!)
+      for (const dependency of version.dependencies) {
+        if (!dependency.required || !dependency.projectId) continue
+        if (!wanted.has(dependency.projectId)) wanted.set(dependency.projectId, entry.name)
+      }
+    } catch {
+      // A version Modrinth no longer serves says nothing about what is missing.
+    }
+  }
+
+  // Anything already here — including a copy imported from disk, matched by
+  // project id — is not missing.
+  for (const entry of profile.content) if (entry.projectId) wanted.delete(entry.projectId)
+
+  const report: DependencyReport = { installed: [], unavailable: [] }
+  const targets = [...wanted]
+
+  for (const [index, [projectId, requiredBy]] of targets.entries()) {
+    // Each install can bring its own dependencies with it, so a library added a
+    // moment ago must not be fetched twice.
+    if (store.profile(profileId)?.content.some((entry) => entry.projectId === projectId)) continue
+
+    const detail = `${index + 1}/${targets.length}`
+    onProgress({ id: taskId, label: 'Gerekli modlar kuruluyor', progress: index / targets.length, detail, state: 'running' })
+
+    let name = projectId
+    try {
+      const project = await modrinth.getProject(projectId)
+      name = project.title
+      const version = await modrinth.bestVersion(projectId, profile.gameVersion, profile.loader)
+      if (!version) {
+        report.unavailable.push({ name, requiredBy })
+        continue
+      }
+      await installContent(
+        { profileId, projectId, versionId: version.id, kind: 'mod', name, withDependencies: true },
+        () => undefined
+      )
+      report.installed.push({ name, requiredBy })
+    } catch {
+      report.unavailable.push({ name, requiredBy })
+    }
+  }
+
+  onProgress({
+    id: taskId,
+    label: 'Gerekli modlar tamam',
+    progress: 1,
+    detail: `${report.installed.length} mod`,
+    state: 'done'
+  })
+  return report
+}
+
 /**
  * Imports a file the user picked from disk. Worlds arrive as zips and are
  * unpacked into `saves/`; everything else is copied as-is.

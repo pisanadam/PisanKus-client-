@@ -1130,6 +1130,22 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     }
   })
 
+  /**
+   * Installs the libraries the profile's mods declare and do not have.
+   *
+   * Under the rollback transaction like every other write into a profile: this
+   * one can add several jars, and a run that stops halfway leaves a mods folder
+   * the game may refuse to start with.
+   */
+  handle('content:installMissingDependencies', (profileId: string) =>
+    withProfileRollback(
+      profileId,
+      'Gerekli modlar',
+      () => install.installMissingDependencies(profileId, onProgress),
+      onProgress
+    )
+  )
+
   // ------------------------------------------------------------------ servers
 
   /** Every server call works on one profile's own `servers.dat`. */
