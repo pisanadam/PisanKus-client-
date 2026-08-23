@@ -118,6 +118,11 @@ const sessions = new Map<string, GameSession>()
  * until the process is gone makes the save land on the file the next launch
  * actually reads.
  */
+/** Progress that names the profile it belongs to, so its page can show it. */
+function progressFor(profileId: string, report: (task: TaskProgress) => void) {
+  return (task: TaskProgress): void => report({ ...task, profileId })
+}
+
 const pendingOptions = new Map<string, string>()
 
 /**
@@ -1072,7 +1077,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         await install.installContent(
           { profileId: profile.id, projectId: request.projectId, versionId: request.versionId,
             kind: 'modpack', name: request.name, iconUrl: request.iconUrl, anyVersion: true },
-          onProgress
+          progressFor(profile.id, onProgress)
         )
         store.updateProfile(profile.id, { preparing: false })
       } catch (error) {
@@ -1083,6 +1088,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
           label: `${request.name} kurulamadı`,
           progress: 0,
           state: 'error',
+          profileId: profile.id,
           error: error instanceof Error ? error.message : String(error)
         })
       } finally {
@@ -1099,9 +1105,14 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   /**
    * Builds a whole profile from one of the launcher's packs: the loader the
-   * pack asks for on the chosen version, then its curated mods. A failure at
-   * any point removes the profile again, since a half-built one would look
-   * finished from the library.
+   * pack asks for on the chosen version, then its curated mods.
+   *
+   * The profile appears before any of it is downloaded, marked as preparing.
+   * A hundred-mod pack takes minutes, and waiting for it behind a dialog told
+   * the player nothing and made the launcher look stuck — now the profile is in
+   * the library from the first second, and opening it shows what is being
+   * installed. A failure removes it again, since a half-built profile would look
+   * finished from the outside.
    */
   handle('content:installPack', async (request: { packId: string; gameVersion: string; name: string }) => {
     const pack = packById(request.packId)
@@ -1119,15 +1130,32 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       loaderVersion,
       icon: pack.icon
     })
+    store.updateProfile(profile.id, { preparing: true })
+    profilesChanged()
 
-    try {
-      const report = await curated.installPackInto(pack.id, profile.id, onProgress)
-      return { profile: store.profile(profile.id)!, report }
-    } catch (error) {
-      store.removeProfile(profile.id)
-      await fsp.rm(profile.directory, { recursive: true, force: true })
-      throw error
-    }
+    // Deliberately not awaited: the handler answers as soon as the profile
+    // exists. Everything after this reports through onProgress.
+    void (async () => {
+      try {
+        await curated.installPackInto(pack.id, profile.id, progressFor(profile.id, onProgress))
+        store.updateProfile(profile.id, { preparing: false })
+      } catch (error) {
+        store.removeProfile(profile.id)
+        await fsp.rm(profile.directory, { recursive: true, force: true }).catch(() => undefined)
+        onProgress({
+          id: `pack-${profile.id}`,
+          label: `${pack.name} kurulamadı`,
+          progress: 0,
+          state: 'error',
+          profileId: profile.id,
+          error: error instanceof Error ? error.message : String(error)
+        })
+      } finally {
+        profilesChanged()
+      }
+    })()
+
+    return store.profile(profile.id)!
   })
 
   /**

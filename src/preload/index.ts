@@ -82,15 +82,6 @@ export interface ProjectDetail {
   issuesUrl?: string
 }
 
-export interface PackInstallResult {
-  profile: Profile
-  report: {
-    installed: { name: string; role: string }[]
-    /** Mods with no build for the chosen Minecraft version. */
-    skipped: { name: string; reason: string }[]
-  }
-}
-
 export interface ServerEntry {
   index: number
   name: string
@@ -290,7 +281,8 @@ const api = {
       packId: string
       gameVersion: string
       name: string
-    }): Promise<PackInstallResult> => ipcRenderer.invoke('content:installPack', request),
+      /** Answers as soon as the profile exists; the mods download in the background. */
+    }): Promise<Profile> => ipcRenderer.invoke('content:installPack', request),
     /** Creates a profile from a modpack, using the version and loader it declares. */
     installModpackAsProfile: (request: {
       projectId: string

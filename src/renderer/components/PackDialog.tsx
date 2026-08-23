@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import type { PackInstallResult } from '../../preload'
 import type { CuratedPack } from '../../shared/curatedPack'
 import { api } from '../lib/api'
-import { errorMessage, loaderLabel } from '../lib/format'
+import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
 import { t } from '../../shared/i18n'
@@ -28,7 +27,6 @@ export function PackDialog({
   const [name, setName] = useState(pack.name)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<PackInstallResult | null>(null)
 
   useEffect(() => {
     api.content
@@ -50,71 +48,27 @@ export function PackDialog({
   )
   const why = pack.recommended.find((entry) => entry.version === gameVersion)?.why
 
+  /**
+   * Starts the install and hands over to the profile straight away.
+   *
+   * The dialog used to sit here until the last of a hundred mods had landed,
+   * showing nothing, and only then produced a report. The profile now exists
+   * before the first download, so the place to watch it is the profile itself.
+   */
   const install = async (): Promise<void> => {
     setBusy(true)
     setError(null)
     try {
-      setResult(
-        await api.content.installPack({ packId: pack.id, gameVersion, name: name.trim() || pack.name })
-      )
+      const profile = await api.content.installPack({
+        packId: pack.id,
+        gameVersion,
+        name: name.trim() || pack.name
+      })
+      onInstalled(profile.id)
     } catch (caught) {
       setError(errorMessage(caught))
-    } finally {
       setBusy(false)
     }
-  }
-
-  // After a successful install the dialog turns into the report: which mods
-  // went in, and which had nothing for this version.
-  if (result) {
-    return (
-      <Modal
-        title={t('{name} hazır', { name })}
-        onClose={onClose}
-        footer={
-          <button className="btn btn--primary" onClick={() => onInstalled(result.profile.id)}>
-            <Icon name="play" size={16} />
-            {t('Profili aç')}
-          </button>
-        }
-      >
-        <p className="muted">
-          Minecraft {result.profile.gameVersion} · {loaderLabel(result.profile.loader)} ·{' '}
-          {t('{count} mod kuruldu. Oyun ayarlarınıza dokunulmadı.', {
-            count: result.report.installed.length
-          })}
-        </p>
-
-        <ul className="pack-list">
-          {result.report.installed.map((mod) => (
-            <li key={mod.name} className="pack-list__item">
-              <Icon name="check" size={15} className="pack-list__ok" />
-              <span className="pack-list__name">{mod.name}</span>
-              <span className="pack-list__role">{t(mod.role)}</span>
-            </li>
-          ))}
-        </ul>
-
-        {result.report.skipped.length > 0 && (
-          <>
-            <p className="faint" style={{ marginTop: 16 }}>
-              {t(
-                'Bu sürüm için hazır olmayanlar atlandı — paket bunlarsız da çalışır, mod güncellenince Keşfet’ten tek tek ekleyebilirsiniz.'
-              )}
-            </p>
-            <ul className="pack-list">
-              {result.report.skipped.map((mod) => (
-                <li key={mod.name} className="pack-list__item pack-list__item--skipped">
-                  <Icon name="close" size={15} />
-                  <span className="pack-list__name">{mod.name}</span>
-                  <span className="pack-list__role">{t(mod.reason)}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </Modal>
-    )
   }
 
   return (

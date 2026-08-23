@@ -57,7 +57,7 @@ export function ProfileDetail({
   onBack: () => void
   onBrowse: (profileId: string, kind?: ContentKind) => void
 }): JSX.Element {
-  const { profiles, refreshProfiles, gameStates, notify } = useApp()
+  const { profiles, refreshProfiles, gameStates, notify, tasks } = useApp()
   const profile = profiles.find((entry) => entry.id === profileId)
 
   // The recorded list can lag behind the folders — a modpack writes its jars
@@ -91,6 +91,8 @@ export function ProfileDetail({
 
   const state = gameStates[profile.id]
   const running = state === 'running' || state === 'preparing'
+  /** The install this profile is waiting on, so the page can show its progress. */
+  const installTask = tasks.find((task) => task.profileId === profile.id && task.state === 'running')
 
   const contentKind = TABS.find((entry) => entry.id === tab)?.kind
 
@@ -142,6 +144,10 @@ export function ProfileDetail({
                 stand here and made starting the game read as a decision. */}
             <button
               className="btn btn--primary"
+              // A profile whose mods are still downloading has no loader and
+              // half a mods folder; starting it produces a crash, not a game.
+              disabled={profile.preparing}
+              title={profile.preparing ? t('Paket hâlâ indiriliyor') : undefined}
               onClick={async () => {
                 try {
                   await api.game.launch(profile.id)
@@ -157,6 +163,40 @@ export function ProfileDetail({
         )}
       </header>
 
+      {/* While a pack is still downloading, its own page is the place to watch
+          it. The tabs below would show an empty mod list and a Play button that
+          cannot be pressed, which reads as a broken profile rather than an
+          unfinished one. */}
+      {profile.preparing ? (
+        <div className="settings-group">
+          <div className="row" style={{ gap: 12 }}>
+            <div className="spinner" />
+            <div>
+              <div className="settings-row__label">{t('Modlar kuruluyor')}</div>
+              <div className="faint">
+                {installTask?.detail ?? installTask?.label ?? t('Paket hazırlanıyor…')}
+              </div>
+            </div>
+          </div>
+
+          {installTask && installTask.progress >= 0 && (
+            <div
+              className="progress"
+              role="progressbar"
+              aria-valuenow={Math.round(installTask.progress * 100)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="progress__bar" style={{ width: `${Math.round(installTask.progress * 100)}%` }} />
+            </div>
+          )}
+
+          <div className="faint">
+            {t('Bu profil kurulum bitene kadar başlatılamaz. Launcher’ı kapatmayın.')}
+          </div>
+        </div>
+      ) : (
+      <>
       <nav className="tabs">
         {TABS.map((entry) => (
           <button
@@ -194,6 +234,8 @@ export function ProfileDetail({
       {tab === 'logs' && <LogsTab profileId={profile.id} onOpenTab={(target) => setTab(target)} />}
       {tab === 'settings' && (
         <ProfileSettingsTab profileId={profile.id} onDeleteRequested={() => setConfirmDelete(true)} />
+      )}
+      </>
       )}
 
       {confirmDelete && (

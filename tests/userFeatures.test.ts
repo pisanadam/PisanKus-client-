@@ -125,3 +125,32 @@ test('missing required libraries can be installed from the profile settings', ()
   assert.match(detail, /api\.content\.installMissingDependencies\(profileId\)/)
   assert.match(detail, /Gerekli kütüphaneler/)
 })
+
+/**
+ * A hundred-mod pack takes minutes. Waiting for it behind a dialog showed the
+ * player nothing and made the launcher look stuck, and the profile only existed
+ * once the last jar had landed.
+ */
+test('a pack profile exists before its mods do, and says what it is doing', () => {
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  const handler = ipc.slice(ipc.indexOf("handle('content:installPack'"))
+
+  // The profile is created and marked, then the install runs unawaited.
+  const marked = handler.indexOf('preparing: true')
+  const background = handler.indexOf('void (async () => {')
+  const install = handler.indexOf('curated.installPackInto')
+  assert.ok(marked > 0 && background > marked && install > background)
+  // Progress carries the profile so its own page can show it.
+  assert.match(handler.slice(0, install + 200), /progressFor\(profile\.id, onProgress\)/)
+
+  // The dialog hands over instead of waiting for a report.
+  const dialog = readFileSync('src/renderer/components/PackDialog.tsx', 'utf8')
+  assert.match(dialog, /onInstalled\(profile\.id\)/)
+  assert.doesNotMatch(dialog, /PackInstallResult/)
+
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  assert.match(detail, /Modlar kuruluyor/)
+  assert.match(detail, /tasks\.find\(\(task\) => task\.profileId === profile\.id && task\.state === 'running'\)/)
+  // And it cannot be launched half-built.
+  assert.match(detail, /disabled=\{profile\.preparing\}/)
+})

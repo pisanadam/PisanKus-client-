@@ -303,6 +303,14 @@ export interface TaskProgress {
   /** Offers a way out of the failure instead of only naming it. */
   action?: 'signIn' | 'openCrash'
   actionProfileId?: string
+  /**
+   * The profile this work is for, when it is for one.
+   *
+   * Lets a profile's own page show what is happening to it. Without it the task
+   * tray was the only place the progress existed, and a profile created for a
+   * pack sat there saying "preparing" with nothing to say how far along it was.
+   */
+  profileId?: string
 }
 
 export interface GameLogLine {
