@@ -29,7 +29,13 @@ export function Settings(): JSX.Element {
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
   const [jvmDraft, setJvmDraft] = useState('')
-  const [totalMemoryMb, setTotalMemoryMb] = useState(32768)
+  /**
+   * The machine's memory, once it is known. Null until then — a placeholder
+   * maximum lower than the value already stored would let the range input clamp
+   * it, and the next touch of the slider would save that clamped number as if
+   * the player had chosen it.
+   */
+  const [totalMemoryMb, setTotalMemoryMb] = useState<number | null>(null)
 
   useEffect(() => {
     if (!settings) return
@@ -412,7 +418,9 @@ export function Settings(): JSX.Element {
             <input
               type="range"
               min={1024}
-              max={totalMemoryMb}
+              // Never below what is already set, whatever the machine reports:
+              // a maximum under the stored value silently rewrites it.
+              max={Math.max(totalMemoryMb ?? settings.defaultMemoryMb, settings.defaultMemoryMb)}
               step={512}
               value={settings.defaultMemoryMb}
               onChange={(event) => void saveSettings({ defaultMemoryMb: Number(event.target.value) })}

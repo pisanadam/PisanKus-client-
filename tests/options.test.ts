@@ -234,3 +234,33 @@ test('the editor is re-read when the game stops holding the file', () => {
   // And a finished session triggers a fresh read.
   assert.match(detail, /gameStatus === 'exited' \|\| gameStatus === 'crashed'/)
 })
+
+/**
+ * The slider's maximum must never sit below the value already stored.
+ *
+ * It did: the machine's memory was reported half a gigabyte short of the real
+ * total, so an 8 GB machine capped the slider at 7.5. A profile already set to
+ * 8 could not be shown, and the range input quietly clamped it — the next touch
+ * of the control saved 7.5 as though the player had chosen it, which is what
+ * "the setting resets itself" looked like.
+ */
+test('the memory slider cannot be capped below what is already set', () => {
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  // The whole of the machine's memory, rounded onto the sliders' 512 MB grid.
+  assert.match(ipc, /Math\.floor\(os\.totalmem\(\) \/ 1024 \/ 1024 \/ 512\) \* 512/)
+  assert.doesNotMatch(ipc, /os\.totalmem\(\) \/ 1024 \/ 1024\) - 512/)
+
+  for (const file of ['src/renderer/pages/Settings.tsx', 'src/renderer/pages/ProfileDetail.tsx']) {
+    const source = readFileSync(file, 'utf8')
+    assert.match(source, /max=\{Math\.max\(/, `${file}: alt sınır yok`)
+    // Null until the real number arrives, so no placeholder maximum can clamp.
+    assert.match(source, /useState<number \| null>\(null\)/, `${file}: yer tutucu maksimum`)
+  }
+})
+
+test('the profile page says which managed settings the file disagrees with', () => {
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  assert.match(detail, /const managedMismatches = options/)
+  assert.match(detail, /readOption\(parseOptions\(options\.text\), key\) !== value/)
+  assert.match(detail, /Şu an dosyada farklı: \{list\}/)
+})

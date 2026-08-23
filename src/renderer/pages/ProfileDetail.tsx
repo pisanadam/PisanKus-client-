@@ -14,7 +14,7 @@ import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { ServersTab } from '../components/ServersTab'
-import { parseOptions } from '../../shared/options'
+import { parseOptions, readOption } from '../../shared/options'
 import { Confirm, Modal } from '../components/Modal'
 import type { AutoWorldBackupSummary, JavaInfo, ScreenshotSummary, WorldSummary } from '../../preload'
 import { api } from '../lib/api'
@@ -1208,13 +1208,28 @@ function ProfileSettingsTab({
    * would then refuse to reserve — and that shows up as a failed launch, not as
    * a slider that stops.
    */
-  const [totalMemory, setTotalMemory] = useState(32768)
+  const [totalMemory, setTotalMemory] = useState<number | null>(null)
 
   useEffect(() => {
     void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
   }, [])
 
   const managedCount = Object.keys(profile.managedOptions ?? {}).length
+
+  /**
+   * Launcher-managed settings whose value is not what options.txt currently
+   * says.
+   *
+   * This is the one question that could not be answered from the outside: a
+   * setting that "does not apply" is either one the launcher never wrote or one
+   * the game overrode, and those need opposite fixes. Comparing what the
+   * launcher holds against the file it just read separates them on sight.
+   */
+  const managedMismatches = options
+    ? Object.entries(profile.managedOptions ?? {}).filter(
+        ([key, value]) => readOption(parseOptions(options.text), key) !== value
+      )
+    : []
   const optionCount = options ? parseOptions(options.text).filter((line) => !('raw' in line)).length : 0
 
   /**
@@ -1364,6 +1379,20 @@ function ProfileSettingsTab({
                   { count: managedCount }
                 )}
               </div>
+              {managedMismatches.length > 0 && (
+                <div className="faint" style={{ marginTop: 4 }}>
+                  {t('Şu an dosyada farklı: {list}', {
+                    list: managedMismatches
+                      .map(
+                        ([key, value]) =>
+                          `${key} (${t('istenen')} ${value}, ${t('dosyada')} ${
+                            readOption(parseOptions(options?.text ?? ''), key) ?? t('yok')
+                          })`
+                      )
+                      .join(', ')
+                  })}
+                </div>
+              )}
             </div>
             <button
               className="btn btn--sm"
@@ -1392,7 +1421,10 @@ function ProfileSettingsTab({
           <input
             type="range"
             min={1024}
-            max={totalMemory}
+            // Never below what this profile is already set to: a maximum under
+            // the stored value lets the input clamp it, and the next touch saves
+            // the clamped number as though it had been chosen.
+            max={Math.max(totalMemory ?? memory, memory)}
             step={512}
             value={memory}
             onChange={(event) => setMemory(Number(event.target.value))}

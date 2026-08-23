@@ -1250,12 +1250,18 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
    * Physical memory, in MB, for the memory sliders.
    *
    * The maximum used to be a flat 32 GB, so on an 8 GB machine three quarters
-   * of the slider promised memory the JVM would refuse to reserve — and a
-   * profile set that way fails at launch, not while the slider is dragged.
-   * Half a gigabyte is kept back for the machine itself; a Minecraft that owns
-   * every last byte still cannot run alone.
+   * of the slider promised memory the JVM would refuse to reserve.
+   *
+   * It is now the machine's whole memory, rounded down onto the sliders' 512 MB
+   * grid — "8 GB of RAM means the slider goes to 8", as asked. Half a gigabyte
+   * used to be held back for the machine itself, which is sound advice and the
+   * wrong place to enforce it: it put the top of the slider at 7.5 on an 8 GB
+   * machine, so a profile already set to 8 could never be shown or set again
+   * and slid down to 7.5 the moment the control was touched.
    */
-  handle('app:totalMemoryMb', () => Math.max(1024, Math.floor(os.totalmem() / 1024 / 1024) - 512))
+  handle('app:totalMemoryMb', () =>
+    Math.max(1024, Math.floor(os.totalmem() / 1024 / 1024 / 512) * 512)
+  )
   handle('app:tokenStorage', () => store.encryption)
 
   // -------------------------------------------------------------- updates
