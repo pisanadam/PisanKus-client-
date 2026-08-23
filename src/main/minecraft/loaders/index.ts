@@ -162,9 +162,16 @@ export async function installLoader(
   const file = path.join(dataDir, 'versions', versionId, `${versionId}.json`)
   try {
     await fsp.access(file)
+    // Forge and NeoForge need their unpacked installer kept: the client jars
+    // they launch from are built from it at launch time. A version json on its
+    // own is not proof the loader is usable, and a profile missing the recipe
+    // would crash with the loader's own "contained no existing paths" instead
+    // of being repaired here.
+    if (loader !== 'forge' && loader !== 'neoforge') return versionId
+    await fsp.access(path.join(dataDir, 'installers', versionId, 'install_profile.json'))
     return versionId
   } catch {
-    // Not installed yet.
+    // Not installed yet, or installed without the recipe.
   }
 
   onProgress?.(`${loader} ${resolved} kuruluyor…`)

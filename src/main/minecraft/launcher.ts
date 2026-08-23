@@ -8,6 +8,7 @@ import { assertLocalFiles, downloadAll, type DownloadItem } from './downloader'
 import { ensureJava, requireInstalledJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
+import { runInstallerProcessors } from './loaders/forgeProcessors'
 import {
   applyManagedOptions,
   clientDataVersion,
@@ -16,6 +17,7 @@ import {
 } from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 import { classifyGameExit } from './gameLifecycle'
+import { dropEmptyOptions } from './launchArgs'
 
 const LAUNCHER_NAME = 'PisanKusClient'
 const LAUNCHER_VERSION = '1.0.0'
@@ -193,6 +195,15 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
           ))
     log(`Java: ${javaPath}`)
 
+    // Forge and NeoForge build the jars they launch from out of Mojang's client
+    // jar, using a chain of tools their installer only describes. It runs here
+    // because the client jar is its input, and it is skipped in a moment when
+    // the results are already on disk.
+    report('Yükleyici hazırlanıyor', -1)
+    await runInstallerProcessors(dataDir, versionId, profile.gameVersion, javaPath, (detail) =>
+      report('Yükleyici hazırlanıyor', -1, detail)
+    )
+
     await fsp.mkdir(profile.directory, { recursive: true })
 
     // Seeds the configured template the first time a profile is launched, and
@@ -306,6 +317,14 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
       gameArgs.push('--server', host)
       if (port) gameArgs.push('--port', port)
     }
+
+    // An option whose value came out empty is worse than one that is absent.
+    // `--xuid` is the case that bites: an account signed in before the launcher
+    // read the Xbox id has none, and passing the flag with nothing after it
+    // makes the client announce an Xbox identity of "" — which servers reject
+    // at the join handshake, long after the launcher has reported success.
+    const dropped = dropEmptyOptions(gameArgs, ['--xuid', '--clientId', '--userProperties'])
+    if (dropped.length > 0) log(`Boş bırakılan argümanlar atlandı: ${dropped.join(', ')}`)
 
     const args = [...jvmArgs, version.mainClass, ...gameArgs]
 
