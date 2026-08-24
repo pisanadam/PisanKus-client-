@@ -221,3 +221,19 @@ export async function runInstallerProcessors(
     throw new Error(`Forge kurulumu tamamlanamadı; şu dosyalar üretilemedi: ${missing.join(', ')}`)
   }
 }
+
+/**
+ * Whether this loader build its own client jars rather than running Mojang's.
+ *
+ * True exactly when the installer shipped a recipe — which is what separates
+ * Forge 1.17 and later, whose `client-<mcp>-srg.jar` replaces the vanilla jar,
+ * from the older builds that ran straight out of it. Adding Mojang's jar
+ * alongside the patched ones puts `net.minecraft.server` on the module path
+ * twice and Java refuses to start.
+ */
+export async function loaderPatchesClient(dataDir: string, versionId: string): Promise<boolean> {
+  const profile = await readJson<InstallProfile>(
+    path.join(installerDir(dataDir, versionId), 'install_profile.json')
+  )
+  return (profile?.processors?.length ?? 0) > 0
+}

@@ -1,3 +1,4 @@
+import { loaderApplies, type ContentKind } from '../../shared/types'
 import { packById, type CuratedPack, type PackMod } from '../../shared/curatedPack'
 import { store } from '../store'
 import { installContent, type ProgressReporter } from './install'
@@ -14,6 +15,8 @@ interface Resolved {
   mod: PackMod
   projectId: string
   versionId: string
+  /** What Modrinth says it is, which decides the folder it lands in. */
+  kind: ContentKind
 }
 
 function requirePack(packId: string): CuratedPack {
@@ -32,8 +35,15 @@ function requirePack(packId: string): CuratedPack {
 async function resolveOne(
   pack: CuratedPack,
   projectId: string,
-  gameVersion: string
+  gameVersion: string,
+  kind: ContentKind
 ): Promise<string | undefined> {
+  // A resource pack lists `minecraft` as its loader and a shader lists `iris`,
+  // so narrowing those by the pack's mod loader matches nothing at all.
+  if (!loaderApplies(kind)) {
+    const version = await modrinth.bestVersion(projectId, gameVersion).catch(() => undefined)
+    return version?.id
+  }
   for (const loader of pack.modrinthLoaders) {
     const version = await modrinth.bestVersion(projectId, gameVersion, loader).catch(() => undefined)
     if (version) return version.id
@@ -54,7 +64,7 @@ async function resolvePack(
   gameVersion: string
 ): Promise<{ ready: Resolved[]; missing: PackReport['skipped'] }> {
   const projects = await modrinth.getProjects(pack.mods.map((mod) => mod.slug))
-  const bySlug = new Map(projects.map((project) => [project.slug, project.id]))
+  const bySlug = new Map(projects.map((project) => [project.slug, project]))
 
   const ready: Resolved[] = []
   const missing: PackReport['skipped'] = []
@@ -62,13 +72,14 @@ async function resolvePack(
   // Sequential on purpose: Modrinth rate-limits, and a pack install that trips
   // the limit halfway through is worse than one that takes a few seconds longer.
   for (const mod of pack.mods) {
-    const projectId = bySlug.get(mod.slug)
-    if (!projectId) {
+    const project = bySlug.get(mod.slug)
+    if (!project) {
       missing.push({ name: mod.name, reason: 'Modrinth’te bulunamadı' })
       continue
     }
+    const projectId = project.id
 
-    const versionId = await resolveOne(pack, projectId, gameVersion)
+    const versionId = await resolveOne(pack, projectId, gameVersion, project.kind)
     if (!versionId) {
       // A fixed sentence rather than one built around the version: the report's
       // own header already names it, and a sentence assembled here could not be
@@ -76,7 +87,7 @@ async function resolvePack(
       missing.push({ name: mod.name, reason: 'Bu sürüme yayınlanmamış' })
       continue
     }
-    ready.push({ mod, projectId, versionId })
+    ready.push({ mod, projectId, versionId, kind: project.kind })
   }
 
   const blocked = missing.find((entry) =>
@@ -163,7 +174,10 @@ async function installPack(
           profileId,
           projectId: entry.projectId,
           versionId: entry.versionId,
-          kind: 'mod',
+          // Whatever Modrinth says it is. Installing everything as a mod put
+          // this pack's four texture packs into `mods/`, where Forge tried to
+          // load a resource pack as a module and the game refused to start.
+          kind: entry.kind,
           name: entry.mod.name,
           // The libraries the pack knows about are listed and installed first,
           // so this normally finds them already there. It stays on for the ones

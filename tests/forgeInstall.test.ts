@@ -95,3 +95,55 @@ test('a maven coordinate may name its own extension', () => {
     'org/ow2/asm/asm/9.8/asm-9.8.jar'
   )
 })
+
+/**
+ * Forge from 1.17 on launches from the jars its installer builds, not Mojang's.
+ * Adding the untouched client jar alongside them put `net.minecraft.server` on
+ * the module path twice, and Java refused to build the layer — with a message
+ * that named neither Minecraft nor the loader:
+ *
+ *   java.lang.module.ResolutionException: Modules _1._20._1 and minecraft
+ *   export package net.minecraft.server to module …kotlinforforge.kfflib
+ *
+ * (`_1._20._1` is what Java calls a jar named `1.20.1.jar`.)
+ */
+test('the vanilla client jar stays off a patched loader’s classpath', () => {
+  const launcher = readFileSync('src/main/minecraft/launcher.ts', 'utf8')
+  assert.match(
+    launcher,
+    /const classpath = patchedByLoader \? libraries\.classpath : \[\.\.\.libraries\.classpath, clientJar\]/
+  )
+  // Decided by whether the installer shipped a recipe, so old Forge — which does
+  // run out of Mojang's jar — still gets it.
+  assert.match(launcher, /profile\.loader === 'forge' \|\| profile\.loader === 'neoforge'/)
+
+  const processors = readFileSync('src/main/minecraft/loaders/forgeProcessors.ts', 'utf8')
+  assert.match(processors, /export async function loaderPatchesClient/)
+  assert.match(processors, /return \(profile\?\.processors\?\.length \?\? 0\) > 0/)
+})
+
+/**
+ * A curated list is written as names, and a name does not say which folder the
+ * file belongs in. Installing everything as a mod put this pack's four texture
+ * packs into `mods/`.
+ */
+test('a pack entry is installed as whatever Modrinth says it is', () => {
+  const curated = readFileSync('src/main/content/curated.ts', 'utf8')
+  assert.match(curated, /kind: entry\.kind,/)
+  assert.doesNotMatch(curated, /kind: 'mod',/)
+  // A resource pack lists `minecraft` as its loader, so the pack's mod loader
+  // must not be used to narrow it.
+  assert.match(curated, /if \(!loaderApplies\(kind\)\) \{/)
+
+  const modrinth = readFileSync('src/main/content/modrinth.ts', 'utf8')
+  assert.match(modrinth, /kind: kindOfProjectType\(project\.project_type\)/)
+})
+
+test('the pack does not ship an addon whose base mod it cannot install', () => {
+  const pack = readFileSync('src/shared/curatedPack.ts', 'utf8')
+  // Requires Twilight Forest, which is not on Modrinth at all — Forge stopped
+  // at startup with "Mod ID: 'twilightforest' … [MISSING]".
+  assert.doesNotMatch(pack, /slug: 'the-twilight-forest-dungeons-villages'/)
+  // "embeddiumplus" does not exist; the nearest real project is a modpack.
+  assert.doesNotMatch(pack, /slug: 'embeddiumplus'/)
+})

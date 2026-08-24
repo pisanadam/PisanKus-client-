@@ -159,7 +159,10 @@ const SWEETIE: CuratedPack = {
     // Dünya üretimi ve keşif
     { slug: 'tectonic', name: 'Tectonic', role: 'Dağları, vadileri ve nehirleri baştan şekillendirir' },
     { slug: 'biomes-o-plenty', name: 'Biomes O’ Plenty', role: 'Yüzlerce yeni biyom' },
-    { slug: 'the-twilight-forest-dungeons-villages', name: 'Twilight Forest - Dungeons & Villages', role: 'Alacakaranlık Ormanı’na zindan ve köy ekler' },
+    // Twilight Forest'ın kendisi Modrinth'te yok (aşağıdaki nota bakın) ve bu
+    // ona eklenti. Temeli olmadan Forge açılışta durduruyor:
+    //   Mod ID: 'twilightforest', Requested by: 'tf_dnv', Actual version: [MISSING]
+    // Kurulamayacak bir eklentiyi listede tutmanın anlamı yok.
     { slug: 'when-dungeons-arise', name: 'When Dungeons Arise', role: 'El yapımı büyük zindanlar ve yapılar' },
     { slug: 'lithostitched', name: 'Lithostitched', role: 'Dünya üretimi eklerini birbirine bağlar' },
     { slug: 'terrablender', name: 'TerraBlender', role: 'Biyom modlarının aynı dünyada geçinmesini sağlar' },
@@ -252,10 +255,12 @@ const SWEETIE: CuratedPack = {
     { slug: 'memoryleakfix', name: 'Memory Leak Fix', role: 'Bilinen bellek sızıntılarını kapatır' },
     { slug: 'saturn', name: 'Saturn', role: 'Bellek ayırmayı azaltır' },
     { slug: 'entityculling', name: 'Entity Culling', role: 'Görünmeyen varlıkları hiç çizmez' },
-    { slug: 'moreculling', name: 'More Culling', role: 'Görünmeyen blok yüzeylerini eler' },
+    // More Culling ve Embeddium++ burada dururdu; ikisi de kaldırıldı.
+    // More Culling'in 1.20.1'de Forge yapısı yok, "embeddiumplus" diye bir proje
+    // hiç yok ve ona en yakın "embeddium-plus" bir mod değil, bir mod paketi —
+    // kurulsaydı profile bütün bir paket açardı.
     { slug: 'clumps', name: 'Clumps', role: 'Tecrübe küreciklerini birleştirir — kalabalık savaşlarda büyük fark' },
     { slug: 'ai-improvements', name: 'AI Improvements', role: 'Yaratık yapay zekâsının yükünü azaltır' },
-    { slug: 'embeddiumplus', name: 'Embeddium++', role: 'Embeddium’a ek görsel/performans ayarları' },
     { slug: 'libipn', name: 'libIPN', role: 'Arayüz modlarının ortak kütüphanesi' },
 
     // Kütüphaneler

@@ -8,7 +8,7 @@ import { assertLocalFiles, downloadAll, type DownloadItem } from './downloader'
 import { ensureJava, requireInstalledJava } from './java'
 import { currentOs, extractNatives, resolveLibraries, rulesAllow } from './libraries'
 import { installLoader } from './loaders'
-import { runInstallerProcessors } from './loaders/forgeProcessors'
+import { loaderPatchesClient, runInstallerProcessors } from './loaders/forgeProcessors'
 import {
   applyManagedOptions,
   clientDataVersion,
@@ -228,7 +228,23 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     if (seededServers > 0) log(`Sunucu listesine eklendi: ${seededServers}`)
     if (corrected > 0) log(`Launcher ayarları yeniden uygulandı: ${corrected} anahtar`)
 
-    const classpath = [...libraries.classpath, clientJar]
+    // Mojang's own client jar goes on the classpath for vanilla and for the
+    // Fabric-shaped loaders, which run the game straight out of it.
+    //
+    // Forge and NeoForge from 1.17 on must not have it. They launch from the
+    // jars their installer builds — `client-<mcp>-srg.jar` and `-extra.jar` —
+    // and adding the untouched one puts `net.minecraft.server` on the module
+    // path twice. Java refuses to build a layer with two suppliers for the same
+    // package, and the game dies before the title screen with a message naming
+    // neither Minecraft nor the mod that seems to be involved:
+    //
+    //   java.lang.module.ResolutionException: Modules _1._20._1 and minecraft
+    //   export package net.minecraft.server to module …kotlinforforge.kfflib
+    //
+    // (`_1._20._1` is what Java calls a jar named `1.20.1.jar`.)
+    const patchedByLoader =
+      (profile.loader === 'forge' || profile.loader === 'neoforge') && (await loaderPatchesClient(dataDir, versionId))
+    const classpath = patchedByLoader ? libraries.classpath : [...libraries.classpath, clientJar]
     const values: Record<string, string> = {
       auth_player_name: account.name,
       auth_uuid: account.id,

@@ -1,5 +1,5 @@
-import { loadsMods, type ContentKind, type LoaderId, type ProjectVersion, type SearchQuery, type SearchResult } from '../../shared/types'
-import { fetchJson } from '../minecraft/downloader'
+import { loadsMods, type ContentKind, type LoaderId, type ProjectVersion, type SearchQuery, type SearchResult } from '../../shared/types.ts'
+import { fetchJson } from '../minecraft/downloader.ts'
 
 const API = 'https://api.modrinth.com/v2'
 
@@ -212,12 +212,21 @@ export async function bestVersion(
  */
 export async function getProjects(
   idsOrSlugs: string[]
-): Promise<{ id: string; slug: string; title: string; gameVersions: string[]; iconUrl?: string }[]> {
+): Promise<
+  { id: string; slug: string; title: string; gameVersions: string[]; iconUrl?: string; kind: ContentKind }[]
+> {
   if (idsOrSlugs.length === 0) return []
 
   const params = new URLSearchParams({ ids: JSON.stringify(idsOrSlugs) })
   const projects = await fetchJson<
-    { id: string; slug: string; title: string; game_versions: string[]; icon_url?: string | null }[]
+    {
+      id: string
+      slug: string
+      title: string
+      game_versions: string[]
+      icon_url?: string | null
+      project_type?: string
+    }[]
   >(`${API}/projects?${params}`)
 
   return projects.map((project) => ({
@@ -225,8 +234,25 @@ export async function getProjects(
     slug: project.slug,
     title: project.title,
     gameVersions: project.game_versions,
-    iconUrl: project.icon_url ?? undefined
+    iconUrl: project.icon_url ?? undefined,
+    kind: kindOfProjectType(project.project_type)
   }))
+}
+
+/**
+ * What a Modrinth project actually is.
+ *
+ * A curated list is written as names, and a name says nothing about which
+ * folder the file belongs in. Assuming "mod" put four texture packs into
+ * `mods/`, where Forge treated a resource pack as a module and the game refused
+ * to start. Anything unrecognised stays a mod, which is what the vast majority
+ * of a mod list is.
+ */
+export function kindOfProjectType(projectType: string | undefined): ContentKind {
+  for (const [kind, type] of Object.entries(PROJECT_TYPE)) {
+    if (type === projectType) return kind as ContentKind
+  }
+  return 'mod'
 }
 
 /**
