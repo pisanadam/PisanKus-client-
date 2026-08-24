@@ -35,6 +35,7 @@ function defaultSettings(): Settings {
     accentColor: '#14b8b8',
     soundEffects: true,
     minecraftOptions: '',
+    minecraftServers: [],
     welcomeSeen: false
   }
 }

@@ -17,6 +17,7 @@ import {
 } from './options'
 import { resolveVersion, type Rule, type VersionJson } from './versions'
 import { classifyGameExit } from './gameLifecycle'
+import { seedProfileServers } from './servers'
 import { dropEmptyOptions } from './launchArgs'
 
 const LAUNCHER_NAME = 'PisanKusClient'
@@ -218,6 +219,13 @@ export async function launch(context: LaunchContext): Promise<GameSession> {
     // that; this is what makes them the settings the game actually starts with.
     const corrected = await applyManagedOptions(profile.directory, profile.managedOptions, dataVersion)
     log(await describeProfileOptions(profile.directory))
+
+    // The same courtesy for the multiplayer list: a new profile starts with no
+    // servers.dat at all, and typing the same addresses into every profile is
+    // the kind of work a launcher should absorb. Adds only what is missing, so a
+    // server removed on purpose stays removed.
+    const seededServers = await seedProfileServers(profile.directory, settings.minecraftServers ?? [])
+    if (seededServers > 0) log(`Sunucu listesine eklendi: ${seededServers}`)
     if (corrected > 0) log(`Launcher ayarları yeniden uygulandı: ${corrected} anahtar`)
 
     const classpath = [...libraries.classpath, clientJar]

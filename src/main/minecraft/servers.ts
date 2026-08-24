@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises'
 import path from 'node:path'
-import { compound, readNbt, stringValue, Tag, writeNbt, type NbtFile, type NbtValue } from './nbt'
+import { compound, readNbt, stringValue, Tag, writeNbt, type NbtFile, type NbtValue } from './nbt.ts'
 
 /**
  * The multiplayer list a profile shows in game, kept in `servers.dat`.
@@ -99,6 +99,55 @@ export async function addServer(
 
   await persist(profileDirectory, file)
   return listServers(profileDirectory)
+}
+
+/**
+ * Adds the launcher's default servers to a profile that does not have them.
+ *
+ * Only ever adds, and only what is missing — matched by address, so a server the
+ * player already added by hand is not duplicated and one they deliberately
+ * removed does not come back on the next launch. That makes it safe to run
+ * before every start, which is what a new profile needs: it is created empty and
+ * `servers.dat` does not exist until either the game or this writes one.
+ *
+ * The address is compared with case and surrounding space ignored, because
+ * `Play.Example.NET ` and `play.example.net` are the same server to everyone
+ * except a string comparison.
+ */
+export async function seedProfileServers(
+  profileDirectory: string,
+  template: { name: string; address: string }[]
+): Promise<number> {
+  const wanted = template.filter((entry) => entry.address.trim())
+  if (wanted.length === 0) return 0
+
+  const file = await load(profileDirectory)
+  const servers = listOf(file)
+  const present = new Set(
+    servers.flatMap((item) => {
+      const address = stringValue(compound(item)?.get('ip'))
+      return address ? [address.trim().toLowerCase()] : []
+    })
+  )
+
+  let added = 0
+  for (const entry of wanted) {
+    const key = entry.address.trim().toLowerCase()
+    if (present.has(key)) continue
+    present.add(key)
+    servers.push({
+      type: Tag.Compound,
+      value: new Map<string, NbtValue>([
+        ['name', { type: Tag.String, value: entry.name || entry.address }],
+        ['ip', { type: Tag.String, value: entry.address.trim() }]
+      ])
+    })
+    added += 1
+  }
+
+  if (added === 0) return 0
+  await persist(profileDirectory, file)
+  return added
 }
 
 export async function updateServer(

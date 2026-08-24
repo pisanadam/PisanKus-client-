@@ -26,6 +26,7 @@ export function Settings(): JSX.Element {
   const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [tokenStorage, setTokenStorage] = useState<{ available: boolean; backend: string } | null>(null)
   const [applying, setApplying] = useState(false)
+  const [applyingServers, setApplyingServers] = useState(false)
   const [javaRuntimes, setJavaRuntimes] = useState<JavaInfo[]>([])
   const [scanningJava, setScanningJava] = useState(false)
   const [jvmDraft, setJvmDraft] = useState('')
@@ -318,6 +319,105 @@ export function Settings(): JSX.Element {
                 </option>
               ))}
             </select>
+          </div>
+        </section>
+
+        {/* The other file a fresh profile starts without. Same shape as the
+            options template above: define it once, every new profile gets it. */}
+        <section className="settings-group">
+          <div className="section-title">{t('Sunucu listesi')}</div>
+
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">{t('Varsayılan sunucular')}</div>
+              <div className="faint">
+                {settings.minecraftServers?.length
+                  ? t('{count} sunucu · yeni profillere otomatik eklenir', {
+                      count: settings.minecraftServers.length
+                    })
+                  : t('Buraya eklediğiniz sunucular her yeni profilin listesinde hazır gelir.')}
+              </div>
+            </div>
+          </div>
+
+          {(settings.minecraftServers ?? []).map((server, index) => (
+            <div className="settings-row" key={`${server.address}-${index}`}>
+              <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                <input
+                  className="input"
+                  style={{ width: 180 }}
+                  value={server.name}
+                  placeholder={t('Ad')}
+                  onChange={(event) => {
+                    const next = [...settings.minecraftServers]
+                    next[index] = { ...server, name: event.target.value }
+                    void saveSettings({ minecraftServers: next })
+                  }}
+                />
+                <input
+                  className="input"
+                  style={{ width: 240 }}
+                  value={server.address}
+                  placeholder="play.example.net"
+                  onChange={(event) => {
+                    const next = [...settings.minecraftServers]
+                    next[index] = { ...server, address: event.target.value }
+                    void saveSettings({ minecraftServers: next })
+                  }}
+                />
+              </div>
+              <button
+                className="btn btn--sm btn--icon"
+                aria-label={t('Kaldır')}
+                title={t('Kaldır')}
+                onClick={() =>
+                  void saveSettings({
+                    minecraftServers: settings.minecraftServers.filter((_, at) => at !== index)
+                  })
+                }
+              >
+                <Icon name="trash" size={15} />
+              </button>
+            </div>
+          ))}
+
+          <div className="settings-row">
+            <button
+              className="btn btn--sm"
+              onClick={() =>
+                void saveSettings({
+                  minecraftServers: [...(settings.minecraftServers ?? []), { name: '', address: '' }]
+                })
+              }
+            >
+              <Icon name="plus" size={15} />
+              {t('Sunucu ekle')}
+            </button>
+
+            {(settings.minecraftServers ?? []).some((server) => server.address.trim()) && (
+              <button
+                className="btn btn--sm"
+                disabled={profiles.length === 0 || applyingServers}
+                onClick={async () => {
+                  setApplyingServers(true)
+                  try {
+                    const added = await api.servers.applyToProfiles(profiles.map((p) => p.id))
+                    notify(
+                      added === 0
+                        ? t('Bütün profillerde zaten vardı.')
+                        : t('{count} sunucu eklendi.', { count: added })
+                    )
+                  } catch (error) {
+                    notify(error, 'error')
+                  } finally {
+                    setApplyingServers(false)
+                  }
+                }}
+              >
+                {applyingServers ? <div className="spinner" /> : <Icon name="check" size={15} />}
+                {t('Mevcut profillere uygula')}
+              </button>
+            )}
           </div>
         </section>
 

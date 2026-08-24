@@ -269,6 +269,15 @@ export interface Settings {
    * survive untouched.
    */
   minecraftOptions: string
+  /**
+   * Servers written into every new profile's list.
+   *
+   * The same idea as `minecraftOptions`, for the other file a fresh profile
+   * starts without: a player who runs several profiles types the same addresses
+   * into each of them. Only missing entries are ever added, matched by address,
+   * so one removed on purpose does not reappear.
+   */
+  minecraftServers: { name: string; address: string }[]
   /** Cleared only on a fresh install, so the welcome screen shows exactly once. */
   welcomeSeen: boolean
 }

@@ -1198,6 +1198,23 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   )
   handle('servers:status', (address: string) => servers.serverStatus(address))
 
+  /**
+   * Adds the default servers to profiles that already exist.
+   *
+   * The separate, explicit action, as with the options template — except this
+   * one only ever adds. A server list is a list, not a set of values to
+   * overwrite, so there is nothing here that could take away what the player
+   * put in.
+   */
+  handle('servers:applyToProfiles', async (profileIds: string[]) => {
+    let added = 0
+    for (const id of profileIds) {
+      const profile = store.profile(id)
+      if (profile) added += await servers.seedProfileServers(profile.directory, store.settings.minecraftServers ?? [])
+    }
+    return added
+  })
+
   handle('skins:texture', (url: string) => skins.textureDataUrl(url))
 
   // ------------------------------------------------------------ skin library

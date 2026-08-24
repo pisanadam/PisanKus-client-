@@ -306,7 +306,10 @@ const api = {
     move: (profileId: string, from: number, to: number): Promise<ServerEntry[]> =>
       ipcRenderer.invoke('servers:move', profileId, from, to),
     /** Asked only when the player is looking; nothing polls in the background. */
-    status: (address: string): Promise<ServerStatus> => ipcRenderer.invoke('servers:status', address)
+    status: (address: string): Promise<ServerStatus> => ipcRenderer.invoke('servers:status', address),
+    /** Adds the default servers to the given profiles; returns how many were added. */
+    applyToProfiles: (profileIds: string[]): Promise<number> =>
+      ipcRenderer.invoke('servers:applyToProfiles', profileIds)
   },
 
   worlds: {
