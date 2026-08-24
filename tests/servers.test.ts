@@ -86,3 +86,21 @@ test('the list is seeded at launch and can be applied to existing profiles', () 
   const ipc = readFileSync('src/main/ipc.ts', 'utf8')
   assert.match(ipc, /handle\('servers:applyToProfiles'/)
 })
+
+/**
+ * A square icon button in the settings grid's stretching second column became a
+ * 300px-tall square holding a 15px icon. The editable rows are a flex row
+ * instead, where the button keeps its own size.
+ */
+test('an editable server row is one line, not a stretched grid cell', () => {
+  const settings = readFileSync('src/renderer/pages/Settings.tsx', 'utf8')
+  const css = readFileSync('src/renderer/styles/global.css', 'utf8')
+
+  assert.match(settings, /<div className="server-row" key=\{index\}>/)
+  assert.match(css, /\.server-row \{\s*display: flex;/)
+  // The button must not be stretched by the row.
+  assert.match(css, /\.server-row \.btn--icon \{\s*flex: none;/)
+  // Both fields shrink rather than overflowing the card.
+  assert.match(css, /\.server-row__name \{\s*flex: 1 1 150px;\s*min-width: 0;/)
+  assert.match(css, /\.server-row__address \{\s*flex: 2 1 200px;\s*min-width: 0;/)
+})

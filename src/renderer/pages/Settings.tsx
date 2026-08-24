@@ -340,32 +340,31 @@ export function Settings(): JSX.Element {
             </div>
           </div>
 
+          {/* A plain flex row, not `settings-row`: that one is a grid whose
+              second column stretches, and a square icon button stretched to a
+              300px column becomes a 300px-tall square. */}
           {(settings.minecraftServers ?? []).map((server, index) => (
-            <div className="settings-row" key={`${server.address}-${index}`}>
-              <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-                <input
-                  className="input"
-                  style={{ width: 180 }}
-                  value={server.name}
-                  placeholder={t('Ad')}
-                  onChange={(event) => {
-                    const next = [...settings.minecraftServers]
-                    next[index] = { ...server, name: event.target.value }
-                    void saveSettings({ minecraftServers: next })
-                  }}
-                />
-                <input
-                  className="input"
-                  style={{ width: 240 }}
-                  value={server.address}
-                  placeholder="play.example.net"
-                  onChange={(event) => {
-                    const next = [...settings.minecraftServers]
-                    next[index] = { ...server, address: event.target.value }
-                    void saveSettings({ minecraftServers: next })
-                  }}
-                />
-              </div>
+            <div className="server-row" key={index}>
+              <input
+                className="input server-row__name"
+                value={server.name}
+                placeholder={t('Ad')}
+                onChange={(event) => {
+                  const next = [...settings.minecraftServers]
+                  next[index] = { ...server, name: event.target.value }
+                  void saveSettings({ minecraftServers: next })
+                }}
+              />
+              <input
+                className="input server-row__address"
+                value={server.address}
+                placeholder="play.example.net"
+                onChange={(event) => {
+                  const next = [...settings.minecraftServers]
+                  next[index] = { ...server, address: event.target.value }
+                  void saveSettings({ minecraftServers: next })
+                }}
+              />
               <button
                 className="btn btn--sm btn--icon"
                 aria-label={t('Kaldır')}
@@ -381,7 +380,7 @@ export function Settings(): JSX.Element {
             </div>
           ))}
 
-          <div className="settings-row">
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button
               className="btn btn--sm"
               onClick={() =>

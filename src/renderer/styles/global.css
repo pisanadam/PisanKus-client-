@@ -2192,6 +2192,31 @@ button.update--ready:hover {
   justify-content: flex-end;
 }
 
+/* One editable server. Deliberately not a `.settings-row`: that is a grid whose
+   second column stretches its child, and `.btn--icon` is square by aspect ratio
+   — stretched to a 300px column it became a 300px-tall button holding a 15px
+   icon. */
+.server-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Both shrink; the address gets the larger share because it is the longer text. */
+.server-row__name {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+.server-row__address {
+  flex: 2 1 200px;
+  min-width: 0;
+}
+
+.server-row .btn--icon {
+  flex: none;
+}
+
 .settings-row__label {
   font-weight: 560;
 }
