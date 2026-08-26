@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
 import fsp from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import os from 'node:os'
@@ -7,15 +6,76 @@ import path from 'node:path'
 import test from 'node:test'
 import { ENVIRONMENT_IDS, readModMetadata } from '../src/main/content/modMetadata.ts'
 
-/** Builds a real jar — a zip — holding the given files. */
+const CRC_TABLE = Array.from({ length: 256 }, (_unused, index) => {
+  let value = index
+  for (let bit = 0; bit < 8; bit += 1) value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1
+  return value >>> 0
+})
+
+function crc32(data: Buffer): number {
+  let crc = 0xffffffff
+  for (const byte of data) crc = CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8)
+  return (crc ^ 0xffffffff) >>> 0
+}
+
+/**
+ * Writes a real jar, without shelling out to `zip`.
+ *
+ * The first version of this called the `zip` binary, which every runner has
+ * except the one that packages the app for most of its users: Windows. The
+ * whole release stopped there. Entries are stored rather than deflated, which
+ * is a valid zip and enough for a manifest.
+ */
 async function makeJar(name: string, files: Record<string, string>): Promise<string> {
-  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-jar-'))
-  for (const [file, content] of Object.entries(files)) {
-    await fsp.mkdir(path.join(staging, path.dirname(file)), { recursive: true })
-    await fsp.writeFile(path.join(staging, file), content, 'utf8')
+  const entries = Object.entries(files).map(([file, content]) => ({
+    nameBytes: Buffer.from(file, 'utf8'),
+    data: Buffer.from(content, 'utf8')
+  }))
+
+  const locals: Buffer[] = []
+  const central: Buffer[] = []
+  let offset = 0
+
+  for (const entry of entries) {
+    const crc = crc32(entry.data)
+    const header = Buffer.alloc(30)
+    header.writeUInt32LE(0x04034b50, 0)
+    header.writeUInt16LE(20, 4) // version needed
+    header.writeUInt16LE(0, 6) // flags — nothing encrypted
+    header.writeUInt16LE(0, 8) // stored
+    header.writeUInt32LE(crc, 14)
+    header.writeUInt32LE(entry.data.length, 18)
+    header.writeUInt32LE(entry.data.length, 22)
+    header.writeUInt16LE(entry.nameBytes.length, 26)
+    locals.push(header, entry.nameBytes, entry.data)
+
+    const record = Buffer.alloc(46)
+    record.writeUInt32LE(0x02014b50, 0)
+    record.writeUInt16LE(20, 4) // version made by
+    record.writeUInt16LE(20, 6) // version needed
+    record.writeUInt16LE(0, 8)
+    record.writeUInt16LE(0, 10)
+    record.writeUInt32LE(crc, 16)
+    record.writeUInt32LE(entry.data.length, 20)
+    record.writeUInt32LE(entry.data.length, 24)
+    record.writeUInt16LE(entry.nameBytes.length, 28)
+    record.writeUInt32LE(offset, 42)
+    central.push(record, entry.nameBytes)
+
+    offset += header.length + entry.nameBytes.length + entry.data.length
   }
+
+  const directory = Buffer.concat(central)
+  const end = Buffer.alloc(22)
+  end.writeUInt32LE(0x06054b50, 0)
+  end.writeUInt16LE(entries.length, 8)
+  end.writeUInt16LE(entries.length, 10)
+  end.writeUInt32LE(directory.length, 12)
+  end.writeUInt32LE(offset, 16)
+
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-jar-'))
   const jar = path.join(staging, name)
-  execFileSync('zip', ['-q', '-r', jar, ...Object.keys(files)], { cwd: staging })
+  await fsp.writeFile(jar, Buffer.concat([...locals, directory, end]))
   return jar
 }
 
