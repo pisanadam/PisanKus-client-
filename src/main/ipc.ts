@@ -624,6 +624,20 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       void diagnostics.finish(state).then(publishCrash).catch(() => undefined)
     }
 
+    // What the jars in `mods/` say about themselves, before the game gets a
+    // chance to refuse them. Not a refusal of its own: the player may know
+    // something the manifests do not, and a launcher that will not start the
+    // game over a warning is worse than one that says so and starts it.
+    for (const issue of (await inspectProfileHealth(profile).catch(() => null))?.issues ?? []) {
+      if (issue.severity !== 'error' || !issue.id.startsWith('mod-') && issue.id !== 'duplicate-mod-ids') continue
+      recordedLog({
+        profileId,
+        stream: 'launcher',
+        line: `Uyarı — ${issue.title}: ${issue.detail}`,
+        at: Date.now()
+      })
+    }
+
     if (offline) {
       recordedLog({
         profileId,
