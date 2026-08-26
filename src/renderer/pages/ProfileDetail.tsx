@@ -97,7 +97,7 @@ export function ProfileDetail({
   const contentKind = TABS.find((entry) => entry.id === tab)?.kind
 
   return (
-    <div className="page">
+    <div className="page page--profile">
       <header className="page__header">
         <button className="btn btn--ghost btn--icon" onClick={onBack} aria-label="Geri">
           <Icon name="close" size={18} />

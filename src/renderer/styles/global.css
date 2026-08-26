@@ -2013,6 +2013,22 @@ button.update--ready:hover {
   border: 1px dashed var(--border);
 }
 
+/* The content tab's drop target is everything below the tabs, not just the rows.
+   A jar dropped into the empty space under a short list used to land nowhere,
+   which reads as "drag and drop is broken" rather than "you missed the list".
+   Scoped to the profile page so no other page's layout is turned into a column. */
+.page--profile {
+  display: flex;
+  flex-direction: column;
+}
+
+.page--profile > .dropzone {
+  /* Grows into the space under a short list, but never shrinks below its own
+     content — `flex: 1` would let a long mod list be compressed instead of
+     scrolling the page. */
+  flex: 1 0 auto;
+}
+
 /* Profile icon, which may be an emoji or a picture the player chose. */
 .profile-icon {
   display: grid;

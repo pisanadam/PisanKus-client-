@@ -154,3 +154,22 @@ test('a pack profile exists before its mods do, and says what it is doing', () =
   // And it cannot be launched half-built.
   assert.match(detail, /disabled=\{profile\.preparing\}/)
 })
+
+/**
+ * The drop target used to be only the rows themselves, so a jar dropped into
+ * the empty space under a short list landed nowhere — which reads as "drag and
+ * drop is broken" rather than "you missed the list".
+ */
+test('the content tab accepts a file dropped anywhere below the tabs', () => {
+  const css = readFileSync('src/renderer/styles/global.css', 'utf8')
+
+  // Scoped to the profile page: turning every page into a flex column would
+  // change layouts that have nothing to do with dropping files.
+  assert.match(css, /\.page--profile \{\s*display: flex;\s*flex-direction: column;/)
+  // Grows into the empty space, but never shrinks a long list.
+  assert.match(css, /\.page--profile > \.dropzone \{[\s\S]*?flex: 1 0 auto;/)
+
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  assert.match(detail, /className="page page--profile"/)
+  assert.match(detail, /onDrop=\{\(event\) => void acceptDrop\(event\)\}/)
+})
