@@ -139,11 +139,17 @@ test('a pack entry is installed as whatever Modrinth says it is', () => {
   assert.match(modrinth, /kind: kindOfProjectType\(project\.project_type\)/)
 })
 
-test('the pack does not ship an addon whose base mod it cannot install', () => {
+/**
+ * Sweetie Pack was withdrawn: ninety-odd mods the launcher could not keep
+ * standing from a list of Modrinth slugs. The launcher bugs it exposed are
+ * fixed and stay fixed — every Forge profile was hitting them — but the pack
+ * itself is not shipped half-working.
+ */
+test('only the packs that can be kept working are offered', () => {
   const pack = readFileSync('src/shared/curatedPack.ts', 'utf8')
-  // Requires Twilight Forest, which is not on Modrinth at all — Forge stopped
-  // at startup with "Mod ID: 'twilightforest' … [MISSING]".
+
+  assert.match(pack, /export const PACKS: CuratedPack\[] = \[MODERN]/)
+  assert.doesNotMatch(pack, /const SWEETIE/)
   assert.doesNotMatch(pack, /slug: 'the-twilight-forest-dungeons-villages'/)
-  // "embeddiumplus" does not exist; the nearest real project is a modpack.
   assert.doesNotMatch(pack, /slug: 'embeddiumplus'/)
 })
