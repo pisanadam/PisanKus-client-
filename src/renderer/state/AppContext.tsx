@@ -16,6 +16,9 @@ import { appMarkDataUrl } from '../lib/appMark'
 import { errorMessage, isSignInError } from '../lib/format'
 import type { PublicAccount } from '../../preload'
 
+/** How long a finished notice stays at the bottom of the window. */
+const NOTICE_LIFETIME_MS = 5000
+
 /**
  * Lettering that stays readable on top of the chosen accent.
  *
@@ -183,15 +186,29 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     root.dataset.theme = theme
   }, [settings, language])
 
+  /**
+   * Clears a finished notice after a moment.
+   *
+   * One lifetime for all of them. There used to be three — 2.4 seconds for a
+   * finished task, 3.5 for a notice, 8 for an error — and a failure reported by
+   * the main process had none at all, so it sat at the bottom of the window
+   * until the launcher was restarted.
+   *
+   * The exception is a notice carrying a button: one that vanishes mid-click is
+   * worse than no button at all, so those wait to be used or dismissed.
+   */
+  const retire = useCallback((id: string, keep: boolean) => {
+    if (keep) return
+    setTimeout(() => setTasks((current) => current.filter((task) => task.id !== id)), NOTICE_LIFETIME_MS)
+  }, [])
+
   useEffect(() => {
     const offProgress = api.tasks.onProgress((task) => {
       setTasks((current) => {
         const next = current.filter((item) => item.id !== task.id)
         return [...next, task]
       })
-      if (task.state === 'done') {
-        setTimeout(() => setTasks((current) => current.filter((item) => item.id !== task.id)), 2400)
-      }
+      if (task.state !== 'running') retire(task.id, Boolean(task.action))
     })
 
     // A pack installing in the background changes the list without the renderer
@@ -233,7 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       offCrash()
       clearInterval(flush)
     }
-  }, [refreshProfiles, showCrashNotice])
+  }, [refreshProfiles, retire, showCrashNotice])
 
   const saveSettings = useCallback(async (patch: Partial<Settings>) => {
     setSettings(await api.settings.update(patch))
@@ -259,11 +276,8 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       }
     ])
 
-    // Anything offering a button stays until it is used or dismissed; a notice
-    // that vanishes mid-click is worse than no button at all.
-    if (action) return
-    setTimeout(() => setTasks((current) => current.filter((task) => task.id !== id)), kind === 'error' ? 8000 : 3500)
-  }, [])
+    retire(id, Boolean(action))
+  }, [retire])
 
   const signIn = useCallback(async () => {
     setSigningIn(true)

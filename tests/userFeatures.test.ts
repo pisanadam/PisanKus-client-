@@ -173,3 +173,24 @@ test('the content tab accepts a file dropped anywhere below the tabs', () => {
   assert.match(detail, /className="page page--profile"/)
   assert.match(detail, /onDrop=\{\(event\) => void acceptDrop\(event\)\}/)
 })
+
+/**
+ * There used to be three lifetimes — 2.4 seconds for a finished task, 3.5 for a
+ * notice, 8 for an error — and a failure reported by the main process had none
+ * at all, so it sat at the bottom of the window until the launcher was
+ * restarted.
+ */
+test('every finished notice clears itself after the same five seconds', () => {
+  const context = readFileSync('src/renderer/state/AppContext.tsx', 'utf8')
+
+  assert.match(context, /const NOTICE_LIFETIME_MS = 5000/)
+  // One place decides, and it is the only timeout left.
+  assert.equal(context.split('setTimeout(').length - 1, 1)
+  assert.doesNotMatch(context, /\b(2400|3500|8000)\b/)
+
+  // An error from the main process is retired too, not only a finished task.
+  assert.match(context, /if \(task\.state !== 'running'\) retire\(task\.id, Boolean\(task\.action\)\)/)
+  // A notice offering a button waits to be used: one that vanishes mid-click is
+  // worse than no button at all.
+  assert.match(context, /const retire = useCallback\(\(id: string, keep: boolean\) => \{\s*if \(keep\) return/)
+})
