@@ -151,8 +151,9 @@ test('a pack profile exists before its mods do, and says what it is doing', () =
   const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
   assert.match(detail, /Modlar kuruluyor/)
   assert.match(detail, /tasks\.find\(\(task\) => task\.profileId === profile\.id && task\.state === 'running'\)/)
-  // And it cannot be launched half-built.
-  assert.match(detail, /disabled=\{profile\.preparing\}/)
+  // And it cannot be launched half-built. The expression grew a second guard
+  // later, so only the preparing half is pinned here.
+  assert.match(detail, /disabled=\{profile\.preparing/)
 })
 
 /**
@@ -193,4 +194,34 @@ test('every finished notice clears itself after the same five seconds', () => {
   // A notice offering a button waits to be used: one that vanishes mid-click is
   // worse than no button at all.
   assert.match(context, /const retire = useCallback\(\(id: string, keep: boolean\) => \{\s*if \(keep\) return/)
+})
+
+/**
+ * `sessions` only learns about a launch once it has succeeded, and getting
+ * there takes as long as the downloads and the loader's build steps do —
+ * minutes on a first run. Pressing Play again inside that window started a
+ * second copy of the same profile: two processes writing one world, one
+ * options.txt and one mods folder.
+ */
+test('a profile can only have one launch in flight', () => {
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+
+  assert.match(ipc, /handle\(\s*'game:launch',\s*onlyOneLaunch\(/)
+
+  const wrapper = ipc.slice(ipc.indexOf('function onlyOneLaunch'), ipc.indexOf('const pendingOptions'))
+  // Claimed before the first await, so two clicks in the same instant cannot
+  // both get past the check.
+  const claim = wrapper.indexOf('launching.add(profileId)')
+  const firstAwait = wrapper.indexOf('await ')
+  assert.ok(claim > 0 && firstAwait > claim, 'ilk await’ten önce sahiplenilmeli')
+  // Both states are refused: already running, and already on its way.
+  assert.match(wrapper, /sessions\.has\(profileId\)/)
+  assert.match(wrapper, /launching\.has\(profileId\)/)
+  // Released whatever happens, or the profile could never be launched again.
+  assert.match(wrapper, /\} finally \{\s*\/\/[\s\S]*?launching\.delete\(profileId\)/)
+
+  // And the button cannot fire twice while the call is out.
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  assert.match(detail, /disabled=\{profile\.preparing \|\| launching\}/)
+  assert.match(detail, /setLaunching\(true\)/)
 })

@@ -123,6 +123,38 @@ function progressFor(profileId: string, report: (task: TaskProgress) => void) {
   return (task: TaskProgress): void => report({ ...task, profileId })
 }
 
+/**
+ * Profiles whose launch has been asked for and has not finished starting.
+ *
+ * `sessions` only learns about a launch once it has succeeded, and getting there
+ * takes as long as the downloads and the loader's own build steps do — minutes
+ * on a first run. Pressing Play again inside that window started a second copy
+ * of the same profile: two processes writing one world, one options.txt and one
+ * mods folder.
+ */
+const launching = new Set<string>()
+
+/** Lets one launch at a time exist per profile, from the first click onwards. */
+function onlyOneLaunch<Rest extends unknown[], Result>(
+  run: (profileId: string, ...rest: Rest) => Promise<Result>
+): (profileId: string, ...rest: Rest) => Promise<Result> {
+  return async (profileId, ...rest) => {
+    if (sessions.has(profileId)) throw new Error('Bu profil zaten çalışıyor.')
+    // Claimed before the first `await`, so two clicks in the same instant
+    // cannot both get past this.
+    if (launching.has(profileId)) throw new Error('Bu profil zaten başlatılıyor.')
+    launching.add(profileId)
+
+    try {
+      return await run(profileId, ...rest)
+    } finally {
+      // Released once the game has started, not when it exits: from then on the
+      // session itself is what says the profile is busy.
+      launching.delete(profileId)
+    }
+  }
+}
+
 const pendingOptions = new Map<string, string>()
 
 /**
@@ -561,9 +593,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   // ---------------------------------------------------------------------- game
 
-  handle('game:launch', async (profileId: string, options?: { offline?: boolean; serverAddress?: string }) => {
-    if (sessions.has(profileId)) throw new Error('Bu profil zaten çalışıyor.')
-
+  handle(
+    'game:launch',
+    onlyOneLaunch(async (profileId: string, options?: { offline?: boolean; serverAddress?: string }) => {
     // A save made during the last session is written before the game reads the
     // file, not after — if the launcher was closed before the game exited, this
     // is the only place left to apply it.
@@ -724,7 +756,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       if (controller.signal.aborted) return { pid: undefined }
       throw error
     }
-  })
+    })
+  )
 
   handle('game:kill', (profileId: string) => {
     sessions.get(profileId)?.kill()

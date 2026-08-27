@@ -71,6 +71,7 @@ export function ProfileDetail({
   }, [profileId, refreshProfiles])
   const [tab, setTab] = useState<Tab>(initialTab ?? 'mods')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [launching, setLaunching] = useState(false)
 
   useEffect(() => {
     setTab(initialTab ?? 'mods')
@@ -146,13 +147,20 @@ export function ProfileDetail({
               className="btn btn--primary"
               // A profile whose mods are still downloading has no loader and
               // half a mods folder; starting it produces a crash, not a game.
-              disabled={profile.preparing}
+              //
+              // `launching` closes the gap before the game reports itself as
+              // preparing: getting there reads every mod jar, which on a large
+              // profile is long enough to click twice.
+              disabled={profile.preparing || launching}
               title={profile.preparing ? t('Paket hâlâ indiriliyor') : undefined}
               onClick={async () => {
+                setLaunching(true)
                 try {
                   await api.game.launch(profile.id)
                 } catch (error) {
                   notify(error, 'error')
+                } finally {
+                  setLaunching(false)
                 }
               }}
             >
