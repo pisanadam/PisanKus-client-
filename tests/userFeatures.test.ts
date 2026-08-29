@@ -225,3 +225,29 @@ test('a profile can only have one launch in flight', () => {
   assert.match(detail, /disabled=\{profile\.preparing \|\| launching\}/)
   assert.match(detail, /setLaunching\(true\)/)
 })
+
+/**
+ * A profile played for a season has hundreds of screenshots, and a flat grid of
+ * them is a wall. The tab groups them by month, with the current one named
+ * rather than dated because that is how people refer to it.
+ */
+test('screenshots can be searched, sorted and folded away by month', () => {
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  const tab = detail.slice(detail.indexOf('function ScreenshotsTab'), detail.indexOf('function ServersTab'))
+
+  // Search, both sort directions, and grouping that can be turned off.
+  assert.match(tab, /item\.fileName\.toLocaleLowerCase\(locale\)\.includes\(needle\)/)
+  assert.match(tab, /newestFirst \? right\.createdAt - left\.createdAt : left\.createdAt - right\.createdAt/)
+  assert.match(tab, /grouped\s*\?\s*groupByMonth\(visible, locale\)/)
+
+  // Each group folds, and says how many it holds.
+  assert.match(tab, /aria-expanded=\{!collapsed\.has\(group\.key\)\}/)
+  assert.match(tab, /\{group\.items\.length\}/)
+
+  // Month names follow the language the player chose, not a hardcoded locale.
+  assert.match(detail, /const locale = currentLanguage\(\)/)
+  assert.match(detail, /toLocaleDateString\(locale, \{ month: 'long', year: 'numeric' \}\)/)
+
+  // A search that matches nothing is its own state, not an empty page.
+  assert.match(tab, /Eşleşen görüntü yok/)
+})

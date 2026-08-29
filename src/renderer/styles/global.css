@@ -237,6 +237,59 @@ a {
   gap: 14px;
 }
 
+/* The search field grows into whatever the row's other controls leave. */
+.screenshot-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.screenshot-search > .input {
+  min-width: 0;
+}
+
+/* One month's heading, which is also the control that folds it away. */
+.screenshot-group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.screenshot-group__label {
+  font-weight: 600;
+}
+
+.screenshot-group:hover {
+  color: var(--accent);
+}
+
+/* The count belongs beside the month, not against the far edge; the sidebar's
+   badge pushes itself there with an auto margin. */
+.screenshot-group .nav-item__badge {
+  margin-inline-start: 0;
+}
+
+/* The disclosure triangle: right when folded, down when open. */
+.screenshot-group__caret {
+  flex: none;
+  transition: transform 0.14s;
+}
+
+.screenshot-group[aria-expanded='true'] .screenshot-group__caret {
+  transform: rotate(90deg);
+}
+
 .screenshot-card {
   overflow: hidden;
   border: 1px solid var(--border);
