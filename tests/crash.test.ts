@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import fsp from 'node:fs/promises'
+import { existsSync, readFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import type { Profile } from '../src/shared/types.ts'
 import {
-  analyzeCrash,
   detectUnprocessedCrashes,
   GameDiagnostics,
   listCrashReports,
@@ -45,62 +45,6 @@ function profile(directory = '/profiles/test'): Profile {
   }
 }
 
-test('crash analysis scores an out-of-memory failure above weaker symptoms', () => {
-  const report = analyzeCrash('NoClassDefFoundError\njava.lang.OutOfMemoryError: Java heap space')
-  assert.equal(report.category, 'memory')
-  assert.ok(report.confidence >= 90)
-  assert.ok(report.secondaryCauses.some((cause) => cause.category === 'dependency'))
-})
-
-test('crash analysis identifies the wrong Java class version', () => {
-  assert.equal(analyzeCrash('UnsupportedClassVersionError: class file version 65.0').category, 'java')
-})
-
-test('crash analysis identifies Fabric missing dependencies', () => {
-  const report = analyzeCrash('ModResolutionException: mod example depends on fabric-api which is missing')
-  assert.equal(report.category, 'dependency')
-  assert.match(report.evidence.join('\n'), /fabric-api/)
-})
-
-test('crash analysis identifies Fabric incompatible mods', () => {
-  assert.equal(analyzeCrash('Incompatible mods found! replace mod fabric-api with version 1.2').category, 'dependency')
-})
-
-test('crash analysis identifies Forge and NeoForge mod loading failures', () => {
-  assert.equal(analyzeCrash('net.minecraftforge.fml.LoadingFailedException: Mod loading has failed').category, 'dependency')
-  assert.equal(analyzeCrash('net.neoforged.fml.ModLoadingException: Mod loading failed').category, 'dependency')
-})
-
-test('crash analysis identifies MixinApplyError', () => {
-  assert.equal(analyzeCrash('MixinTransformerError caused by MixinApplyError: mixin failed').category, 'mixin')
-})
-
-test('crash analysis identifies shader/OpenGL window crashes', () => {
-  assert.equal(analyzeCrash('GLFW error 65542: OpenGL not supported; Failed to create window').category, 'graphics')
-})
-
-test('crash analysis identifies native LWJGL failures', () => {
-  assert.equal(analyzeCrash('java.lang.UnsatisfiedLinkError: no lwjgl in java.library.path').category, 'native')
-})
-
-test('hs_err fatal JVM crash receives native classification and source metadata', () => {
-  const report = analyzeCrash('', {
-    sources: [{
-      kind: 'jvm-crash',
-      path: '<PROFILE>/hs_err_pid123.log',
-      text: '# A fatal error has been detected by the Java Runtime Environment'
-    }]
-  })
-  assert.equal(report.category, 'native')
-  assert.equal(report.sources[0]?.kind, 'jvm-crash')
-})
-
-test('unknown crashes keep only a short tail as evidence', () => {
-  const report = analyzeCrash(Array.from({ length: 20 }, (_, index) => `line ${index}`).join('\n'))
-  assert.equal(report.category, 'unknown')
-  assert.deepEqual(report.evidence, Array.from({ length: 8 }, (_, index) => `line ${index + 12}`))
-})
-
 test('crash reports redact bearer, access and refresh tokens', () => {
   const line = 'Authorization: Bearer very-secret --accessToken another-secret access_token=third-secret refreshToken=fourth'
   const redacted = redactLogLine(line)
@@ -121,20 +65,6 @@ test('clipboard crash reports are sanitized recursively', () => {
   }, '/home/fixture/.minecraft', '/home/fixture')
   assert.equal(report.logFile, '<PROFILE>/crash.log')
   assert.doesNotMatch(report.evidence[0], /secret-token/)
-})
-
-test('suspected mod detection matches installed content and snapshot changes', async () => {
-  const fixture = await fsp.readFile(path.join(import.meta.dirname, 'fixtures', 'crashes', 'fabric-mixin-crash.txt'), 'utf8')
-  const current = profile()
-  const previousProfile = profile()
-  current.content[0].versionId = 'new-version'
-  current.content[0].fileName = 'sodium-fabric-0.6.13+mc1.21.4.jar'
-  const snapshot = createSuccessfulRunSnapshot(previousProfile)
-  const changes = compareSuccessfulRunSnapshot(snapshot, current)
-  const report = analyzeCrash(fixture, { profile: current, changesSinceLastSuccess: changes })
-  assert.equal(report.suspectedMods[0]?.name, 'Sodium')
-  assert.ok((report.suspectedMods[0]?.confidence ?? 0) >= 90)
-  assert.ok(report.suspectedMods[0]?.reasons.some((reason) => /güncellendi/.test(reason)))
 })
 
 test('successful snapshot comparison detects added, updated, enabled, loader, Java and RAM changes', () => {
@@ -187,15 +117,6 @@ test('an intentional stopped session writes no crash report and does write the s
   }
 })
 
-test('a real-format Minecraft crash fixture is analyzed from its primary source', async () => {
-  const fixture = await fsp.readFile(path.join(import.meta.dirname, 'fixtures', 'crashes', 'fabric-mixin-crash.txt'), 'utf8')
-  const report = analyzeCrash('', {
-    sources: [{ kind: 'minecraft-crash', path: '<PROFILE>/crash-reports/crash-fixture.txt', text: fixture }]
-  })
-  assert.equal(report.category, 'mixin')
-  assert.equal(report.sources[0]?.kind, 'minecraft-crash')
-})
-
 test('the same detached crash file is imported only once', async () => {
   const directory = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-crash-test-'))
   try {
@@ -209,4 +130,35 @@ test('the same detached crash file is imported only once', async () => {
   } finally {
     await fsp.rm(directory, { recursive: true, force: true })
   }
+})
+
+/**
+ * The analyser is gone. It scored keywords in the log into a category, a
+ * confidence percentage and a "probable mod", and it was wrong often enough to
+ * send people after mods that were fine — while the one failure that mattered,
+ * a loader whose own build steps had never run, came out as "unknown crash".
+ *
+ * What is kept is what the launcher actually knows, and the redaction, which was
+ * never analysis: a log carries the access token the game was launched with.
+ */
+test('a crash report states facts and guesses nothing', () => {
+  const types = readFileSync('src/shared/types.ts', 'utf8')
+  const report = types.slice(types.indexOf('export interface CrashReport {'))
+
+  for (const guessed of ['category', 'confidence', 'suggestions', 'suspectedMods', 'summary', 'title']) {
+    assert.doesNotMatch(report.slice(0, report.indexOf('\n}')), new RegExp(`\\b${guessed}[?]?:`), guessed)
+  }
+  // The facts stay.
+  for (const fact of ['exitCode', 'signal', 'logFile', 'sources', 'changesSinceLastSuccess']) {
+    assert.match(report.slice(0, report.indexOf('\n}')), new RegExp(`\\b${fact}[?]?:`), fact)
+  }
+
+  // The module that did the guessing is gone; the one that redacts is not.
+  assert.equal(existsSync('src/main/minecraft/crashAnalysis.ts'), false)
+  assert.equal(existsSync('src/main/minecraft/redact.ts'), true)
+
+  // And the notice no longer names a cause or a percentage.
+  const context = readFileSync('src/renderer/state/AppContext.tsx', 'utf8')
+  assert.doesNotMatch(context, /güven/)
+  assert.doesNotMatch(context, /Muhtemel mod/)
 })

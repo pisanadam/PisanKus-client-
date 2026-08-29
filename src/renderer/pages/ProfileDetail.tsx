@@ -892,7 +892,7 @@ function LogsTab({
   profileId: string
   onOpenTab: (tab: 'mods' | 'shaders' | 'settings') => void
 }): JSX.Element {
-  const { logs, clearLogs, notify, profiles, refreshProfiles, signIn } = useApp()
+  const { logs, clearLogs, notify } = useApp()
   const lines = logs[profileId] ?? []
   const consoleRef = useRef<HTMLDivElement>(null)
   const [follow, setFollow] = useState(true)
@@ -928,59 +928,29 @@ function LogsTab({
 
   return (
     <div className="stack-lg">
+      {/* What the launcher knows, and nothing it guessed. The analyser that used
+          to sit here named a cause from keywords in the log; it was wrong often
+          enough to send people after mods that were fine, while the one failure
+          that mattered — a loader whose own build steps had never run — came out
+          as "unknown crash". The log is the report. */}
       {latest && (
-        <div className="card crash-analysis">
+        <div className="card">
           <div className="row" style={{ flexWrap: 'wrap' }}>
-            <div>
-              <div className="section-title">Crash analizi</div>
-              <div className="list__title">{latest.title}</div>
-            </div>
-            <span className="badge badge--danger">{latest.category}</span>
-            {latest.confidence != null && (
-              <span className="badge badge--accent">{t('%{confidence} güven', { confidence: latest.confidence })}</span>
+            <div className="section-title">{t('Son çökme')}</div>
+            {latest.exitCode != null && (
+              <span className="badge badge--danger">{t('Çıkış kodu {code}', { code: latest.exitCode })}</span>
             )}
+            {latest.signal && <span className="badge badge--danger">{latest.signal}</span>}
             <div className="topbar__spacer" />
             <span className="faint">{new Date(latest.createdAt).toLocaleString('tr-TR')}</span>
           </div>
-          <p className="muted">{latest.summary}</p>
-          {(latest.suspectedMods?.length ?? 0) > 0 && (
-            <div className="stack-sm">
-              <div className="section-title">{t('Muhtemel sorunlu modlar')}</div>
-              {latest.suspectedMods!.map((suspect) => (
-                <div className="crash-analysis__suspect" key={`${suspect.contentId ?? suspect.name}-${suspect.fileName ?? ''}`}>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div className="list__title">
-                      {suspect.name}{suspect.versionId ? ` · ${suspect.versionId}` : ''}
-                    </div>
-                    <div className="muted">{t('%{confidence} güven', { confidence: suspect.confidence })}</div>
-                    <ul className="crash-analysis__steps">
-                      {suspect.reasons.map((reason) => <li key={reason}>{reason}</li>)}
-                    </ul>
-                  </div>
-                  {suspect.contentId && profiles.find((item) => item.id === profileId)?.content.some(
-                    (content) => content.id === suspect.contentId && content.enabled
-                  ) && (
-                    <button
-                      className="btn btn--primary btn--sm"
-                      onClick={async () => {
-                        try {
-                          await api.content.toggle(profileId, suspect.contentId!, false)
-                          await refreshProfiles()
-                          await api.game.launch(profileId)
-                          notify(`${suspect.name} devre dışı bırakıldı; oyun yeniden başlatıldı.`)
-                        } catch (error) {
-                          notify(error, 'error')
-                        }
-                      }}
-                    >
-                      <Icon name="refresh" size={14} />
-                      {t('Devre dışı bırak ve tekrar dene')}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+
+          <p className="muted">
+            {latest.detectedWhileLauncherClosed
+              ? t("PisanKus kapalıyken Minecraft'ın çöktüğü tespit edildi. Günlük aşağıda.")
+              : t('Ne olduğu aşağıdaki günlükte yazıyor. Yardım isterken günlüğü kopyalayıp paylaşın.')}
+          </p>
+
           {(latest.changesSinceLastSuccess?.length ?? 0) > 0 && (
             <details open>
               <summary>{t('Son başarılı çalıştırmadan beri değişenler')}</summary>
@@ -993,18 +963,7 @@ function LogsTab({
               </ul>
             </details>
           )}
-          <div className="section-title">{t('Öneriler')}</div>
-          <ul className="crash-analysis__steps">
-            {latest.suggestions.map((suggestion) => (
-              <li key={suggestion}>{suggestion}</li>
-            ))}
-          </ul>
-          {latest.evidence.length > 0 && (
-            <details>
-              <summary>{t('Hata kanıtı ({count} satır)', { count: latest.evidence.length })}</summary>
-              <pre className="crash-analysis__evidence">{latest.evidence.join('\n')}</pre>
-            </details>
-          )}
+
           {(latest.sources?.length ?? 0) > 0 && (
             <details>
               <summary>{t('Kullanılan kaynaklar ({count})', { count: latest.sources!.length })}</summary>
@@ -1015,60 +974,25 @@ function LogsTab({
               </ul>
             </details>
           )}
+
           <div className="row" style={{ flexWrap: 'wrap' }}>
-            {latest.category === 'memory' && (
-              <button
-                className="btn btn--primary btn--sm"
-                onClick={() => onOpenTab('settings')}
-              >
-                <Icon name="settings" size={14} />
-                {t('RAM ayarlarını aç')}
-              </button>
-            )}
-            {latest.category === 'java' && (
-              <button
-                className="btn btn--primary btn--sm"
-                onClick={() => onOpenTab('settings')}
-              >
-                <Icon name="settings" size={14} />
-                {t('Java ayarlarını aç')}
-              </button>
-            )}
-            {latest.category === 'authentication' && (
-              <button className="btn btn--primary btn--sm" onClick={() => void signIn()}>
-                <Icon name="user" size={14} />
-                {t('Yeniden oturum aç')}
-              </button>
-            )}
-            {(latest.category === 'dependency' || latest.category === 'mixin') && (
-              <button className="btn btn--primary btn--sm" onClick={() => onOpenTab('mods')}>
-                <Icon name="package" size={14} />
-                {t('Modları yönet')}
-              </button>
-            )}
-            {latest.category === 'graphics' && (
-              <button className="btn btn--primary btn--sm" onClick={() => onOpenTab('shaders')}>
-                <Icon name="image" size={14} />
-                {t('Shaderları yönet')}
-              </button>
-            )}
+            <button
+              className="btn btn--primary btn--sm"
+              onClick={() => void api.crashes
+                .share(profileId, latest.id)
+                .then((text) => navigator.clipboard.writeText(text))
+                .then(() => notify(t('Günlük panoya kopyalandı. Jetonlar ve dosya yolları temizlendi.')))
+                .catch((error) => notify(error, 'error'))}
+            >
+              <Icon name="copy" size={14} />
+              {t('Günlüğü kopyala')}
+            </button>
             <button
               className="btn btn--sm"
               onClick={() => void api.crashes.openFolder(profileId).catch((error) => notify(error, 'error'))}
             >
               <Icon name="folder" size={14} />
               {t('Rapor klasörü')}
-            </button>
-            <button
-              className="btn btn--sm"
-              onClick={() => void api.crashes
-                .share(profileId, latest.id)
-                .then((text) => navigator.clipboard.writeText(text))
-                .then(() => notify(t('Sanitize edilmiş analiz panoya kopyalandı.')))
-                .catch((error) => notify(error, 'error'))}
-            >
-              <Icon name="copy" size={14} />
-              {t('Analizi kopyala')}
             </button>
             {reports.length > 1 && (
               <span className="faint">{t('Toplam {count} crash raporu', { count: reports.length })}</span>

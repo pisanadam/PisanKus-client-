@@ -3,14 +3,13 @@ import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { finished } from 'node:stream/promises'
-import type { CrashReport, CrashSourceKind, GameLogLine, GameState, Profile } from '../../shared/types'
-import {
-  analyzeCrash,
-  analyzeCrashText,
-  redactSensitiveText,
-  sanitizeCrashReportForShare,
-  type CrashTextSource
-} from './crashAnalysis.ts'
+import type { CrashReport, CrashSource, CrashSourceKind, GameLogLine, GameState, Profile } from '../../shared/types'
+import { redactSensitiveText, sanitizeCrashReportForShare } from './redact.ts'
+
+/** A source with its text still attached; only the metadata reaches the report. */
+interface CrashTextSource extends CrashSource {
+  text: string
+}
 import {
   compareSuccessfulRunSnapshot,
   loadSuccessfulRunSnapshot,
@@ -35,7 +34,7 @@ interface SourceCandidate {
   size: number
 }
 
-export { analyzeCrash, sanitizeCrashReportForShare }
+export { sanitizeCrashReportForShare }
 
 /** Backwards-compatible line helper used by existing log consumers/tests. */
 export function redactLogLine(value: string): string {
@@ -173,25 +172,25 @@ async function analyzeSources(
   runtime: RuntimeSnapshotInfo = {}
 ): Promise<CrashReport> {
   const previous = await loadSuccessfulRunSnapshot(profile)
-  const changes = compareSuccessfulRunSnapshot(previous, profile, runtime)
-  const analysis = analyzeCrashText(sources.map((source) => source.text).join('\n'), {
-    profile,
-    sources,
-    changesSinceLastSuccess: changes
-  })
-  const createdAt = Date.now()
   return writeReport(
     profile,
     {
       id: randomUUID(),
       profileId: profile.id,
       profileName: profile.name,
-      createdAt,
+      createdAt: Date.now(),
       exitCode: state.exitCode,
       signal: state.signal,
       detectedWhileLauncherClosed,
       sourceFingerprint,
-      ...analysis
+      sources: sources.map((source) => ({
+        kind: source.kind,
+        path: source.path,
+        modifiedAt: source.modifiedAt
+      })),
+      // Not a cause, but a fact worth having: what the player changed between
+      // the last run that worked and this one.
+      changesSinceLastSuccess: compareSuccessfulRunSnapshot(previous, profile, runtime)
     },
     sources.map((source) => `===== ${source.path} =====\n${source.text}`).join('\n\n')
   )

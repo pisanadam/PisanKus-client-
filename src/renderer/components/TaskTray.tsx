@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import { t } from '../../shared/i18n'
 
 export function TaskTray(): JSX.Element | null {
-  const { tasks, dismissTask, signIn, signingIn, openCrashAnalysis } = useApp()
+  const { tasks, dismissTask, signIn, signingIn, openCrashLog } = useApp()
   if (tasks.length === 0) return null
 
   return (
@@ -49,7 +49,7 @@ export function TaskTray(): JSX.Element | null {
                 className="btn btn--primary btn--sm btn--block"
                 style={{ marginTop: 4 }}
                 onClick={() => {
-                  openCrashAnalysis(task.actionProfileId!)
+                  openCrashLog(task.actionProfileId!)
                   dismissTask(task.id)
                 }}
               >

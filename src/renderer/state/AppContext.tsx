@@ -70,7 +70,7 @@ interface AppValue {
   logs: Record<string, GameLogLine[]>
   clearLogs: (profileId: string) => void
   crashOpenRequest: { profileId: string; nonce: number } | null
-  openCrashAnalysis: (profileId: string) => void
+  openCrashLog: (profileId: string) => void
   clearCrashOpenRequest: () => void
 }
 
@@ -107,20 +107,18 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
   }, [])
 
   const showCrashNotice = useCallback((report: CrashReport) => {
-    const suspect = report.suspectedMods?.[0]
-    const details = [
-      report.detectedWhileLauncherClosed
-        ? t("PisanKus kapalıyken Minecraft'ın çöktüğü tespit edildi.")
-        : report.summary,
-      report.confidence != null ? t('%{confidence} güven', { confidence: report.confidence }) : undefined,
-      suspect ? t('Muhtemel mod: {name}', { name: suspect.name }) : undefined
-    ].filter(Boolean)
+    // The notice used to carry a guessed cause, a confidence percentage and a
+    // "probable mod". All three were scored from keywords in the log and were
+    // wrong often enough to send people after mods that were fine. It now says
+    // the one thing that is certainly true, and offers the log.
     setTasks((current) => [
       ...current.filter((task) => task.id !== `crash-${report.id}`),
       {
         id: `crash-${report.id}`,
-        label: `${t('Minecraft çöktü')} · ${report.title}`,
-        detail: details.join(' · '),
+        label: t('Minecraft çöktü'),
+        detail: report.detectedWhileLauncherClosed
+          ? t("PisanKus kapalıyken çöktüğü tespit edildi.")
+          : t('Günlüğü açıp ne olduğuna bakabilirsiniz.'),
         progress: 1,
         state: 'error',
         action: 'openCrash',
@@ -304,7 +302,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
     setLogs((current) => ({ ...current, [profileId]: [] }))
   }, [])
 
-  const openCrashAnalysis = useCallback((profileId: string) => {
+  const openCrashLog = useCallback((profileId: string) => {
     setCrashOpenRequest({ profileId, nonce: Date.now() })
   }, [])
 
@@ -331,7 +329,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       logs,
       clearLogs,
       crashOpenRequest,
-      openCrashAnalysis,
+      openCrashLog,
       clearCrashOpenRequest
     }),
     [
@@ -354,7 +352,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       logs,
       clearLogs,
       crashOpenRequest,
-      openCrashAnalysis,
+      openCrashLog,
       clearCrashOpenRequest
     ]
   )

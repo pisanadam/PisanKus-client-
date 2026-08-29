@@ -338,17 +338,7 @@ export interface GameState {
   signal?: string
 }
 
-export type CrashCategory =
-  | 'memory'
-  | 'java'
-  | 'dependency'
-  | 'mixin'
-  | 'graphics'
-  | 'authentication'
-  | 'native'
-  | 'network'
-  | 'unknown'
-
+/** Which kind of file a crash log line came out of. */
 export type CrashSourceKind = 'minecraft-crash' | 'jvm-crash' | 'latest-log' | 'launcher-log'
 
 export interface CrashSource {
@@ -356,20 +346,6 @@ export interface CrashSource {
   /** Sanitized profile-relative name, never an absolute disk path. */
   path: string
   modifiedAt?: number
-}
-
-export interface CrashSecondaryCause {
-  category: CrashCategory
-  confidence: number
-}
-
-export interface SuspectedCrashMod {
-  name: string
-  contentId?: string
-  versionId?: string
-  fileName?: string
-  confidence: number
-  reasons: string[]
 }
 
 export type CrashChangeKind = 'added' | 'updated' | 'enabled' | 'loader' | 'java' | 'memory'
@@ -382,6 +358,16 @@ export interface CrashProfileChange {
 }
 
 /** A persisted, token-redacted explanation of a failed launch or game crash. */
+/**
+ * A crash that happened, and where to read about it.
+ *
+ * Deliberately no cause, no confidence and no suspected mod. Those were
+ * guessed from keywords in the log and were wrong often enough to send people
+ * after mods that were fine — while the one failure that mattered, a loader
+ * whose own build steps had never run, came out as "unknown crash". What is
+ * left is what the launcher actually knows: it crashed, when, how it exited,
+ * what changed since the last run that worked, and the log itself.
+ */
 export interface CrashReport {
   id: string
   profileId: string
@@ -389,19 +375,12 @@ export interface CrashReport {
   createdAt: number
   exitCode?: number
   signal?: string
-  category: CrashCategory
-  title: string
-  summary: string
-  suggestions: string[]
-  /** Short relevant excerpts only; the full sanitized output stays in logFile. */
-  evidence: string[]
+  /** The sanitized log, which is the report. */
   logFile: string
   reportFile: string
-  /** V2 fields are optional so reports written by older versions still load. */
-  confidence?: number
-  secondaryCauses?: CrashSecondaryCause[]
-  suspectedMods?: SuspectedCrashMod[]
+  /** Which files the log was gathered from. */
   sources?: CrashSource[]
+  /** Mods, memory or Java changed since the last successful run. */
   changesSinceLastSuccess?: CrashProfileChange[]
   detectedWhileLauncherClosed?: boolean
   sourceFingerprint?: string
