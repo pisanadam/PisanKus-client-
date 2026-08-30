@@ -671,7 +671,10 @@ const table: Dictionary = {
   'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'Modlar shu profilga qoʻshiladi; dunyolaringiz, sozlamalaringiz va oʻrnatilgan boshqa modlar joyida qoladi.',
   'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'Faqat {loader} profillari koʻrsatiladi; toʻplam shu yuklovchi uchun tayyorlangan.',
   'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'Bu profil {version} versiyasida, toʻplamning asosiy modlari esa shu versiyaga chiqmagan; oʻrnatiladigan modlar kamroq boʻlishi mumkin.',
-  'Modları ekle': 'Modlarni qoʻshish'
+  'Modları ekle': 'Modlarni qoʻshish',
+  'Bütün profillerde çektiğiniz görüntüler': 'Barcha profillarda olgan skrinshotlaringiz',
+  'Tüm profiller': 'Barcha profillar',
+  'Profil': 'Profil'
 }
 
 export default table

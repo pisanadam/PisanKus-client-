@@ -234,8 +234,10 @@ test('a profile can only have one launch in flight', () => {
  * rather than dated because that is how people refer to it.
  */
 test('screenshots can be searched, sorted and folded away by month', () => {
-  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
-  const tab = detail.slice(detail.indexOf('function ScreenshotsTab'), detail.indexOf('function ServersTab'))
+  // The gallery is shared: the profile's own tab and the launcher-wide page
+  // draw the same component, so neither can quietly lose a control.
+  const detail = readFileSync('src/renderer/components/ScreenshotGallery.tsx', 'utf8')
+  const tab = detail
 
   // Search, both sort directions, and grouping that can be turned off.
   assert.match(tab, /item\.fileName\.toLocaleLowerCase\(locale\)\.includes\(needle\)/)
@@ -313,4 +315,29 @@ test('screenshot thumbnails are JPEG and kept on disk', () => {
   // The cache belongs to the category the storage screen can already clear.
   const maintenance = readFileSync('src/main/profileMaintenance.ts', 'utf8')
   assert.match(maintenance, /cache: \[.*'\.pisankus\/cache'\]/)
+})
+
+/**
+ * Screenshots were reachable only through the profile that took them, which is
+ * the wrong way round: what someone wants back is the picture, not the profile
+ * it happens to sit under. Playing three profiles meant remembering which one
+ * you were in that evening and opening each in turn.
+ */
+test('screenshots have a page of their own, across every profile', () => {
+  const app = readFileSync('src/renderer/App.tsx', 'utf8')
+  assert.match(app, /\{ page: 'screenshots', label: 'Ekran görüntüleri', icon: 'image' \}/)
+  assert.match(app, /route\.page === 'screenshots' && <Screenshots \/>/)
+
+  const page = readFileSync('src/renderer/pages/Screenshots.tsx', 'utf8')
+  // Every profile is read, side by side, and one bad folder does not empty the
+  // page.
+  assert.match(page, /profiles\.map\(async \(profile\) => \{/)
+  assert.match(page, /api\.screenshots\.list\(profile\.id\)\.catch\(\(\) => \[\]\)/)
+  // Deleting works on the profile the shot came from, not the page's own idea
+  // of a current profile.
+  assert.match(page, /api\.screenshots\s*\.remove\(item\.profileId, item\.fileName\)/)
+
+  // The card says which profile a shot belongs to when the list spans several.
+  const gallery = readFileSync('src/renderer/components/ScreenshotGallery.tsx', 'utf8')
+  assert.match(gallery, /item\.profileName \? `\$\{item\.profileName\} · ` : ''/)
 })

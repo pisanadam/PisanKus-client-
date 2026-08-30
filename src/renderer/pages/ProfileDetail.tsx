@@ -13,16 +13,17 @@ import type {
 import { Icon } from '../components/Icon'
 import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
+import { ScreenshotGallery, type GalleryItem } from '../components/ScreenshotGallery'
 import { ServersTab } from '../components/ServersTab'
 import { parseOptions, readOption } from '../../shared/options'
 import { Confirm, Modal } from '../components/Modal'
-import type { AutoWorldBackupSummary, JavaInfo, ScreenshotSummary, WorldSummary } from '../../preload'
+import type { AutoWorldBackupSummary, JavaInfo, WorldSummary } from '../../preload'
 import { api } from '../lib/api'
 import { formatPlaytime, formatRelative, loaderLabel } from '../lib/format'
 import { useApp } from '../state/AppContext'
 import { IconEditor } from '../components/IconEditor'
 import type { IconRecipe } from '../../shared/profileIcon'
-import { currentLanguage, t } from '../../shared/i18n'
+import { t } from '../../shared/i18n'
 
 type Tab = 'mods' | 'resourcepacks' | 'shaders' | 'worlds' | 'screenshots' | 'servers' | 'logs' | 'settings'
 
@@ -837,51 +838,14 @@ function WorldsTab({ profileId }: { profileId: string }): JSX.Element {
   )
 }
 
-/**
- * A month, or "this month", with the shots taken in it.
- *
- * Grouping by date rather than listing everything: a profile played for a
- * season has hundreds of these, and a flat grid of them is a wall. The current
- * month is named rather than dated because that is how people refer to it.
- */
-interface ScreenshotGroup {
-  key: string
-  label: string
-  items: ScreenshotSummary[]
-}
-
-function groupByMonth(items: ScreenshotSummary[], locale: string): ScreenshotGroup[] {
-  const now = new Date()
-  const groups = new Map<string, ScreenshotGroup>()
-
-  for (const item of items) {
-    const taken = new Date(item.createdAt)
-    const thisMonth =
-      taken.getFullYear() === now.getFullYear() && taken.getMonth() === now.getMonth()
-    const key = thisMonth ? 'current' : `${taken.getFullYear()}-${taken.getMonth()}`
-    const label = thisMonth
-      ? t('Bu ay')
-      : taken.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
-
-    const group = groups.get(key) ?? { key, label, items: [] }
-    group.items.push(item)
-    groups.set(key, group)
-  }
-  return [...groups.values()]
-}
-
 function ScreenshotsTab({ profileId }: { profileId: string }): JSX.Element {
   const { notify } = useApp()
-  const [items, setItems] = useState<ScreenshotSummary[] | null>(null)
-  const [query, setQuery] = useState('')
-  const [newestFirst, setNewestFirst] = useState(true)
-  const [grouped, setGrouped] = useState(true)
-  /** Collapsed groups, by key. Everything starts open. */
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  const [items, setItems] = useState<GalleryItem[] | null>(null)
 
   const reload = async (): Promise<void> => {
     try {
-      setItems(await api.screenshots.list(profileId))
+      const list = await api.screenshots.list(profileId)
+      setItems(list.map((item) => ({ ...item, profileId })))
     } catch (error) {
       setItems([])
       notify(error, 'error')
@@ -893,80 +857,17 @@ function ScreenshotsTab({ profileId }: { profileId: string }): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId])
 
-  const remove = async (fileName: string): Promise<void> => {
-    try {
-      setItems(await api.screenshots.remove(profileId, fileName))
-    } catch (error) {
-      notify(error, 'error')
-    }
-  }
-
-  // Month names and case-folding follow the language the player chose. The
-  // codes are plain BCP-47 tags, so they can be handed to Intl as they are.
-  const locale = currentLanguage()
-  const needle = query.trim().toLocaleLowerCase(locale)
-  const visible = (items ?? [])
-    .filter((item) => !needle || item.fileName.toLocaleLowerCase(locale).includes(needle))
-    .sort((left, right) =>
-      newestFirst ? right.createdAt - left.createdAt : left.createdAt - right.createdAt
-    )
-
-  const groups: ScreenshotGroup[] = grouped
-    ? groupByMonth(visible, locale)
-    : [{ key: 'all', label: '', items: visible }]
-
-  const card = (item: ScreenshotSummary): JSX.Element => (
-    <article className="screenshot-card" key={item.fileName}>
-      {item.thumbnail ? (
-        <img src={item.thumbnail} alt={item.fileName} />
-      ) : (
-        <div className="screenshot-card__empty">📷</div>
-      )}
-      <div className="screenshot-card__info">
-        <div className="list__title" title={item.fileName}>{item.fileName}</div>
-        <div className="list__sub">{formatRelative(item.createdAt)} · {item.sizeMb} MB</div>
-        <button className="btn btn--danger btn--sm" onClick={() => void remove(item.fileName)}>
-          <Icon name="trash" size={14} /> {t('Sil')}
-        </button>
-      </div>
-    </article>
-  )
-
   return (
-    <div className="stack-lg">
-      <div className="row" style={{ flexWrap: 'wrap' }}>
-        <div className="screenshot-search">
-          <Icon name="search" size={15} />
-          <input
-            className="input"
-            value={query}
-            placeholder={t('Ara')}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-
-        <select
-          className="select"
-          style={{ width: 'auto' }}
-          value={newestFirst ? 'newest' : 'oldest'}
-          onChange={(event) => setNewestFirst(event.target.value === 'newest')}
-        >
-          <option value="newest">{t('En yeni')}</option>
-          <option value="oldest">{t('En eski')}</option>
-        </select>
-
-        <select
-          className="select"
-          style={{ width: 'auto' }}
-          value={grouped ? 'date' : 'none'}
-          onChange={(event) => setGrouped(event.target.value === 'date')}
-        >
-          <option value="date">{t('Tarihe göre')}</option>
-          <option value="none">{t('Gruplama yok')}</option>
-        </select>
-
-        <div className="topbar__spacer" />
-
+    <ScreenshotGallery
+      items={items}
+      onReload={() => void reload()}
+      onRemove={(item) => {
+        void api.screenshots
+          .remove(profileId, item.fileName)
+          .then((list) => setItems(list.map((entry) => ({ ...entry, profileId }))))
+          .catch((error) => notify(error, 'error'))
+      }}
+      controls={
         <button
           className="btn"
           onClick={() => void api.screenshots.openFolder(profileId).catch((error) => notify(error, 'error'))}
@@ -974,53 +875,10 @@ function ScreenshotsTab({ profileId }: { profileId: string }): JSX.Element {
           <Icon name="folder" size={16} />
           {t('Klasörü aç')}
         </button>
-        <button className="btn" onClick={() => void reload()}>
-          <Icon name="refresh" size={16} />
-          {t('Yenile')}
-        </button>
-      </div>
-
-      {items === null ? (
-        <div className="row" style={{ justifyContent: 'center', padding: 30 }}><div className="spinner" /></div>
-      ) : items.length === 0 ? (
-        <div className="empty">
-          <div className="empty__icon">📷</div>
-          <div className="empty__title">{t('Henüz ekran görüntüsü yok')}</div>
-          <p>{t("Minecraft'ta F2 tuşuyla çektiğiniz görüntüler burada görünür.")}</p>
-        </div>
-      ) : visible.length === 0 ? (
-        <div className="empty">
-          <div className="empty__icon">🔍</div>
-          <div className="empty__title">{t('Eşleşen görüntü yok')}</div>
-          <p>{t('Arama terimini değiştirmeyi deneyin.')}</p>
-        </div>
-      ) : (
-        groups.map((group) => (
-          <section className="stack-sm" key={group.key}>
-            {group.label && (
-              <button
-                className="screenshot-group"
-                aria-expanded={!collapsed.has(group.key)}
-                onClick={() =>
-                  setCollapsed((current) => {
-                    const next = new Set(current)
-                    if (!next.delete(group.key)) next.add(group.key)
-                    return next
-                  })
-                }
-              >
-                <Icon name="play" size={12} className="screenshot-group__caret" />
-                <span className="screenshot-group__label">{group.label}</span>
-                <span className="nav-item__badge">{group.items.length}</span>
-              </button>
-            )}
-            {!collapsed.has(group.key) && (
-              <div className="screenshot-grid">{group.items.map(card)}</div>
-            )}
-          </section>
-        ))
-      )}
-    </div>
+      }
+      emptyTitle={t('Henüz ekran görüntüsü yok')}
+      emptyHint={t("Minecraft'ta F2 tuşuyla çektiğiniz görüntüler burada görünür.")}
+    />
   )
 }
 

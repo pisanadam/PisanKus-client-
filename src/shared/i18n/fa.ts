@@ -671,7 +671,10 @@ const table: Dictionary = {
   'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'مادها به این نمایه افزوده می‌شوند؛ جهان‌ها، تنظیمات و مادهای نصب‌شدهٔ دیگر دست‌نخورده می‌مانند.',
   'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'تنها نمایه‌های {loader} فهرست می‌شوند؛ این بسته برای همان بارگذار ساخته شده است.',
   'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'این نمایه روی {version} است و مادهای اصلی بسته برای آن منتشر نشده‌اند؛ مادهای کمتری نصب می‌شود.',
-  'Modları ekle': 'افزودن مادها'
+  'Modları ekle': 'افزودن مادها',
+  'Bütün profillerde çektiğiniz görüntüler': 'همهٔ نماگرفت‌هایی که در تمام نمایه‌ها گرفته‌اید',
+  'Tüm profiller': 'همهٔ نمایه‌ها',
+  'Profil': 'نمایه'
 }
 
 export default table

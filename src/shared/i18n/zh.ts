@@ -671,7 +671,10 @@ const table: Dictionary = {
   'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': '模组会加入这个配置；你的存档、设置和已装的其他模组都不会动。',
   'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': '只列出 {loader} 配置；此整合包是为该加载器准备的。',
   'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': '此配置是 {version}，整合包的核心模组没有该版本；能装上的模组会少一些。',
-  'Modları ekle': '添加模组'
+  'Modları ekle': '添加模组',
+  'Bütün profillerde çektiğiniz görüntüler': '你在所有配置里截下的图片',
+  'Tüm profiller': '所有配置',
+  'Profil': '配置'
 }
 
 export default table

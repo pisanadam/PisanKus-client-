@@ -671,7 +671,10 @@ const table: Dictionary = {
   'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'Le mod vengono aggiunte a questo profilo; mondi, impostazioni e altre mod installate restano dove sono.',
   'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'Sono elencati solo i profili {loader}; il pacchetto è pensato per quel loader.',
   'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'Questo profilo è su {version} e le mod principali del pacchetto non escono per quella versione; ne verranno installate meno.',
-  'Modları ekle': 'Aggiungi le mod'
+  'Modları ekle': 'Aggiungi le mod',
+  'Bütün profillerde çektiğiniz görüntüler': 'Tutti i tuoi screenshot, di ogni profilo',
+  'Tüm profiller': 'Tutti i profili',
+  'Profil': 'Profilo'
 }
 
 export default table

@@ -9,6 +9,7 @@ import { Welcome } from './components/Welcome'
 import { Accounts } from './pages/Accounts'
 import { Discover } from './pages/Discover'
 import { Library } from './pages/Library'
+import { Screenshots } from './pages/Screenshots'
 import { ProfileDetail } from './pages/ProfileDetail'
 import { Settings } from './pages/Settings'
 import { Skins } from './pages/Skins'
@@ -20,6 +21,7 @@ type Route =
   | { page: 'library' }
   | { page: 'discover'; profileId?: string; kind?: ContentKind }
   | { page: 'skins' }
+  | { page: 'screenshots' }
   | { page: 'accounts' }
   | { page: 'settings' }
   | { page: 'profile'; profileId: string; tab?: 'logs'; tabRequestKey?: number }
@@ -28,6 +30,7 @@ const NAV: { page: Route['page']; label: string; icon: IconName }[] = [
   { page: 'library', label: 'Kitaplık', icon: 'grid' },
   { page: 'discover', label: 'Keşfet', icon: 'compass' },
   { page: 'skins', label: 'Skin', icon: 'sparkle' },
+  { page: 'screenshots', label: 'Ekran görüntüleri', icon: 'image' },
   { page: 'accounts', label: 'Hesaplar', icon: 'user' },
   { page: 'settings', label: 'Ayarlar', icon: 'settings' }
 ]
@@ -200,6 +203,7 @@ export function App(): JSX.Element {
         )}
 
         {route.page === 'skins' && <Skins />}
+        {route.page === 'screenshots' && <Screenshots />}
         {route.page === 'accounts' && <Accounts />}
         {route.page === 'settings' && <Settings />}
       </main>
