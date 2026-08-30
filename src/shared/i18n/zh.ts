@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': '默认：{key}',
   'Durdur': '停止',
   'Oyna': '开始游戏',
-  'Paket hâlâ indiriliyor': '整合包仍在下载'
+  'Paket hâlâ indiriliyor': '整合包仍在下载',
+  'Kaldırmayı onayla': '确认移除',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '“{name}”将从此配置中删除。文件会从磁盘上移除，要找回只能重新下载。',
+  '{pack} modları {name} profiline kuruldu.': '{pack} 的模组已安装到 {name}。',
+  '{name} modları kuruluyor.': '正在安装 {name} 的模组。',
+  'Nereye kurulsun?': '安装到哪里？',
+  'Var olan profiller': '已有的配置',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': '模组会加入这个配置；你的存档、设置和已装的其他模组都不会动。',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': '只列出 {loader} 配置；此整合包是为该加载器准备的。',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': '此配置是 {version}，整合包的核心模组没有该版本；能装上的模组会少一些。',
+  'Modları ekle': '添加模组'
 }
 
 export default table

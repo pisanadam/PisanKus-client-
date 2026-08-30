@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { errorMessage } from '../lib/format'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
+import { useApp } from '../state/AppContext'
 import { t } from '../../shared/i18n'
 
 /**
@@ -20,13 +21,30 @@ export function PackDialog({
 }: {
   pack: CuratedPack
   onClose: () => void
-  onInstalled: (profileId: string) => void
+  /** `created` is false when the mods went into a profile that already existed. */
+  onInstalled: (profileId: string, created: boolean) => void
 }): JSX.Element {
+  const { profiles, notify } = useApp()
   const [versions, setVersions] = useState<string[] | null>(null)
   const [gameVersion, setGameVersion] = useState('')
   const [name, setName] = useState(pack.name)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** Either a new profile, or the id of one that already exists. */
+  const [target, setTarget] = useState('new')
+
+  /**
+   * The profiles this pack can go into.
+   *
+   * A pack is a list of mods for one loader, and putting a Fabric jar in a Forge
+   * profile does not give a game that ignores it — it gives one that will not
+   * start. Quilt is the exception it is everywhere else: it runs Fabric mods.
+   */
+  const eligible = profiles.filter(
+    (profile) =>
+      profile.loader === pack.loader || (pack.loader === 'fabric' && profile.loader === 'quilt')
+  )
+  const chosen = eligible.find((profile) => profile.id === target)
 
   useEffect(() => {
     api.content
@@ -58,13 +76,28 @@ export function PackDialog({
   const install = async (): Promise<void> => {
     setBusy(true)
     setError(null)
+
+    // Into a profile that already exists: the call runs the whole install behind
+    // a rollback snapshot and only answers at the end, so the dialog hands over
+    // to the progress tray rather than sitting on top of the launcher for the
+    // minutes that takes.
+    if (chosen) {
+      const into = chosen
+      void api.content
+        .installPackInto(pack.id, into.id)
+        .then(() => notify(t('{pack} modları {name} profiline kuruldu.', { pack: pack.name, name: into.name })))
+        .catch((caught) => notify(errorMessage(caught), 'error'))
+      onInstalled(into.id, false)
+      return
+    }
+
     try {
       const profile = await api.content.installPack({
         packId: pack.id,
         gameVersion,
         name: name.trim() || pack.name
       })
-      onInstalled(profile.id)
+      onInstalled(profile.id, true)
     } catch (caught) {
       setError(errorMessage(caught))
       setBusy(false)
@@ -80,9 +113,13 @@ export function PackDialog({
           <button className="btn" onClick={onClose} disabled={busy}>
             {t('Vazgeç')}
           </button>
-          <button className="btn btn--primary" onClick={() => void install()} disabled={busy || !gameVersion}>
+          <button
+            className="btn btn--primary"
+            onClick={() => void install()}
+            disabled={busy || (!chosen && !gameVersion)}
+          >
             {busy ? <div className="spinner" /> : <Icon name="download" size={16} />}
-            {t('Kur')}
+            {chosen ? t('Modları ekle') : t('Kur')}
           </button>
         </>
       }
@@ -96,6 +133,48 @@ export function PackDialog({
         </div>
       )}
 
+      {eligible.length > 0 && (
+        <div className="field">
+          <label className="field__label" htmlFor="pack-target">
+            {t('Nereye kurulsun?')}
+          </label>
+          <select
+            id="pack-target"
+            className="select"
+            value={target}
+            onChange={(event) => setTarget(event.target.value)}
+          >
+            <option value="new">{t('Yeni profil oluştur')}</option>
+            <optgroup label={t('Var olan profiller')}>
+              {eligible.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.name} — {profile.gameVersion} {profile.loader}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          <span className="field__hint">
+            {chosen
+              ? t('Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.')
+              : t('Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.', {
+                  loader: pack.loader
+                })}
+          </span>
+        </div>
+      )}
+
+      {chosen && !available.includes(chosen.gameVersion) && versions !== null && (
+        <div className="notice notice--warning" style={{ marginTop: 12 }}>
+          <Icon name="compass" size={15} />
+          <div>
+            {t('Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.', {
+              version: chosen.gameVersion
+            })}
+          </div>
+        </div>
+      )}
+
+      {!chosen && (
       <div className="field">
         <label className="field__label" htmlFor="pack-version">
           {t('Minecraft sürümü')}
@@ -136,7 +215,9 @@ export function PackDialog({
             : t('Yalnızca paketin çekirdek modlarının yayınlandığı sürümler listelenir.')}
         </span>
       </div>
+      )}
 
+      {!chosen && (
       <div className="field">
         <label className="field__label" htmlFor="pack-name">
           {t('Profil adı')}
@@ -148,6 +229,7 @@ export function PackDialog({
           onChange={(event) => setName(event.target.value)}
         />
       </div>
+      )}
 
       <div className="section-title" style={{ marginTop: 18 }}>
         {t('İçindekiler')}

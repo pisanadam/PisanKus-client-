@@ -97,7 +97,7 @@ const STORAGE_PATHS: Record<ProfileStorageCategory, string[]> = {
   screenshots: ['screenshots'],
   logs: ['logs'],
   crashes: ['crash-reports', '.pisankus/crashes'],
-  cache: ['.pisankus/transactions']
+  cache: ['.pisankus/transactions', '.pisankus/cache']
 }
 
 export async function inspectProfileStorage(profile: Profile): Promise<ProfileStorageReport> {

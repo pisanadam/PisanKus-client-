@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': '기본값: {key}',
   'Durdur': '중지',
   'Oyna': '플레이',
-  'Paket hâlâ indiriliyor': '팩을 아직 내려받는 중입니다'
+  'Paket hâlâ indiriliyor': '팩을 아직 내려받는 중입니다',
+  'Kaldırmayı onayla': '제거 확인',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '"{name}"을(를) 이 프로필에서 삭제합니다. 파일이 디스크에서 지워지므로 되돌리려면 다시 내려받아야 합니다.',
+  '{pack} modları {name} profiline kuruldu.': '{pack} 모드를 {name}에 설치했습니다.',
+  '{name} modları kuruluyor.': '{name} 모드를 설치하는 중입니다.',
+  'Nereye kurulsun?': '어디에 설치할까요?',
+  'Var olan profiller': '기존 프로필',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': '모드가 이 프로필에 추가됩니다. 월드와 설정, 이미 설치한 다른 모드는 그대로입니다.',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': '{loader} 프로필만 보여 줍니다. 이 팩은 그 로더용으로 만들어졌습니다.',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': '이 프로필은 {version}인데 팩의 핵심 모드에는 그 버전이 없습니다. 설치되는 모드가 적을 수 있습니다.',
+  'Modları ekle': '모드 추가'
 }
 
 export default table

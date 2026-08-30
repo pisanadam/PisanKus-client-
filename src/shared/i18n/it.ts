@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': 'Predefinito: {key}',
   'Durdur': 'Ferma',
   'Oyna': 'Gioca',
-  'Paket hâlâ indiriliyor': 'Il pacchetto è ancora in scaricamento'
+  'Paket hâlâ indiriliyor': 'Il pacchetto è ancora in scaricamento',
+  'Kaldırmayı onayla': 'Conferma rimozione',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '«{name}» verrà eliminato da questo profilo. Il file sparisce dal disco; per riaverlo va scaricato di nuovo.',
+  '{pack} modları {name} profiline kuruldu.': 'Le mod di {pack} sono state installate in {name}.',
+  '{name} modları kuruluyor.': 'Le mod di {name} si stanno installando.',
+  'Nereye kurulsun?': 'Dove installarlo?',
+  'Var olan profiller': 'Profili esistenti',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'Le mod vengono aggiunte a questo profilo; mondi, impostazioni e altre mod installate restano dove sono.',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'Sono elencati solo i profili {loader}; il pacchetto è pensato per quel loader.',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'Questo profilo è su {version} e le mod principali del pacchetto non escono per quella versione; ne verranno installate meno.',
+  'Modları ekle': 'Aggiungi le mod'
 }
 
 export default table

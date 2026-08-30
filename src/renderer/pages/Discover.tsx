@@ -445,11 +445,15 @@ export function Discover({
         <PackDialog
           pack={openPack}
           onClose={() => setOpenPack(null)}
-          onInstalled={() => {
+          onInstalled={(_profileId, created) => {
             const name = openPack.name
             setOpenPack(null)
             void refreshProfiles()
-            notify(t('{name} profili oluşturuldu.', { name }))
+            // Adding to an existing profile reports when it finishes, from the
+            // dialog itself — saying "installed" here would be a lie told
+            // several minutes early.
+            if (created) notify(t('{name} profili oluşturuldu.', { name }))
+            else notify(t('{name} modları kuruluyor.', { name }))
           }}
         />
       )}

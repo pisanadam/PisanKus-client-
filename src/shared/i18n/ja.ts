@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': '既定: {key}',
   'Durdur': '停止',
   'Oyna': 'プレイ',
-  'Paket hâlâ indiriliyor': 'パックはまだダウンロード中です'
+  'Paket hâlâ indiriliyor': 'パックはまだダウンロード中です',
+  'Kaldırmayı onayla': '削除の確認',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '「{name}」をこのプロファイルから削除します。ファイルはディスクから消えるため、戻すには再ダウンロードが必要です。',
+  '{pack} modları {name} profiline kuruldu.': '{pack} の Mod を {name} に導入しました。',
+  '{name} modları kuruluyor.': '{name} の Mod を導入しています。',
+  'Nereye kurulsun?': 'どこに導入しますか？',
+  'Var olan profiller': '既存のプロファイル',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'Mod はこのプロファイルに追加されます。ワールド、設定、導入済みの他の Mod はそのままです。',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': '{loader} のプロファイルだけを表示しています。このパックはそのローダー向けです。',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'このプロファイルは {version} で、パックの中心となる Mod はその版に対応していません。導入される Mod は少なくなります。',
+  'Modları ekle': 'Mod を追加'
 }
 
 export default table

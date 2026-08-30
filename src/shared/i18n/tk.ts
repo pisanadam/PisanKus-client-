@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': 'Başlangyç: {key}',
   'Durdur': 'Duruz',
   'Oyna': 'Oýna',
-  'Paket hâlâ indiriliyor': 'Paket entek ýüklenýär'
+  'Paket hâlâ indiriliyor': 'Paket entek ýüklenýär',
+  'Kaldırmayı onayla': 'Aýyrmagy tassyklaň',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '"{name}" bu profilden pozular. Faýl diskden aýrylýar; yzyna almak üçin täzeden ýüklemeli.',
+  '{pack} modları {name} profiline kuruldu.': '{pack} modlary {name} profiline guruldy.',
+  '{name} modları kuruluyor.': '{name} modlary gurulýar.',
+  'Nereye kurulsun?': 'Nirä gurulsun?',
+  'Var olan profiller': 'Bar bolan profiller',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'Modlar şu profile goşulýar; dünýäleriňiz, sazlamalaryňyz we gurlan beýleki modlar bolşy ýaly galýar.',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'Diňe {loader} profilleri görkezilýär; toplum şol ýükleýji üçin taýýarlandy.',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'Bu profil {version} wersiýasynda, toplumyň esasy modlary bolsa şol wersiýa çykmady; az mod gurlup biler.',
+  'Modları ekle': 'Modlary goş'
 }
 
 export default table

@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': 'Standart: {key}',
   'Durdur': 'To\'xtatish',
   'Oyna': 'O\'ynash',
-  'Paket hâlâ indiriliyor': 'To\'plam hali yuklanmoqda'
+  'Paket hâlâ indiriliyor': 'To\'plam hali yuklanmoqda',
+  'Kaldırmayı onayla': 'Oʻchirishni tasdiqlang',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '"{name}" shu profildan oʻchiriladi. Fayl diskdan olib tashlanadi; qaytarish uchun qaytadan yuklab olish kerak.',
+  '{pack} modları {name} profiline kuruldu.': '{pack} modlari {name} profiliga oʻrnatildi.',
+  '{name} modları kuruluyor.': '{name} modlari oʻrnatilmoqda.',
+  'Nereye kurulsun?': 'Qayerga oʻrnatilsin?',
+  'Var olan profiller': 'Mavjud profillar',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'Modlar shu profilga qoʻshiladi; dunyolaringiz, sozlamalaringiz va oʻrnatilgan boshqa modlar joyida qoladi.',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'Faqat {loader} profillari koʻrsatiladi; toʻplam shu yuklovchi uchun tayyorlangan.',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'Bu profil {version} versiyasida, toʻplamning asosiy modlari esa shu versiyaga chiqmagan; oʻrnatiladigan modlar kamroq boʻlishi mumkin.',
+  'Modları ekle': 'Modlarni qoʻshish'
 }
 
 export default table

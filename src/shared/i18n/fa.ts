@@ -661,7 +661,17 @@ const table: Dictionary = {
   'Varsayılan: {key}': 'پیش‌فرض: {key}',
   'Durdur': 'توقف',
   'Oyna': 'بازی',
-  'Paket hâlâ indiriliyor': 'بسته هنوز در حال دریافت است'
+  'Paket hâlâ indiriliyor': 'بسته هنوز در حال دریافت است',
+  'Kaldırmayı onayla': 'تأیید حذف',
+  '"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.': '«{name}» از این نمایه حذف می‌شود. فایل از دیسک پاک می‌شود و برای بازگرداندنش باید دوباره دانلود کنید.',
+  '{pack} modları {name} profiline kuruldu.': 'مادهای {pack} در {name} نصب شد.',
+  '{name} modları kuruluyor.': 'مادهای {name} در حال نصب است.',
+  'Nereye kurulsun?': 'کجا نصب شود؟',
+  'Var olan profiller': 'نمایه‌های موجود',
+  'Modlar bu profile eklenir; dünyalarınız, ayarlarınız ve kurulu diğer modlar durur.': 'مادها به این نمایه افزوده می‌شوند؛ جهان‌ها، تنظیمات و مادهای نصب‌شدهٔ دیگر دست‌نخورده می‌مانند.',
+  'Yalnızca {loader} profilleri listelenir; paket bu yükleyici için hazırlandı.': 'تنها نمایه‌های {loader} فهرست می‌شوند؛ این بسته برای همان بارگذار ساخته شده است.',
+  'Bu profil {version} sürümünde ve paketin çekirdek modları bu sürümde yok; kurulan mod sayısı az olabilir.': 'این نمایه روی {version} است و مادهای اصلی بسته برای آن منتشر نشده‌اند؛ مادهای کمتری نصب می‌شود.',
+  'Modları ekle': 'افزودن مادها'
 }
 
 export default table

@@ -35,6 +35,11 @@ import {
 import { listLoaderVersions } from './minecraft/loaders'
 import * as servers from './minecraft/servers'
 import { listVersions as listGameVersions } from './minecraft/versions'
+import {
+  listScreenshots as listScreenshotsFrom,
+  THUMBNAIL_QUALITY,
+  THUMBNAIL_WIDTH
+} from './screenshots'
 import * as skins from './skins'
 import { store } from './store'
 import * as updater from './updater'
@@ -996,18 +1001,20 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     return path.join(profile.directory, 'screenshots')
   }
 
-  const listScreenshots = async (profileId: string) => {
-    const directory = screenshotDir(profileId)
-    const names = await fsp.readdir(directory).catch(() => [] as string[])
-    const images = await Promise.all(names.filter((name) => /\.(png|jpe?g)$/i.test(name)).map(async (fileName) => {
-      const file = resolveInside(directory, requireLeafName(fileName, 'Ekran görüntüsü'))
-      const stat = await fsp.stat(file)
-      const source = nativeImage.createFromPath(file)
-      const thumbnail = source.isEmpty() ? '' : source.resize({ width: 360 }).toDataURL()
-      return { fileName, createdAt: stat.mtimeMs, sizeMb: Math.round(stat.size / 10_485.76) / 100, thumbnail }
-    }))
-    return images.sort((a, b) => b.createdAt - a.createdAt)
+  const thumbnailCacheDir = (profileId: string): string => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return path.join(profile.directory, '.pisankus', 'cache', 'thumbnails')
   }
+
+  const encodeThumbnail = async (file: string): Promise<Buffer | null> => {
+    const source = nativeImage.createFromPath(file)
+    if (source.isEmpty()) return null
+    return source.resize({ width: THUMBNAIL_WIDTH }).toJPEG(THUMBNAIL_QUALITY)
+  }
+
+  const listScreenshots = (profileId: string) =>
+    listScreenshotsFrom(screenshotDir(profileId), thumbnailCacheDir(profileId), encodeThumbnail)
 
   handle('screenshots:list', (profileId: string) => listScreenshots(profileId))
   handle('screenshots:openFolder', async (profileId: string) => {
@@ -1203,6 +1210,50 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     })()
 
     return store.profile(profile.id)!
+  })
+
+  /**
+   * Adds a pack's mods to a profile that already exists.
+   *
+   * The packs used to be installable only as a whole new profile, which meant
+   * anyone who wanted the performance mods in the world they already play had to
+   * build a second profile and move their saves across. Here the profile keeps
+   * its version, its loader, its worlds and everything already installed; the
+   * pack is resolved against that profile's Minecraft version and only the mods
+   * are added.
+   *
+   * Under the rollback transaction, because this profile is the player's: a run
+   * that stops halfway must leave the mods folder as it found it rather than
+   * being deleted the way a freshly created one is.
+   */
+  handle('content:installPackInto', async (packId: string, profileId: string) => {
+    const pack = packById(packId)
+    if (!pack) throw new Error(`Paket bulunamadı: ${packId}`)
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+
+    // Fabric mods do run under Quilt, and nothing else mixes: a Fabric jar in a
+    // Forge profile is not a mod the game ignores, it is a game that will not
+    // start.
+    const compatible =
+      profile.loader === pack.loader || (pack.loader === 'fabric' && profile.loader === 'quilt')
+    if (!compatible) {
+      throw new Error(
+        `${pack.name} ${pack.loader} paketidir; bu profil ${profile.loader} kullanıyor. ` +
+          'Paketi yeni bir profil olarak kurun.'
+      )
+    }
+
+    return withProfileRollback(
+      profileId,
+      pack.name,
+      async () => {
+        await curated.installPackInto(pack.id, profileId, progressFor(profileId, onProgress))
+        profilesChanged()
+        return store.profile(profileId)!
+      },
+      onProgress
+    )
   })
 
   /**

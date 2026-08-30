@@ -287,6 +287,10 @@ function ContentTab({
   const [busyId, setBusyId] = useState<string | null>(null)
   const [dropping, setDropping] = useState(false)
   const [pendingUpdates, setPendingUpdates] = useState<InstalledContent[] | null>(null)
+  // Removing content deletes the jar from disk, and the button that does it sits
+  // next to the on/off switch — one slip and a mod the player spent a download
+  // on is gone with nothing to undo it.
+  const [pendingRemove, setPendingRemove] = useState<InstalledContent | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [contentFilter, setContentFilter] = useState<'all' | 'enabled' | 'disabled' | 'updates' | 'recent'>('all')
   const [contentQuery, setContentQuery] = useState('')
@@ -562,13 +566,29 @@ function ContentTab({
                 className="btn btn--ghost btn--icon"
                 aria-label={t('Kaldır')}
                 disabled={busyId === item.id}
-                onClick={() => void run(item.id, () => api.content.remove(profileId, item.id))}
+                onClick={() => setPendingRemove(item)}
               >
                 <Icon name="trash" size={16} />
               </button>
             </div>
           ))}
         </div>
+      )}
+
+      {pendingRemove && (
+        <Confirm
+          title={t('Kaldırmayı onayla')}
+          message={t('"{name}" bu profilden silinecek. Dosya diskten kaldırılır; geri almak için yeniden indirmeniz gerekir.', {
+            name: pendingRemove.name
+          })}
+          confirmLabel={t('Kaldır')}
+          danger
+          onConfirm={() => {
+            const target = pendingRemove
+            void run(target.id, () => api.content.remove(profileId, target.id))
+          }}
+          onClose={() => setPendingRemove(null)}
+        />
       )}
 
       {pendingUpdates && (

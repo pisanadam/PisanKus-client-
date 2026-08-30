@@ -283,6 +283,9 @@ const api = {
       name: string
       /** Answers as soon as the profile exists; the mods download in the background. */
     }): Promise<Profile> => ipcRenderer.invoke('content:installPack', request),
+    /** Adds a pack's mods to a profile that already exists, keeping everything in it. */
+    installPackInto: (packId: string, profileId: string): Promise<Profile> =>
+      ipcRenderer.invoke('content:installPackInto', packId, profileId),
     /** Creates a profile from a modpack, using the version and loader it declares. */
     installModpackAsProfile: (request: {
       projectId: string

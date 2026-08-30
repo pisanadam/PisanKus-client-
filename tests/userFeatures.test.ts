@@ -145,7 +145,9 @@ test('a pack profile exists before its mods do, and says what it is doing', () =
 
   // The dialog hands over instead of waiting for a report.
   const dialog = readFileSync('src/renderer/components/PackDialog.tsx', 'utf8')
-  assert.match(dialog, /onInstalled\(profile\.id\)/)
+  // The second argument says a profile was created, which is what separates
+  // this path from installing the same pack into one that already exists.
+  assert.match(dialog, /onInstalled\(profile\.id, true\)/)
   assert.doesNotMatch(dialog, /PackInstallResult/)
 
   const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
@@ -250,4 +252,65 @@ test('screenshots can be searched, sorted and folded away by month', () => {
 
   // A search that matches nothing is its own state, not an empty page.
   assert.match(tab, /Eşleşen görüntü yok/)
+})
+
+/**
+ * The remove button sits next to the on/off switch and deletes the jar from
+ * disk. Nothing brings it back but another download, so the click alone must
+ * not be enough.
+ */
+test('removing content asks first', () => {
+  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
+  const tab = detail.slice(detail.indexOf('function ContentTab'), detail.indexOf('function ScreenshotsTab'))
+
+  // The button opens the question instead of doing the deletion.
+  assert.match(tab, /onClick=\{\(\) => setPendingRemove\(item\)\}/)
+  assert.doesNotMatch(tab, /onClick=\{\(\) => void run\(item\.id, \(\) => api\.content\.remove/)
+
+  // And the confirmation is the one that actually removes it.
+  const confirm = tab.slice(tab.indexOf('{pendingRemove && ('))
+  assert.match(confirm, /api\.content\.remove\(profileId, target\.id\)/)
+  assert.match(confirm, /danger/)
+})
+
+/**
+ * A pack used to be installable only as a whole new profile, which meant
+ * wanting its mods in the world you already play involved building a second
+ * profile and moving the saves across.
+ */
+test('a pack can be added to a profile that already exists', () => {
+  const dialog = readFileSync('src/renderer/components/PackDialog.tsx', 'utf8')
+
+  // Only profiles the pack's mods can actually run under are offered.
+  assert.match(dialog, /profile\.loader === pack\.loader \|\| \(pack\.loader === 'fabric' && profile\.loader === 'quilt'\)/)
+  assert.match(dialog, /\.installPackInto\(pack\.id, into\.id\)/)
+  assert.match(dialog, /onInstalled\(into\.id, false\)/)
+
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  const handler = ipc.slice(ipc.indexOf("handle('content:installPackInto'"))
+  // The profile is the player's, so a failed run is rolled back rather than
+  // deleted the way a freshly created one is.
+  assert.match(handler.slice(0, 2_000), /withProfileRollback\(/)
+  assert.doesNotMatch(handler.slice(0, 2_000), /store\.removeProfile/)
+  // And a loader mismatch is refused before anything is downloaded.
+  assert.match(handler.slice(0, 2_000), /Paketi yeni bir profil olarak kurun/)
+})
+
+/**
+ * The gallery sends the pictures themselves across the IPC boundary. PNG data
+ * urls made that 48 MB for a folder of 200, and every visit paid the full
+ * decode-and-scale again.
+ */
+test('screenshot thumbnails are JPEG and kept on disk', () => {
+  const source = readFileSync('src/main/screenshots.ts', 'utf8')
+  assert.match(source, /data:image\/jpeg;base64,/)
+  assert.doesNotMatch(source, /toDataURL/)
+
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  assert.match(ipc, /\.resize\(\{ width: THUMBNAIL_WIDTH \}\)\.toJPEG\(THUMBNAIL_QUALITY\)/)
+  assert.match(ipc, /'\.pisankus', 'cache', 'thumbnails'/)
+
+  // The cache belongs to the category the storage screen can already clear.
+  const maintenance = readFileSync('src/main/profileMaintenance.ts', 'utf8')
+  assert.match(maintenance, /cache: \[.*'\.pisankus\/cache'\]/)
 })
