@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ProfileIcon } from './components/ProfileIcon'
 import { Icon, type IconName } from './components/Icon'
 import { LoginGate } from './components/LoginGate'
@@ -104,6 +104,23 @@ export function App(): JSX.Element {
   // Microsoft authentication is a hard requirement — no account, no launcher.
   if (accounts.length === 0) return <LoginGate />
 
+  /**
+   * The profiles the sidebar shows, newest-played first.
+   *
+   * The list is a shortlist, not the library, and it was in whatever order the
+   * profiles happened to be stored in — so the profile someone plays every
+   * evening could sit at the bottom, or past the cut and not appear at all.
+   * `lastPlayed` is stamped when the game starts, so a running profile is
+   * always at the top of this by definition.
+   */
+  const recent = useMemo(
+    () =>
+      [...profiles]
+        .sort((left, right) => (right.lastPlayed ?? right.createdAt) - (left.lastPlayed ?? left.createdAt))
+        .slice(0, 8),
+    [profiles]
+  )
+
   const runningCount = Object.values(gameStates).filter((status) => status === 'running').length
 
   return (
@@ -137,7 +154,7 @@ export function App(): JSX.Element {
         {profiles.length > 0 && (
           <>
             <div className="nav-section">{t('Profiller')}</div>
-            {profiles.slice(0, 8).map((profile) => {
+            {recent.map((profile) => {
               const running = gameStates[profile.id] === 'running' || gameStates[profile.id] === 'preparing'
               return (
                 <button

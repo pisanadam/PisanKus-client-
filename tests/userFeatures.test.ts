@@ -341,3 +341,25 @@ test('screenshots have a page of their own, across every profile', () => {
   const gallery = readFileSync('src/renderer/components/ScreenshotGallery.tsx', 'utf8')
   assert.match(gallery, /item\.profileName \? `\$\{item\.profileName\} · ` : ''/)
 })
+
+/**
+ * The sidebar's profile list is a shortlist, and it was in whatever order the
+ * profiles happened to be stored in — so the one someone plays every evening
+ * could sit at the bottom, or past the cut and not be there at all.
+ */
+test('the sidebar lists the most recently played profiles first', () => {
+  const app = readFileSync('src/renderer/App.tsx', 'utf8')
+  const recent = app.slice(app.indexOf('const recent = useMemo('), app.indexOf('const runningCount'))
+
+  // The same key the library sorts on, so the two agree about what "recent"
+  // means, and a profile never played falls back to when it was made.
+  assert.match(
+    recent,
+    /\(right\.lastPlayed \?\? right\.createdAt\) - \(left\.lastPlayed \?\? left\.createdAt\)/
+  )
+  // Sorted before the cut: otherwise the shortlist is still the first eight.
+  assert.ok(recent.indexOf('.sort(') < recent.indexOf('.slice(0, 8)'))
+  // And a copy, since the context's array is shared with every other page.
+  assert.match(recent, /\[\.\.\.profiles\]/)
+  assert.match(app, /\{recent\.map\(\(profile\) => \{/)
+})
