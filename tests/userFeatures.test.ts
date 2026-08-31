@@ -331,7 +331,9 @@ test('screenshots have a page of their own, across every profile', () => {
   const page = readFileSync('src/renderer/pages/Screenshots.tsx', 'utf8')
   // Every profile is read, side by side, and one bad folder does not empty the
   // page.
-  assert.match(page, /profiles\.map\(async \(profile\) => \{/)
+  // Read through a ref rather than the array in scope, so the reader can stay
+  // stable while still seeing the current list.
+  assert.match(page, /latest\.current\.map\(async \(profile\) => \{/)
   assert.match(page, /api\.screenshots\.list\(profile\.id\)\.catch\(\(\) => \[\]\)/)
   // Deleting works on the profile the shot came from, not the page's own idea
   // of a current profile.
@@ -429,4 +431,22 @@ test('a pinned profile stays at the top of the sidebar', () => {
   // And the main process only accepts it as a boolean.
   const ipc = readFileSync('src/main/ipc.ts', 'utf8')
   assert.match(ipc, /if \(typeof patch\.pinned === 'boolean'\) allowed\.pinned = patch\.pinned/)
+})
+
+/**
+ * The context replaces its profiles array on every `profiles:changed` event — a
+ * mod installed, a game launched, an icon changed. An effect that depends on
+ * the array therefore re-runs on all of them, and this one re-reads every
+ * screenshot folder in the launcher, pictures included. Measured at twelve
+ * reads where two were needed.
+ */
+test('the screenshots page re-reads folders only when the profile list changes', () => {
+  const page = readFileSync('src/renderer/pages/Screenshots.tsx', 'utf8')
+
+  // A value derived from the list, not the array's identity.
+  assert.match(page, /const signature = profiles\.map\(\(profile\) => `\$\{profile\.id\}:\$\{profile\.name\}`\)\.join/)
+  assert.match(page, /\}, \[reload, signature\]\)/)
+  // The reader itself is stable, so it cannot be what re-triggers the effect.
+  assert.match(page, /const reload = useCallback\([\s\S]*?\}, \[\]\)/)
+  assert.doesNotMatch(page, /\}, \[profiles\]\)/)
 })

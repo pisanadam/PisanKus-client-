@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ScreenshotGallery, type GalleryItem } from '../components/ScreenshotGallery'
 import { api } from '../lib/api'
@@ -23,20 +23,34 @@ export function Screenshots(): JSX.Element {
   const [items, setItems] = useState<GalleryItem[] | null>(null)
   const [profileFilter, setProfileFilter] = useState('all')
 
+  /**
+   * Which profiles to read, as a value rather than an array identity.
+   *
+   * The context replaces its profiles array on every `profiles:changed` event —
+   * a mod installed, a game launched, an icon changed — so depending on the
+   * array meant re-reading every screenshot folder each time. With the pictures
+   * themselves in the reply that is megabytes per event, for a list that has
+   * not changed. This only re-reads when a profile is actually added, removed
+   * or renamed.
+   */
+  const signature = profiles.map((profile) => `${profile.id}:${profile.name}`).join('\n')
+  const latest = useRef(profiles)
+  latest.current = profiles
+
   const reload = useCallback(async (): Promise<void> => {
     const lists = await Promise.all(
-      profiles.map(async (profile) => {
+      latest.current.map(async (profile) => {
         // One unreadable profile folder must not empty the whole page.
         const list = await api.screenshots.list(profile.id).catch(() => [])
         return list.map((item) => ({ ...item, profileId: profile.id, profileName: profile.name }))
       })
     )
     setItems(lists.flat())
-  }, [profiles])
+  }, [])
 
   useEffect(() => {
     void reload()
-  }, [reload])
+  }, [reload, signature])
 
   // A filter pointing at a profile that has since been deleted would show an
   // empty page with no way to tell why.
