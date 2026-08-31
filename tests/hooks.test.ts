@@ -31,7 +31,10 @@ function filesIn(directory: string): string[] {
 
 /** Hooks called after the component's first top-level return, if any. */
 function lateHooks(source: string): { component: string; hook: string; line: number }[] {
-  const lines = source.split('\n')
+  // Split on either ending: a Windows checkout hands these files over with
+  // CRLF, and a trailing carriage return makes every exact line match fail —
+  // which is how this check first reported the whole renderer as broken.
+  const lines = source.split(/\r?\n/)
   const found: { component: string; hook: string; line: number }[] = []
 
   let component: string | null = null
