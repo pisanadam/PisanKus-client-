@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { LoaderId, Profile, VersionSummary } from '../../shared/types'
+import type { MrPackFile } from '../../preload'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { Icon } from '../components/Icon'
 import { Modal } from '../components/Modal'
@@ -16,6 +17,9 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
   const [creating, setCreating] = useState(false)
   const [query, setQuery] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
+  /** A picked .mrpack, waiting for the player to confirm what will be made. */
+  const [pendingPack, setPendingPack] = useState<MrPackFile | null>(null)
+  const [packName, setPackName] = useState('')
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('tr')
@@ -82,6 +86,22 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
         >
           <Icon name="download" size={17} />
           {t('Yedek içe aktar')}
+        </button>
+        {/* Packs get passed around as files — exported from another launcher,
+            sent by a friend — and there was no way in for any of them. */}
+        <button
+          className="btn"
+          onClick={async () => {
+            try {
+              const picked = await api.content.pickMrPack()
+              if (picked) setPendingPack(picked)
+            } catch (error) {
+              notify(error, 'error')
+            }
+          }}
+        >
+          <Icon name="package" size={17} />
+          {t('Mod paketi dosyası')}
         </button>
         <button className="btn btn--primary" onClick={() => setCreating(true)}>
           <Icon name="plus" size={17} />
@@ -185,6 +205,74 @@ export function Library({ onOpenProfile }: { onOpenProfile: (id: string) => void
             )
           })}
         </div>
+      )}
+
+      {pendingPack && (
+        <Modal
+          title={t('Mod paketi dosyasından kur')}
+          onClose={() => setPendingPack(null)}
+          footer={
+            <>
+              <button className="btn" onClick={() => setPendingPack(null)}>
+                {t('Vazgeç')}
+              </button>
+              <button
+                className="btn btn--primary"
+                onClick={async () => {
+                  const pack = pendingPack
+                  const name = packName
+                  setPendingPack(null)
+                  setPackName('')
+                  try {
+                    // Answers as soon as the profile exists; the files land in
+                    // the background and the profile page shows the progress.
+                    const profile = await api.content.installMrPackFile({ filePath: pack.filePath, name })
+                    await refreshProfiles()
+                    onOpenProfile(profile.id)
+                  } catch (error) {
+                    notify(error, 'error')
+                  }
+                }}
+              >
+                <Icon name="download" size={16} />
+                {t('Kur')}
+              </button>
+            </>
+          }
+        >
+          <div className="field">
+            <label className="field__label" htmlFor="mrpack-name">
+              {t('Profil adı')}
+            </label>
+            <input
+              id="mrpack-name"
+              className="input"
+              value={packName}
+              placeholder={pendingPack.name}
+              onChange={(event) => setPackName(event.target.value)}
+            />
+          </div>
+
+          {/* Everything below is read out of the pack itself, not guessed: the
+              profile is created with exactly these. */}
+          <div className="list">
+            <div className="list__row list__row--fact">
+              <span className="list__title">{t('Minecraft sürümü')}</span>
+              <span className="list__sub">{pendingPack.gameVersion}</span>
+            </div>
+            <div className="list__row list__row--fact">
+              <span className="list__title">{t('Mod yükleyicisi')}</span>
+              <span className="list__sub">
+                {loaderLabel(pendingPack.loader)}
+                {pendingPack.loaderVersion ? ` ${pendingPack.loaderVersion}` : ''}
+              </span>
+            </div>
+            <div className="list__row list__row--fact">
+              <span className="list__title">{t('İçindekiler')}</span>
+              <span className="list__sub">{t('{count} dosya', { count: pendingPack.fileCount })}</span>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {creating && (

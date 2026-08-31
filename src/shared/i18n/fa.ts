@@ -674,7 +674,19 @@ const table: Dictionary = {
   'Modları ekle': 'افزودن مادها',
   'Bütün profillerde çektiğiniz görüntüler': 'همهٔ نماگرفت‌هایی که در تمام نمایه‌ها گرفته‌اید',
   'Tüm profiller': 'همهٔ نمایه‌ها',
-  'Profil': 'نمایه'
+  'Profil': 'نمایه',
+  'Kapat': 'بستن',
+  'Önceki': 'قبلی',
+  'Sonraki': 'بعدی',
+  'Büyük göster': 'نمایش بزرگ',
+  'Panoya kopyala': 'رونوشت در بریده‌دان',
+  'Klasörde göster': 'نمایش در پوشه',
+  'Dosya okunamadı.': 'فایل خوانده نشد.',
+  'Görüntü panoya kopyalandı.': 'تصویر در بریده‌دان رونوشت شد.',
+  'Mod paketi dosyası': 'فایل بستهٔ ماد',
+  'Mod paketi dosyasından kur': 'نصب از فایل بستهٔ ماد',
+  'Yukarıda sabitle': 'سنجاق به بالا',
+  'Sabitlemeyi kaldır': 'برداشتن سنجاق'
 }
 
 export default table

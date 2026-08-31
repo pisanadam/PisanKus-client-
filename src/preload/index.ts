@@ -106,6 +106,17 @@ export interface WorldSummary {
   sizeMb: number
 }
 
+/** A `.mrpack` on disk, as it describes itself. */
+export interface MrPackFile {
+  filePath: string
+  name: string
+  versionId: string
+  gameVersion: string
+  loader: LoaderId
+  loaderVersion?: string
+  fileCount: number
+}
+
 export interface ScreenshotSummary {
   fileName: string
   createdAt: number
@@ -286,6 +297,11 @@ const api = {
     /** Adds a pack's mods to a profile that already exists, keeping everything in it. */
     installPackInto: (packId: string, profileId: string): Promise<Profile> =>
       ipcRenderer.invoke('content:installPackInto', packId, profileId),
+    /** Opens a .mrpack from disk and reads what is in it, without installing. */
+    pickMrPack: (): Promise<MrPackFile | null> => ipcRenderer.invoke('content:pickMrPack'),
+    /** Builds a profile from a .mrpack file, using what the pack itself declares. */
+    installMrPackFile: (request: { filePath: string; name?: string }): Promise<Profile> =>
+      ipcRenderer.invoke('content:installMrPackFile', request),
     /** Creates a profile from a modpack, using the version and loader it declares. */
     installModpackAsProfile: (request: {
       projectId: string
@@ -333,6 +349,14 @@ const api = {
   screenshots: {
     list: (profileId: string): Promise<ScreenshotSummary[]> => ipcRenderer.invoke('screenshots:list', profileId),
     openFolder: (profileId: string): Promise<void> => ipcRenderer.invoke('screenshots:openFolder', profileId),
+    /** The full-size picture as a data url, read only when it is opened. */
+    read: (profileId: string, fileName: string): Promise<string> =>
+      ipcRenderer.invoke('screenshots:read', profileId, fileName),
+    copy: (profileId: string, fileName: string): Promise<void> =>
+      ipcRenderer.invoke('screenshots:copy', profileId, fileName),
+    /** Opens the folder with this file selected. */
+    reveal: (profileId: string, fileName: string): Promise<void> =>
+      ipcRenderer.invoke('screenshots:reveal', profileId, fileName),
     remove: (profileId: string, fileName: string): Promise<ScreenshotSummary[]> =>
       ipcRenderer.invoke('screenshots:delete', profileId, fileName)
   },

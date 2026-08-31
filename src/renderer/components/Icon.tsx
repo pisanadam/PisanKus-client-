@@ -25,7 +25,8 @@ const PATHS = {
   sparkle: 'M12 3l2 5.5L19.5 10 14 12l-2 5.5L10 12 4.5 10 10 8.5z',
   check: 'M5 12.5l4.5 4.5L19 7',
   heart: 'M12 20.5 4.2 12.6a4.8 4.8 0 0 1 6.8-6.8l1 1 1-1a4.8 4.8 0 0 1 6.8 6.8z',
-  external: 'M14 4h6v6M20 4l-9 9M18 13v6H5V6h6'
+  external: 'M14 4h6v6M20 4l-9 9M18 13v6H5V6h6',
+  pin: 'M9 4h6l-1 6 3 3H7l3-3zM12 13v7'
 } as const
 
 export type IconName = keyof typeof PATHS

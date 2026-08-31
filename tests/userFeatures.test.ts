@@ -363,3 +363,70 @@ test('the sidebar lists the most recently played profiles first', () => {
   assert.match(recent, /\[\.\.\.profiles\]/)
   assert.match(app, /\{recent\.map\(\(profile\) => \{/)
 })
+
+/**
+ * The gallery shows a 360px thumbnail, which is right for a grid and useless
+ * for looking at a picture. Clicking a card used to do nothing at all.
+ */
+test('a screenshot can be opened at full size', () => {
+  const gallery = readFileSync('src/renderer/components/ScreenshotGallery.tsx', 'utf8')
+  // The picture itself is the target, not a small icon on it.
+  assert.match(gallery, /className="screenshot-card__open"/)
+  assert.match(gallery, /onClick=\{\(\) => setOpened\(keyOf\(item\)\)\}/)
+
+  const viewer = readFileSync('src/renderer/components/ScreenshotViewer.tsx', 'utf8')
+  // Read when opened, not shipped with the list.
+  assert.match(viewer, /api\.screenshots\s*\.read\(item\.profileId, item\.fileName\)/)
+  // Arrow keys walk the list; Escape closes.
+  assert.match(viewer, /event\.key === 'ArrowRight' && index \+ 1 < items\.length/)
+  assert.match(viewer, /event\.key === 'ArrowLeft' && index > 0/)
+  assert.match(viewer, /event\.key === 'Escape'/)
+  // The thumbnail stands in while the file is read, rather than a blank frame.
+  assert.match(viewer, /src=\{full \?\? item\.thumbnail\}/)
+
+  // The full-size read never takes a path from the renderer as given.
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  assert.match(ipc, /resolveInside\(screenshotDir\(profileId\), requireLeafName\(fileName/)
+})
+
+/**
+ * A pack is a file as often as it is a Modrinth page — exported from another
+ * launcher, sent by a friend — and there was no way in for any of them.
+ */
+test('a modpack can be installed from a .mrpack file', () => {
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  const handler = ipc.slice(ipc.indexOf("handle('content:installMrPackFile'"))
+
+  // The profile is created with what the pack declares, not a placeholder that
+  // gets corrected once the files have landed.
+  assert.match(handler.slice(0, 1_500), /gameVersion: details\.gameVersion/)
+  assert.match(handler.slice(0, 1_500), /loader: details\.loader/)
+  // And a failure takes the half-built profile away again.
+  assert.match(handler.slice(0, 2_500), /store\.removeProfile\(profile\.id\)/)
+
+  // Pack paths stay inside the profile even if the index is malformed.
+  const install = readFileSync('src/main/content/install.ts', 'utf8')
+  assert.match(install, /resolveInside\(profile\.directory, file\.path, 'Mod paketi dosya yolu'\)/)
+  // A local pack is recorded as local: there is no project to check updates on.
+  assert.match(install, /id: `local-pack:\$\{slug\}`, source: 'local'/)
+})
+
+/**
+ * Ordering by last played is right most of the time and wrong for the one
+ * profile someone always wants within reach.
+ */
+test('a pinned profile stays at the top of the sidebar', () => {
+  const app = readFileSync('src/renderer/App.tsx', 'utf8')
+  const recent = app.slice(app.indexOf('const recent = useMemo('), app.indexOf('const togglePin'))
+  // Checked before the last-played comparison, so it wins over it.
+  assert.match(recent, /if \(Boolean\(left\.pinned\) !== Boolean\(right\.pinned\)\) return left\.pinned \? -1 : 1/)
+  assert.ok(recent.indexOf('pinned') < recent.indexOf('lastPlayed'))
+
+  // The pin is a sibling of the row, since the row is itself a button.
+  assert.match(app, /<div className="nav-profile" key=\{profile\.id\}>/)
+  assert.match(app, /aria-pressed=\{profile\.pinned === true\}/)
+
+  // And the main process only accepts it as a boolean.
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  assert.match(ipc, /if \(typeof patch\.pinned === 'boolean'\) allowed\.pinned = patch\.pinned/)
+})

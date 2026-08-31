@@ -13,6 +13,7 @@ import { Screenshots } from './pages/Screenshots'
 import { ProfileDetail } from './pages/ProfileDetail'
 import { Settings } from './pages/Settings'
 import { Skins } from './pages/Skins'
+import { api } from './lib/api'
 import { useApp } from './state/AppContext'
 import { t } from '../shared/i18n'
 import type { ContentKind } from '../shared/types'
@@ -46,7 +47,8 @@ export function App(): JSX.Element {
     profiles,
     gameStates,
     crashOpenRequest,
-    clearCrashOpenRequest
+    clearCrashOpenRequest,
+    refreshProfiles
   } = useApp()
   const [route, setRoute] = useState<Route>({ page: 'library' })
   // Kept locally as well so the panel can animate out before the flag round-trips.
@@ -116,10 +118,20 @@ export function App(): JSX.Element {
   const recent = useMemo(
     () =>
       [...profiles]
-        .sort((left, right) => (right.lastPlayed ?? right.createdAt) - (left.lastPlayed ?? left.createdAt))
+        .sort((left, right) => {
+          // A pinned profile is one someone said they always want here, which
+          // outranks how recently anything was played.
+          if (Boolean(left.pinned) !== Boolean(right.pinned)) return left.pinned ? -1 : 1
+          return (right.lastPlayed ?? right.createdAt) - (left.lastPlayed ?? left.createdAt)
+        })
         .slice(0, 8),
     [profiles]
   )
+
+  const togglePin = async (profile: (typeof profiles)[number]): Promise<void> => {
+    await api.profiles.update(profile.id, { pinned: !profile.pinned })
+    await refreshProfiles()
+  }
 
   const runningCount = Object.values(gameStates).filter((status) => status === 'running').length
 
@@ -157,31 +169,44 @@ export function App(): JSX.Element {
             {recent.map((profile) => {
               const running = gameStates[profile.id] === 'running' || gameStates[profile.id] === 'preparing'
               return (
-                <button
-                  key={profile.id}
-                  className={running ? 'nav-item nav-item--running' : 'nav-item'}
-                  aria-current={route.page === 'profile' && route.profileId === profile.id}
-                  onClick={() => setRoute({ page: 'profile', profileId: profile.id })}
-                >
-                  <ProfileIcon profile={profile} size={19} />
-                  <span
-                    style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      minWidth: 0,
-                      flex: 1,
-                      textAlign: 'left'
-                    }}
+                // The pin cannot live inside the row: the row is the button
+                // that opens the profile, and a button inside a button is
+                // neither valid markup nor separately clickable.
+                <div className="nav-profile" key={profile.id}>
+                  <button
+                    className={running ? 'nav-item nav-item--running' : 'nav-item'}
+                    aria-current={route.page === 'profile' && route.profileId === profile.id}
+                    onClick={() => setRoute({ page: 'profile', profileId: profile.id })}
                   >
-                    {profile.name}
-                  </span>
-                  {profile.preparing ? (
-                    <div className="spinner" style={{ width: 13, height: 13 }} />
-                  ) : (
-                    running && <span className="nav-item__dot" />
-                  )}
-                </button>
+                    <ProfileIcon profile={profile} size={19} />
+                    <span
+                      style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        minWidth: 0,
+                        flex: 1,
+                        textAlign: 'left'
+                      }}
+                    >
+                      {profile.name}
+                    </span>
+                    {profile.preparing ? (
+                      <div className="spinner" style={{ width: 13, height: 13 }} />
+                    ) : (
+                      running && <span className="nav-item__dot" />
+                    )}
+                  </button>
+                  <button
+                    className="nav-profile__pin"
+                    aria-pressed={profile.pinned === true}
+                    title={profile.pinned ? t('Sabitlemeyi kaldır') : t('Yukarıda sabitle')}
+                    aria-label={profile.pinned ? t('Sabitlemeyi kaldır') : t('Yukarıda sabitle')}
+                    onClick={() => void togglePin(profile)}
+                  >
+                    <Icon name="pin" size={13} />
+                  </button>
+                </div>
               )
             })}
           </>

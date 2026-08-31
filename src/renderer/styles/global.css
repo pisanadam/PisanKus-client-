@@ -297,13 +297,34 @@ a {
   background: var(--surface);
 }
 
-.screenshot-card > img,
+/* The picture is the button that opens it, so the whole thumbnail is the
+   target rather than a small icon in a corner. */
+.screenshot-card__open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
+  background: none;
+}
+
+.screenshot-card__open img,
 .screenshot-card__empty {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   background: var(--bg-elevated);
+  transition: transform 0.18s ease-out;
+}
+
+.screenshot-card__open:hover img {
+  transform: scale(1.03);
+}
+
+.screenshot-card__open:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .screenshot-card__empty {
@@ -757,6 +778,51 @@ button.update--ready:hover {
 .nav-item:hover {
   background: var(--surface-hover);
   color: var(--text);
+}
+
+/* The row and its pin. The pin is positioned over the row's right edge rather
+   than placed in it, because the row is a button and a button cannot hold
+   another one — but the space is still reserved, or the pin lands on top of
+   the dot that says the profile is running. */
+.nav-profile {
+  position: relative;
+}
+
+.nav-profile .nav-item {
+  padding-inline-end: 32px;
+}
+
+.nav-profile__pin {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.14s, color 0.14s, background 0.14s;
+}
+
+/* Hidden until the row is reached for, so the sidebar stays quiet — except on
+   a pinned profile, where it is the thing saying why that row is at the top. */
+.nav-profile:hover .nav-profile__pin,
+.nav-profile__pin:focus-visible,
+.nav-profile__pin[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.nav-profile__pin:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.nav-profile__pin[aria-pressed='true'] {
+  color: var(--accent);
 }
 
 .nav-item[aria-current='true'] {
@@ -1239,6 +1305,12 @@ button.update--ready:hover {
 
 .list__row:last-child {
   border-bottom: none;
+}
+
+/* A label and the value it names: the value goes to the far edge, so a column
+   of them lines up instead of trailing after labels of different lengths. */
+.list__row--fact > :last-child {
+  margin-inline-start: auto;
 }
 
 .list__row:hover {
@@ -2418,4 +2490,105 @@ button.update--ready:hover {
   .icon-editor {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* --------------------------------------------------- screenshot viewer */
+
+.viewer {
+  width: min(1180px, 100%);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-lg);
+  animation: rise 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.viewer__head,
+.viewer__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+}
+
+.viewer__head {
+  border-bottom: 1px solid var(--border);
+}
+
+.viewer__foot {
+  border-top: 1px solid var(--border);
+}
+
+.viewer__title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewer__head > div:first-child {
+  flex: 1;
+}
+
+/* The picture sits on its own dark ground: a screenshot has no border of its
+   own, and against the panel colour its edges are guesswork. */
+.viewer__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  flex: 1;
+  padding: 16px;
+  background: rgb(0 0 0 / 35%);
+}
+
+.viewer__image {
+  max-width: 100%;
+  max-height: calc(92vh - 160px);
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+/* While the full file is being read the thumbnail stands in, blurred rather
+   than shown sharp at ten times its size. */
+.viewer__image--loading {
+  filter: blur(6px);
+}
+
+.viewer__note {
+  position: absolute;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  background: rgb(0 0 0 / 70%);
+}
+
+.viewer__step {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 55%);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.viewer__step:hover {
+  background: rgb(0 0 0 / 80%);
+}
+
+.viewer__step--prev {
+  left: 18px;
+  rotate: 180deg;
+}
+
+.viewer__step--next {
+  right: 18px;
 }

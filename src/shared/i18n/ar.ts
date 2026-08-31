@@ -674,7 +674,19 @@ const table: Dictionary = {
   'Modları ekle': 'أضف الإضافات',
   'Bütün profillerde çektiğiniz görüntüler': 'كل اللقطات التي التقطتها في جميع الملفات الشخصية',
   'Tüm profiller': 'كل الملفات الشخصية',
-  'Profil': 'ملف شخصي'
+  'Profil': 'ملف شخصي',
+  'Kapat': 'إغلاق',
+  'Önceki': 'السابق',
+  'Sonraki': 'التالي',
+  'Büyük göster': 'عرض بحجم أكبر',
+  'Panoya kopyala': 'نسخ إلى الحافظة',
+  'Klasörde göster': 'إظهار في المجلد',
+  'Dosya okunamadı.': 'تعذّرت قراءة الملف.',
+  'Görüntü panoya kopyalandı.': 'نُسخت الصورة إلى الحافظة.',
+  'Mod paketi dosyası': 'ملف حزمة إضافات',
+  'Mod paketi dosyasından kur': 'التثبيت من ملف حزمة',
+  'Yukarıda sabitle': 'تثبيت في الأعلى',
+  'Sabitlemeyi kaldır': 'إلغاء التثبيت'
 }
 
 export default table

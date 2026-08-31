@@ -674,7 +674,19 @@ const table: Dictionary = {
   'Modları ekle': 'Modlarni qoʻshish',
   'Bütün profillerde çektiğiniz görüntüler': 'Barcha profillarda olgan skrinshotlaringiz',
   'Tüm profiller': 'Barcha profillar',
-  'Profil': 'Profil'
+  'Profil': 'Profil',
+  'Kapat': 'Yopish',
+  'Önceki': 'Oldingi',
+  'Sonraki': 'Keyingi',
+  'Büyük göster': 'Kattalashtirib koʻrsatish',
+  'Panoya kopyala': 'Almashish buferiga nusxalash',
+  'Klasörde göster': 'Jildda koʻrsatish',
+  'Dosya okunamadı.': 'Fayl oʻqilmadi.',
+  'Görüntü panoya kopyalandı.': 'Rasm almashish buferiga nusxalandi.',
+  'Mod paketi dosyası': 'Mod toʻplami fayli',
+  'Mod paketi dosyasından kur': 'Mod toʻplami faylidan oʻrnatish',
+  'Yukarıda sabitle': 'Yuqorida mahkamlash',
+  'Sabitlemeyi kaldır': 'Mahkamlashni olib tashlash'
 }
 
 export default table

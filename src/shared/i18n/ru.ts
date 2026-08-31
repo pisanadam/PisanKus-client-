@@ -674,7 +674,19 @@ const table: Dictionary = {
   'Modları ekle': 'Добавить моды',
   'Bütün profillerde çektiğiniz görüntüler': 'Все ваши снимки экрана, из всех профилей',
   'Tüm profiller': 'Все профили',
-  'Profil': 'Профиль'
+  'Profil': 'Профиль',
+  'Kapat': 'Закрыть',
+  'Önceki': 'Назад',
+  'Sonraki': 'Вперёд',
+  'Büyük göster': 'Открыть крупно',
+  'Panoya kopyala': 'Копировать в буфер',
+  'Klasörde göster': 'Показать в папке',
+  'Dosya okunamadı.': 'Файл не удалось прочитать.',
+  'Görüntü panoya kopyalandı.': 'Снимок скопирован в буфер обмена.',
+  'Mod paketi dosyası': 'Файл сборки',
+  'Mod paketi dosyasından kur': 'Установить из файла сборки',
+  'Yukarıda sabitle': 'Закрепить наверху',
+  'Sabitlemeyi kaldır': 'Открепить'
 }
 
 export default table

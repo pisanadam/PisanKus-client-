@@ -161,6 +161,15 @@ export interface Profile {
    * launched yet, and this is what says so.
    */
   preparing?: boolean
+  /**
+   * Kept at the top of the sidebar, whatever it was last played.
+   *
+   * The sidebar shows a shortlist ordered by when each profile was last played,
+   * which is right most of the time and wrong for the one profile someone
+   * always wants within reach — the server they play with friends, the world
+   * they are building in. This is the answer to "stop moving it".
+   */
+  pinned?: boolean
   createdAt: number
   lastPlayed?: number
   totalPlaytimeMs: number

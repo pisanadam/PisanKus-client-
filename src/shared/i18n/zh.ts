@@ -674,7 +674,19 @@ const table: Dictionary = {
   'Modları ekle': '添加模组',
   'Bütün profillerde çektiğiniz görüntüler': '你在所有配置里截下的图片',
   'Tüm profiller': '所有配置',
-  'Profil': '配置'
+  'Profil': '配置',
+  'Kapat': '关闭',
+  'Önceki': '上一张',
+  'Sonraki': '下一张',
+  'Büyük göster': '放大查看',
+  'Panoya kopyala': '复制到剪贴板',
+  'Klasörde göster': '在文件夹中显示',
+  'Dosya okunamadı.': '无法读取该文件。',
+  'Görüntü panoya kopyalandı.': '图片已复制到剪贴板。',
+  'Mod paketi dosyası': '整合包文件',
+  'Mod paketi dosyasından kur': '从整合包文件安装',
+  'Yukarıda sabitle': '固定在顶部',
+  'Sabitlemeyi kaldır': '取消固定'
 }
 
 export default table

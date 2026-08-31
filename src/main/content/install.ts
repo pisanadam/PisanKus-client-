@@ -9,6 +9,7 @@ import { store } from '../store'
 import { requireLeafName, resolveInside } from '../pathSafety'
 import { extractZip } from '../archive'
 import * as modrinth from './modrinth'
+import { isClientFile, readPackIndex, type MrPackIndex } from './mrpack.ts'
 
 export type ProgressReporter = (task: TaskProgress) => void
 
@@ -171,19 +172,6 @@ export async function installContent(
   }
 }
 
-interface MrPackIndex {
-  formatVersion: number
-  name: string
-  versionId: string
-  dependencies: Record<string, string>
-  files: {
-    path: string
-    hashes: { sha1: string }
-    downloads: string[]
-    fileSize: number
-    env?: { client: string; server: string }
-  }[]
-}
 
 /**
  * Installs a Modrinth `.mrpack` into the profile, switching the profile to the
@@ -210,7 +198,100 @@ async function installModpack(
     if (!(await exists(mrpackIndex))) {
       throw new Error('Tanınmayan modpack biçimi: arşivde modrinth.index.json yok.')
     }
-    return await applyMrPack(profile, unpacked, mrpackIndex, request, onProgress)
+    return await applyMrPack(
+      profile,
+      unpacked,
+      mrpackIndex,
+      {
+        id: `modrinth:${request.projectId}`,
+        source: 'modrinth',
+        projectId: request.projectId,
+        iconUrl: request.iconUrl,
+        taskId
+      },
+      onProgress
+    )
+  } finally {
+    await fsp.rm(workDir, { recursive: true, force: true })
+  }
+}
+
+/**
+ * What a `.mrpack` on disk says about itself, without installing it.
+ *
+ * Read before anything is created so the profile can be made with the pack's
+ * own name, Minecraft version and loader already set, rather than built from a
+ * placeholder and corrected afterwards.
+ */
+export async function readMrPackFile(archivePath: string): Promise<{
+  name: string
+  versionId: string
+  gameVersion: string
+  loader: LoaderId
+  loaderVersion?: string
+  fileCount: number
+}> {
+  const workDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-mrpack-'))
+  try {
+    await extractZip(archivePath, {
+      dir: workDir,
+      filter: (name) => name === 'modrinth.index.json'
+    })
+    const indexFile = path.join(workDir, 'modrinth.index.json')
+    if (!(await exists(indexFile))) {
+      throw new Error('Bu dosya bir Modrinth mod paketi değil: içinde modrinth.index.json yok.')
+    }
+    const index = JSON.parse(await fsp.readFile(indexFile, 'utf8')) as MrPackIndex
+    return readPackIndex(index, path.basename(archivePath, '.mrpack'))
+  } finally {
+    await fsp.rm(workDir, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Installs a `.mrpack` the player already has, rather than one downloaded from
+ * Modrinth.
+ *
+ * Packs get passed around as files — exported from another launcher, sent by a
+ * friend, downloaded from somewhere that is not Modrinth — and until now the
+ * launcher had no way in for any of them. The archive contents are identical
+ * either way, so this is the same install with the download step removed; the
+ * content entry is marked local because there is no project to check for
+ * updates against.
+ */
+export async function installMrPackFile(
+  profileId: string,
+  archivePath: string,
+  onProgress: ProgressReporter
+): Promise<InstalledContent[]> {
+  const profile = store.profile(profileId)
+  if (!profile) throw new Error('Profil bulunamadı.')
+
+  const taskId = `mrpack-${profileId}`
+  const workDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-mrpack-'))
+  try {
+    onProgress({ id: taskId, label: 'Mod paketi açılıyor', progress: -1, state: 'running' })
+    const unpacked = path.join(workDir, 'unpacked')
+    await extractZip(archivePath, { dir: unpacked })
+
+    const indexFile = path.join(unpacked, 'modrinth.index.json')
+    if (!(await exists(indexFile))) {
+      throw new Error('Bu dosya bir Modrinth mod paketi değil: içinde modrinth.index.json yok.')
+    }
+
+    // Keyed on the file's name rather than a hash: a pack the player installs
+    // again from a newer export of the same file should replace the old entry,
+    // which is what an update is here.
+    const slug = path.basename(archivePath, path.extname(archivePath))
+    const result = await applyMrPack(
+      profile,
+      unpacked,
+      indexFile,
+      { id: `local-pack:${slug}`, source: 'local', taskId },
+      onProgress
+    )
+    onProgress({ id: taskId, label: `${result[0]?.name ?? slug} kuruldu`, progress: 1, state: 'done' })
+    return result
   } finally {
     await fsp.rm(workDir, { recursive: true, force: true })
   }
@@ -225,29 +306,31 @@ async function exists(file: string): Promise<boolean> {
   }
 }
 
-/** Maps a pack's dependency block onto our loader ids. */
-function loaderFromDependencies(dependencies: Record<string, string>): { loader: LoaderId; loaderVersion?: string } {
-  if (dependencies['fabric-loader']) return { loader: 'fabric', loaderVersion: dependencies['fabric-loader'] }
-  if (dependencies['quilt-loader']) return { loader: 'quilt', loaderVersion: dependencies['quilt-loader'] }
-  if (dependencies.neoforge) return { loader: 'neoforge', loaderVersion: dependencies.neoforge }
-  if (dependencies.forge) return { loader: 'forge', loaderVersion: dependencies.forge }
-  return { loader: 'vanilla' }
+/** Who a pack is, as the content list records it. */
+interface PackIdentity {
+  id: string
+  source: InstalledContent['source']
+  projectId?: string
+  iconUrl?: string
+  /** Names the tray entry; the project id for a Modrinth pack, a path for a file. */
+  taskId: string
 }
 
 async function applyMrPack(
   profile: Profile,
   unpacked: string,
   indexFile: string,
-  request: InstallRequest,
+  identity: PackIdentity,
   onProgress: ProgressReporter
 ): Promise<InstalledContent[]> {
-  const taskId = `install-${request.projectId}`
+  const taskId = identity.taskId
   const index = JSON.parse(await fsp.readFile(indexFile, 'utf8')) as MrPackIndex
 
-  const gameVersion = index.dependencies.minecraft
-  const { loader, loaderVersion } = loaderFromDependencies(index.dependencies)
+  // The pack's own name is what the content entry is called, so it is read here
+  // rather than taken from whoever asked for the install.
+  const { name, versionId, gameVersion, loader, loaderVersion } = readPackIndex(index, 'Mod paketi')
 
-  const wanted = index.files.filter((file) => file.env?.client !== 'unsupported')
+  const wanted = (index.files ?? []).filter(isClientFile)
 
   // What this version of the pack ships, as the profile sees it. Compared
   // against the previous version's list further down so an update can take the
@@ -269,7 +352,7 @@ async function applyMrPack(
     onProgress: (completed, total, current) =>
       onProgress({
         id: taskId,
-        label: `${index.name} kuruluyor`,
+        label: `${name} kuruluyor`,
         progress: completed / total,
         detail: `${completed}/${total} · ${current}`,
         state: 'running'
@@ -279,7 +362,7 @@ async function applyMrPack(
   // Everything the previous version put here that this one does not. Deleted
   // before the overrides land, so a pack that moved a file between its download
   // list and its overrides does not lose it.
-  const previous = profile.content.find((entry) => entry.id === `modrinth:${request.projectId}`)
+  const previous = profile.content.find((entry) => entry.id === identity.id)
   const keep = new Set(packFiles)
   for (const stale of previous?.packFiles ?? []) {
     if (keep.has(stale)) continue
@@ -302,14 +385,14 @@ async function applyMrPack(
   await fillMissingOptions(profile.directory, store.settings.minecraftOptions || defaultOptionsText())
 
   const installed: InstalledContent = {
-    id: `modrinth:${request.projectId}`,
-    source: 'modrinth',
-    projectId: request.projectId,
-    versionId: index.versionId,
+    id: identity.id,
+    source: identity.source,
+    projectId: identity.projectId,
+    versionId,
     kind: 'modpack',
-    name: index.name,
-    fileName: `${index.name}-${index.versionId}`,
-    iconUrl: request.iconUrl,
+    name,
+    fileName: `${name}-${versionId}`,
+    iconUrl: identity.iconUrl,
     packFiles,
     enabled: true,
     installedAt: Date.now()

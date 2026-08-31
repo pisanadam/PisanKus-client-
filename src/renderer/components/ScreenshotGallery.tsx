@@ -2,6 +2,8 @@ import { useState, type ReactNode } from 'react'
 import type { ScreenshotSummary } from '../../preload'
 import { formatRelative } from '../lib/format'
 import { Icon } from './Icon'
+import { ScreenshotViewer } from './ScreenshotViewer'
+import { useApp } from '../state/AppContext'
 import { currentLanguage, t } from '../../shared/i18n'
 
 /**
@@ -74,6 +76,9 @@ export function ScreenshotGallery({
   const [grouped, setGrouped] = useState(true)
   /** Collapsed groups, by key. Everything starts open. */
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  /** The picture being looked at, by file, so filtering cannot shift it. */
+  const [opened, setOpened] = useState<string | null>(null)
+  const { notify } = useApp()
 
   // Month names and case-folding follow the language the player chose. The
   // codes are plain BCP-47 tags, so they can be handed to Intl as they are.
@@ -94,13 +99,23 @@ export function ScreenshotGallery({
     ? groupByMonth(visible, locale)
     : [{ key: 'all', label: '', items: visible }]
 
+  const keyOf = (item: GalleryItem): string => `${item.profileId}/${item.fileName}`
+  const openedIndex = visible.findIndex((item) => keyOf(item) === opened)
+
   const card = (item: GalleryItem): JSX.Element => (
-    <article className="screenshot-card" key={`${item.profileId}/${item.fileName}`}>
-      {item.thumbnail ? (
-        <img src={item.thumbnail} alt={item.fileName} />
-      ) : (
-        <div className="screenshot-card__empty">📷</div>
-      )}
+    <article className="screenshot-card" key={keyOf(item)}>
+      <button
+        className="screenshot-card__open"
+        onClick={() => setOpened(keyOf(item))}
+        aria-label={t('Büyük göster')}
+        title={t('Büyük göster')}
+      >
+        {item.thumbnail ? (
+          <img src={item.thumbnail} alt={item.fileName} />
+        ) : (
+          <div className="screenshot-card__empty">📷</div>
+        )}
+      </button>
       <div className="screenshot-card__info">
         <div className="list__title" title={item.fileName}>{item.fileName}</div>
         <div className="list__sub">
@@ -195,6 +210,23 @@ export function ScreenshotGallery({
             )}
           </section>
         ))
+      )}
+
+      {openedIndex >= 0 && (
+        <ScreenshotViewer
+          items={visible}
+          index={openedIndex}
+          onIndex={(next) => setOpened(keyOf(visible[next]))}
+          onClose={() => setOpened(null)}
+          onRemove={(item) => {
+            // Step to the next one rather than closing: going through a folder
+            // and throwing out the bad shots is the reason to be in here.
+            const following = visible[openedIndex + 1] ?? visible[openedIndex - 1]
+            setOpened(following && keyOf(following) !== keyOf(item) ? keyOf(following) : null)
+            onRemove(item)
+          }}
+          notify={notify}
+        />
       )}
     </div>
   )

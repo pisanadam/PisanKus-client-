@@ -674,7 +674,19 @@ const table: Dictionary = {
   'Modları ekle': 'Моддорду кошуу',
   'Bütün profillerde çektiğiniz görüntüler': 'Бардык профилдерде тарткан скриншотторуңуз',
   'Tüm profiller': 'Бардык профилдер',
-  'Profil': 'Профиль'
+  'Profil': 'Профиль',
+  'Kapat': 'Жабуу',
+  'Önceki': 'Мурунку',
+  'Sonraki': 'Кийинки',
+  'Büyük göster': 'Чоңойтуп көрсөт',
+  'Panoya kopyala': 'Алмашуу буферине көчүр',
+  'Klasörde göster': 'Папкада көрсөт',
+  'Dosya okunamadı.': 'Файл окулбады.',
+  'Görüntü panoya kopyalandı.': 'Сүрөт алмашуу буферине көчүрүлдү.',
+  'Mod paketi dosyası': 'Мод топтому файлы',
+  'Mod paketi dosyasından kur': 'Мод топтому файлынан орнотуу',
+  'Yukarıda sabitle': 'Жогоруда бекитүү',
+  'Sabitlemeyi kaldır': 'Бекитүүнү алуу'
 }
 
 export default table

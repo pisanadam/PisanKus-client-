@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeImage, net, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeImage, net, shell } from 'electron'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
@@ -505,6 +505,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
       }
     }
     if (typeof patch.autoBackupWorlds === 'boolean') allowed.autoBackupWorlds = patch.autoBackupWorlds
+    if (typeof patch.pinned === 'boolean') allowed.pinned = patch.pinned
     const updated = store.updateProfile(id, allowed)
     if (Object.keys(allowed).length > 0) {
       await recordProfileHistory(
@@ -1022,6 +1023,37 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     await fsp.mkdir(directory, { recursive: true })
     await shell.openPath(directory)
   })
+  /** One screenshot's own bytes, for the full-size view. */
+  const screenshotFile = (profileId: string, fileName: string): string =>
+    resolveInside(screenshotDir(profileId), requireLeafName(fileName, 'Ekran görüntüsü'))
+
+  /**
+   * The picture at full size, as a data url.
+   *
+   * Read on demand rather than sent with the list: a folder of these is tens of
+   * megabytes, and the viewer only ever shows one at a time. The bytes go over
+   * as they are on disk, so what the viewer shows is the file itself rather
+   * than something re-encoded on the way.
+   */
+  handle('screenshots:read', async (profileId: string, fileName: string) => {
+    const file = screenshotFile(profileId, fileName)
+    const bytes = await fsp.readFile(file)
+    const type = /\.png$/i.test(fileName) ? 'image/png' : 'image/jpeg'
+    return `data:${type};base64,${bytes.toString('base64')}`
+  })
+
+  /** Puts the picture on the clipboard, so it can be pasted straight into chat. */
+  handle('screenshots:copy', async (profileId: string, fileName: string) => {
+    const image = nativeImage.createFromPath(screenshotFile(profileId, fileName))
+    if (image.isEmpty()) throw new Error('Bu dosya bir görüntü olarak okunamadı.')
+    clipboard.writeImage(image)
+  })
+
+  /** Opens the folder with this one file selected, rather than just the folder. */
+  handle('screenshots:reveal', (profileId: string, fileName: string) => {
+    shell.showItemInFolder(screenshotFile(profileId, fileName))
+  })
+
   handle('screenshots:delete', async (profileId: string, fileName: string) => {
     const directory = screenshotDir(profileId)
     await fsp.rm(resolveInside(directory, requireLeafName(fileName, 'Ekran görüntüsü')), { force: true })
@@ -1140,6 +1172,83 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
         onProgress({
           id: `install-${request.projectId}`,
           label: `${request.name} kurulamadı`,
+          progress: 0,
+          state: 'error',
+          profileId: profile.id,
+          error: error instanceof Error ? error.message : String(error)
+        })
+      } finally {
+        profilesChanged()
+      }
+    })()
+
+    return store.profile(profile.id)!
+  })
+
+  /**
+   * Opens a `.mrpack` the player already has and says what is in it.
+   *
+   * Separate from installing it so the dialog can show the pack's real name,
+   * Minecraft version, loader and file count before a profile exists — picking
+   * a file and having a profile appear unannounced is the wrong order.
+   */
+  handle('content:pickMrPack', async () => {
+    const window = getWindow()
+    if (!window) return null
+
+    const result = await dialog.showOpenDialog(window, {
+      properties: ['openFile'],
+      filters: [{ name: 'Modrinth mod paketi', extensions: ['mrpack'] }]
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+
+    const filePath = result.filePaths[0]
+    return { filePath, ...(await install.readMrPackFile(filePath)) }
+  })
+
+  /**
+   * Builds a profile from a `.mrpack` file on disk.
+   *
+   * The profile is created with what the pack itself declares, so it is right
+   * from the first second rather than a placeholder corrected at the end. As
+   * with the Modrinth path, the handler answers as soon as the profile exists
+   * and a failure removes it again — a half-unpacked pack looks finished from
+   * the outside.
+   */
+  handle('content:installMrPackFile', async (request: { filePath: string; name?: string }) => {
+    const details = await install.readMrPackFile(request.filePath)
+    const loaderVersion =
+      details.loaderVersion ??
+      (details.loader === 'vanilla'
+        ? undefined
+        : (await listLoaderVersions(details.loader, details.gameVersion))[0]?.version)
+
+    const profile = await createProfile({
+      name: request.name?.trim() || details.name,
+      gameVersion: details.gameVersion,
+      loader: details.loader,
+      loaderVersion,
+      icon: '📦'
+    })
+    store.updateProfile(profile.id, { preparing: true })
+    profilesChanged()
+
+    void (async () => {
+      try {
+        await install.installMrPackFile(profile.id, request.filePath, progressFor(profile.id, onProgress))
+        store.updateProfile(profile.id, { preparing: false })
+        await recordProfileHistory(
+          store.profile(profile.id)!,
+          'content-installed',
+          `${details.name} dosyadan kuruldu`,
+          path.basename(request.filePath)
+        )
+      } catch (error) {
+        store.removeProfile(profile.id)
+        await fsp.rm(profile.directory, { recursive: true, force: true }).catch(() => undefined)
+        onProgress({
+          id: `mrpack-${profile.id}`,
+          label: `${details.name} kurulamadı`,
           progress: 0,
           state: 'error',
           profileId: profile.id,
