@@ -65,6 +65,33 @@ export function App(): JSX.Element {
     clearCrashOpenRequest()
   }, [crashOpenRequest, clearCrashOpenRequest])
 
+  /**
+   * The profiles the sidebar shows, newest-played first.
+   *
+   * The list is a shortlist, not the library, and it was in whatever order the
+   * profiles happened to be stored in — so the profile someone plays every
+   * evening could sit at the bottom, or past the cut and not appear at all.
+   * `lastPlayed` is stamped when the game starts, so a running profile is
+   * always at the top of this by definition.
+   *
+   * Above the early returns below, and not next to the sidebar that uses it: a
+   * hook that only runs on some renders changes how many hooks the component
+   * has, and React tears the whole tree down the render that happens on. That
+   * is a launcher that opens to a black window.
+   */
+  const recent = useMemo(
+    () =>
+      [...profiles]
+        .sort((left, right) => {
+          // A pinned profile is one someone said they always want here, which
+          // outranks how recently anything was played.
+          if (Boolean(left.pinned) !== Boolean(right.pinned)) return left.pinned ? -1 : 1
+          return (right.lastPlayed ?? right.createdAt) - (left.lastPlayed ?? left.createdAt)
+        })
+        .slice(0, 8),
+    [profiles]
+  )
+
   if (!ready) {
     return (
       <div className="gate">
@@ -105,28 +132,6 @@ export function App(): JSX.Element {
 
   // Microsoft authentication is a hard requirement — no account, no launcher.
   if (accounts.length === 0) return <LoginGate />
-
-  /**
-   * The profiles the sidebar shows, newest-played first.
-   *
-   * The list is a shortlist, not the library, and it was in whatever order the
-   * profiles happened to be stored in — so the profile someone plays every
-   * evening could sit at the bottom, or past the cut and not appear at all.
-   * `lastPlayed` is stamped when the game starts, so a running profile is
-   * always at the top of this by definition.
-   */
-  const recent = useMemo(
-    () =>
-      [...profiles]
-        .sort((left, right) => {
-          // A pinned profile is one someone said they always want here, which
-          // outranks how recently anything was played.
-          if (Boolean(left.pinned) !== Boolean(right.pinned)) return left.pinned ? -1 : 1
-          return (right.lastPlayed ?? right.createdAt) - (left.lastPlayed ?? left.createdAt)
-        })
-        .slice(0, 8),
-    [profiles]
-  )
 
   const togglePin = async (profile: (typeof profiles)[number]): Promise<void> => {
     await api.profiles.update(profile.id, { pinned: !profile.pinned })
