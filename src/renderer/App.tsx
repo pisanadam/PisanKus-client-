@@ -51,7 +51,10 @@ export function App(): JSX.Element {
     gameStates,
     crashOpenRequest,
     clearCrashOpenRequest,
-    refreshProfiles
+    refreshProfiles,
+    launchRequest,
+    clearLaunchRequest,
+    notify
   } = useApp()
   const [route, setRoute] = useState<Route>({ page: 'library' })
   // Kept locally as well so the panel can animate out before the flag round-trips.
@@ -67,6 +70,21 @@ export function App(): JSX.Element {
     })
     clearCrashOpenRequest()
   }, [crashOpenRequest, clearCrashOpenRequest])
+
+  /**
+   * A profile a desktop shortcut asked to start.
+   *
+   * The page is opened first and the game started after, so the download bar
+   * and any failure land somewhere the player is already looking — a shortcut
+   * that silently did nothing would be indistinguishable from a broken one.
+   */
+  useEffect(() => {
+    if (!launchRequest) return
+    const { profileId } = launchRequest
+    clearLaunchRequest()
+    setRoute({ page: 'profile', profileId })
+    void api.game.launch(profileId).catch((error) => notify(error, 'error'))
+  }, [launchRequest, clearLaunchRequest, notify])
 
   /**
    * The profiles the sidebar shows, newest-played first.

@@ -497,3 +497,37 @@ test('play sessions are recorded and can be summarised', () => {
   const app = readFileSync('src/renderer/App.tsx', 'utf8')
   assert.match(app, /\{ page: 'stats', label: 'İstatistikler', icon: 'chart' \}/)
 })
+
+/**
+ * Playing the same profile every evening meant opening the launcher, finding it
+ * among the others and pressing play.
+ */
+test('a profile can be started from a desktop shortcut', () => {
+  const shortcuts = readFileSync('src/main/shortcuts.ts', 'utf8')
+  // One file per platform, each the kind that can carry an argument.
+  assert.match(shortcuts, /shell\.writeShortcutLink\(file, 'create'/)
+  assert.match(shortcuts, /\.command`\)/)
+  assert.match(shortcuts, /\.desktop`\)/)
+  // A launcher installed under a path with a space in it is otherwise read as
+  // several arguments.
+  assert.match(shortcuts, /Exec="\$\{target\}" \$\{argument\}/)
+  assert.match(shortcuts, /exec \$\{JSON\.stringify\(target\)\} \$\{JSON\.stringify\(argument\)\}/)
+  // A dev run would point the shortcut at a bare Electron.
+  assert.match(shortcuts, /if \(!app\.isPackaged\)/)
+
+  const index = readFileSync('src/main/index.ts', 'utf8')
+  // Both ways in: the argument the launcher started with, and a shortcut used
+  // while it is already running.
+  assert.match(index, /requestProfileLaunch\(profileIdFromArgv\(process\.argv\)\)/)
+  assert.match(index, /app\.on\('second-instance', \(_event, argv\) => \{/)
+
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  // Taken, not read: a page reload must not start the game a second time.
+  assert.match(ipc, /handle\('profiles:pendingLaunch', \(\) => takePendingLaunch\(\)\)/)
+
+  const app = readFileSync('src/renderer/App.tsx', 'utf8')
+  // The page opens first, so the progress bar and any failure land where the
+  // player is already looking.
+  const effect = app.slice(app.indexOf('if (!launchRequest) return'))
+  assert.ok(effect.indexOf('setRoute(') < effect.indexOf('api.game.launch'))
+})

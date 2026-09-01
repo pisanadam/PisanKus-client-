@@ -712,7 +712,11 @@ const table: Dictionary = {
   'oynanmadı': 'لم تلعب',
   'En yoğun gün: {day} — {time}': 'أكثر الأيام: {day} — {time}',
   'Profillere göre': 'حسب الملف الشخصي',
-  '{count} oturum': '{count} جلسة'
+  '{count} oturum': '{count} جلسة',
+  'Masaüstü kısayolu': 'اختصار على سطح المكتب',
+  'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'النقر المزدوج يفتح المشغّل ويشغّل هذا الملف الشخصي',
+  'Masaüstüne ekle': 'أضف إلى سطح المكتب',
+  'Kısayol oluşturuldu: {file}': 'أُنشئ الاختصار: {file}'
 }
 
 export default table

@@ -165,6 +165,21 @@ const api = {
     update: (id: string, patch: Partial<Profile>): Promise<Profile> =>
       ipcRenderer.invoke('profiles:update', id, patch),
     duplicate: (id: string): Promise<Profile> => ipcRenderer.invoke('profiles:duplicate', id),
+    /** Writes a desktop shortcut that starts this profile; returns its path. */
+    createShortcut: (id: string): Promise<string> => ipcRenderer.invoke('profiles:createShortcut', id),
+    /** False in a dev run, where a shortcut would point at a bare Electron. */
+    canCreateShortcut: (): Promise<boolean> => ipcRenderer.invoke('profiles:canCreateShortcut'),
+    /**
+     * The profile a desktop shortcut asked for, or null. Answers once: a page
+     * reload must not start the game a second time.
+     */
+    pendingLaunch: (): Promise<string | null> => ipcRenderer.invoke('profiles:pendingLaunch'),
+    /** A shortcut double-clicked while the launcher was already open. */
+    onLaunchRequest: (handler: (profileId: string) => void): (() => void) => {
+      const listener = (_event: unknown, profileId: string): void => handler(profileId)
+      ipcRenderer.on('profiles:launchRequest', listener)
+      return () => ipcRenderer.removeListener('profiles:launchRequest', listener)
+    },
     health: (id: string): Promise<ProfileHealthReport> => ipcRenderer.invoke('profiles:health', id),
     fixHealth: (id: string, fix: ProfileHealthFix): Promise<ProfileHealthReport> =>
       ipcRenderer.invoke('profiles:healthFix', id, fix),

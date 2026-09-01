@@ -1169,6 +1169,9 @@ function ProfileSettingsTab({
    * a slider that stops.
    */
   const [totalMemory, setTotalMemory] = useState<number | null>(null)
+  /** False in a dev run, where a shortcut would point at a bare Electron. */
+  const [canShortcut, setCanShortcut] = useState(false)
+  const [shortcutBusy, setShortcutBusy] = useState(false)
 
   /**
    * What this profile's memory ought to be, given what is in it.
@@ -1184,6 +1187,7 @@ function ProfileSettingsTab({
 
   useEffect(() => {
     void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
+    void api.profiles.canCreateShortcut().then(setCanShortcut).catch(() => undefined)
   }, [])
 
   const managedCount = Object.keys(profile.managedOptions ?? {}).length
@@ -1308,6 +1312,35 @@ function ProfileSettingsTab({
             )}
           </div>
         </div>
+
+        {canShortcut && (
+          <div className="settings-row">
+            <div>
+              <div className="settings-row__label">{t('Masaüstü kısayolu')}</div>
+              <div className="faint">
+                {t('Çift tıklayınca launcher açılıp doğrudan bu profili başlatır')}
+              </div>
+            </div>
+            <button
+              className="btn"
+              disabled={shortcutBusy}
+              onClick={async () => {
+                setShortcutBusy(true)
+                try {
+                  const file = await api.profiles.createShortcut(profileId)
+                  notify(t('Kısayol oluşturuldu: {file}', { file }))
+                } catch (error) {
+                  notify(error, 'error')
+                } finally {
+                  setShortcutBusy(false)
+                }
+              }}
+            >
+              {shortcutBusy ? <div className="spinner" /> : <Icon name="external" size={16} />}
+              {t('Masaüstüne ekle')}
+            </button>
+          </div>
+        )}
 
         {/* Beside the other per-profile settings rather than in the mod list: it
             is a repair, done once when something is wrong, not part of adding

@@ -712,7 +712,11 @@ const table: Dictionary = {
   'oynanmadı': '未游玩',
   'En yoğun gün: {day} — {time}': '最投入的一天：{day} — {time}',
   'Profillere göre': '按配置',
-  '{count} oturum': '{count} 次'
+  '{count} oturum': '{count} 次',
+  'Masaüstü kısayolu': '桌面快捷方式',
+  'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': '双击即可打开启动器并直接启动这个配置',
+  'Masaüstüne ekle': '添加到桌面',
+  'Kısayol oluşturuldu: {file}': '已创建快捷方式：{file}'
 }
 
 export default table

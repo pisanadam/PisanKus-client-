@@ -1,5 +1,6 @@
 import { app, BrowserWindow, shell } from 'electron'
 import path from 'node:path'
+import { profileIdFromArgv } from './cliArgs'
 import { registerIpc } from './ipc'
 import { store } from './store'
 import { checkForUpdates } from './updater'
@@ -68,15 +69,35 @@ function createWindow(): void {
   }
 }
 
+/**
+ * The profile a desktop shortcut asked for, until the window can act on it.
+ *
+ * The argument arrives before there is a renderer to tell, and on a second
+ * instance it arrives while the first one is already running. Both end up here,
+ * and the window drains it once it is ready.
+ */
+let requestedProfileId: string | null = null
+
+function requestProfileLaunch(profileId: string | null): void {
+  if (!profileId) return
+  requestedProfileId = profileId
+  // Already up: hand it over now. Otherwise `createWindow` collects it when the
+  // page finishes loading.
+  if (mainWindow) mainWindow.webContents.send('profiles:launchRequest', profileId)
+}
+
 // A second instance should focus the existing window rather than start over.
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (_event, argv) => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore()
       mainWindow.focus()
     }
+    // Double-clicking the shortcut while the launcher is open is a request to
+    // play that profile, not just to bring the window forward.
+    requestProfileLaunch(profileIdFromArgv(argv))
   })
 
   app.whenReady().then(async () => {
@@ -85,7 +106,12 @@ if (!app.requestSingleInstanceLock()) {
     app.setAppUserModelId('com.pisankus.client')
     store.init()
     await recoverInterruptedTransactions()
-    registerIpc(() => mainWindow)
+    registerIpc(() => mainWindow, () => {
+      const pending = requestedProfileId
+      requestedProfileId = null
+      return pending
+    })
+    requestProfileLaunch(profileIdFromArgv(process.argv))
     createWindow()
 
     app.on('activate', () => {

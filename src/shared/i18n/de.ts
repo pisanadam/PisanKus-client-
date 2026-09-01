@@ -712,7 +712,11 @@ const table: Dictionary = {
   'oynanmadı': 'nicht gespielt',
   'En yoğun gün: {day} — {time}': 'Aktivster Tag: {day} — {time}',
   'Profillere göre': 'Nach Profil',
-  '{count} oturum': '{count} Sitzungen'
+  '{count} oturum': '{count} Sitzungen',
+  'Masaüstü kısayolu': 'Desktop-Verknüpfung',
+  'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Ein Doppelklick öffnet den Launcher und startet dieses Profil',
+  'Masaüstüne ekle': 'Zum Desktop hinzufügen',
+  'Kısayol oluşturuldu: {file}': 'Verknüpfung erstellt: {file}'
 }
 
 export default table

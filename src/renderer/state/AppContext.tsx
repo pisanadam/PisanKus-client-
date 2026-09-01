@@ -70,6 +70,12 @@ interface AppValue {
   logs: Record<string, GameLogLine[]>
   clearLogs: (profileId: string) => void
   crashOpenRequest: { profileId: string; nonce: number } | null
+  /**
+   * A profile a desktop shortcut asked to start, with a nonce so the same
+   * profile asked for twice is still two requests.
+   */
+  launchRequest: { profileId: string; nonce: number } | null
+  clearLaunchRequest: () => void
   openCrashLog: (profileId: string) => void
   clearCrashOpenRequest: () => void
 }
@@ -91,6 +97,8 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [crashOpenRequest, setCrashOpenRequest] = useState<{ profileId: string; nonce: number } | null>(null)
+  const [launchRequest, setLaunchRequest] = useState<{ profileId: string; nonce: number } | null>(null)
+  const clearLaunchRequest = useCallback(() => setLaunchRequest(null), [])
 
   // Log lines arrive faster than React should re-render, so they are buffered
   // and flushed on an interval.
@@ -227,6 +235,15 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
 
     const offCrash = api.crashes.onCreated(showCrashNotice)
 
+    // Started from a desktop shortcut: once for the argument the launcher was
+    // opened with, and again whenever a shortcut is used while it is running.
+    void api.profiles.pendingLaunch().then((profileId) => {
+      if (profileId) setLaunchRequest({ profileId, nonce: Date.now() })
+    })
+    const offLaunch = api.profiles.onLaunchRequest((profileId) =>
+      setLaunchRequest({ profileId, nonce: Date.now() })
+    )
+
     const flush = setInterval(() => {
       const pending = logBuffer.current
       if (Object.keys(pending).length === 0) return
@@ -246,6 +263,7 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       offState()
       offLog()
       offCrash()
+      offLaunch()
       clearInterval(flush)
     }
   }, [refreshProfiles, retire, showCrashNotice])
@@ -330,7 +348,9 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       clearLogs,
       crashOpenRequest,
       openCrashLog,
-      clearCrashOpenRequest
+      clearCrashOpenRequest,
+      launchRequest,
+      clearLaunchRequest
     }),
     [
       ready,
@@ -353,7 +373,9 @@ export function AppProvider({ children }: { children: ReactNode }): JSX.Element 
       clearLogs,
       crashOpenRequest,
       openCrashLog,
-      clearCrashOpenRequest
+      clearCrashOpenRequest,
+      launchRequest,
+      clearLaunchRequest
     ]
   )
 

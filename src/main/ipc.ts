@@ -52,6 +52,7 @@ import { isNetworkFailure } from './network.ts'
 import { ICON_BACKGROUNDS, ICON_SYMBOLS, type IconRecipe } from '../shared/profileIcon'
 import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
 import { listSessions, recordSession } from './playSessions'
+import { createProfileShortcut } from './shortcuts'
 import {
   cleanProfileStorage,
   enableSafeMode,
@@ -228,7 +229,14 @@ function looksOnline(): boolean {
   }
 }
 
-export function registerIpc(getWindow: () => BrowserWindow | null): void {
+export function registerIpc(
+  getWindow: () => BrowserWindow | null,
+  /**
+   * The profile a desktop shortcut asked for, if the launcher was started by
+   * one. Taken rather than read: it must be acted on once, not on every reload.
+   */
+  takePendingLaunch: () => string | null = () => null
+): void {
   const send = (channel: string, payload: unknown): void => {
     const window = getWindow()
     if (window && !window.isDestroyed()) window.webContents.send(channel, payload)
@@ -998,6 +1006,31 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     await fsp.mkdir(directory, { recursive: true })
     await shell.openPath(directory)
   })
+
+  // ---------------------------------------------------------------- shortcuts
+
+  /**
+   * Writes a desktop shortcut that starts this profile.
+   *
+   * The window is told the path afterwards so the message can name where the
+   * file landed — on a desktop full of icons, "created" alone is not an answer
+   * to "where".
+   */
+  handle('profiles:createShortcut', async (profileId: string) => {
+    const profile = store.profile(profileId)
+    if (!profile) throw new Error('Profil bulunamadı.')
+    return createProfileShortcut(profile)
+  })
+
+  /** Whether a shortcut can be written at all on this platform and build. */
+  handle('profiles:canCreateShortcut', () => app.isPackaged)
+
+  /**
+   * The profile a shortcut asked for, collected once by the renderer when it
+   * has loaded. Answering null afterwards is what keeps a page reload from
+   * starting the game again.
+   */
+  handle('profiles:pendingLaunch', () => takePendingLaunch())
 
   // --------------------------------------------------------------- statistics
 

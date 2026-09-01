@@ -712,7 +712,11 @@ const table: Dictionary = {
   'oynanmadı': '플레이 안 함',
   'En yoğun gün: {day} — {time}': '가장 오래 한 날: {day} — {time}',
   'Profillere göre': '프로필별',
-  '{count} oturum': '{count}회'
+  '{count} oturum': '{count}회',
+  'Masaüstü kısayolu': '바탕화면 바로 가기',
+  'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': '두 번 누르면 런처가 열리고 이 프로필이 실행됩니다',
+  'Masaüstüne ekle': '바탕화면에 추가',
+  'Kısayol oluşturuldu: {file}': '바로 가기를 만들었습니다: {file}'
 }
 
 export default table

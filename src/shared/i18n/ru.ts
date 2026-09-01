@@ -712,7 +712,11 @@ const table: Dictionary = {
   'oynanmadı': 'не играли',
   'En yoğun gün: {day} — {time}': 'Самый насыщенный день: {day} — {time}',
   'Profillere göre': 'По профилям',
-  '{count} oturum': 'сессий: {count}'
+  '{count} oturum': 'сессий: {count}',
+  'Masaüstü kısayolu': 'Ярлык на рабочем столе',
+  'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Двойной щелчок открывает лаунчер и запускает этот профиль',
+  'Masaüstüne ekle': 'Добавить на рабочий стол',
+  'Kısayol oluşturuldu: {file}': 'Ярлык создан: {file}'
 }
 
 export default table
