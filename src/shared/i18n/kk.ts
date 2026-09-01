@@ -686,7 +686,15 @@ const table: Dictionary = {
   'Mod paketi dosyası': 'Мод жинағы файлы',
   'Mod paketi dosyasından kur': 'Мод жинағы файлынан орнату',
   'Yukarıda sabitle': 'Жоғарыда бекіту',
-  'Sabitlemeyi kaldır': 'Бекітуді алу'
+  'Sabitlemeyi kaldır': 'Бекітуді алу',
+  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Бұл компьютерде {total} ГБ бар; сонша мөлшерді ойынға берсеңіз жүйеге жететіні қалмайды.',
+  'Bu sürüm için az; oyun bellek yetmediği için çökebilir.': 'Бұл нұсқа үшін аз; жады жетпей ойын құлауы мүмкін.',
+  '{count} mod için az; oyun bellek yetmediği için çökebilir.': '{count} мод үшін аз; жады жетпей ойын құлауы мүмкін.',
+  'Mod yok; bu kadarı gereksiz. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Мод жоқ, бұлай көп қажет емес. Қажеттен артық жады қоқыс жинағышты баяулатып, FPS түсіреді.',
+  '{count} mod için fazla. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '{count} мод үшін қажеттен көп. Қажеттен артық жады қоқыс жинағышты баяулатып, FPS түсіреді.',
+  'Mod yok; bu ayar uygun.': 'Мод жоқ; бұл баптау қолайлы.',
+  '{count} mod için uygun.': '{count} мод үшін қолайлы.',
+  '{size} GB yap': '{size} ГБ қылу'
 }
 
 export default table

@@ -2592,3 +2592,9 @@ button.update--ready:hover {
 .viewer__step--next {
   right: 18px;
 }
+
+/* A settings hint that is a caution rather than a description. */
+.settings-row__warn {
+  color: var(--warning);
+  font-size: 13px;
+}

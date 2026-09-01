@@ -686,7 +686,15 @@ const table: Dictionary = {
   'Mod paketi dosyası': 'فایل بستهٔ ماد',
   'Mod paketi dosyasından kur': 'نصب از فایل بستهٔ ماد',
   'Yukarıda sabitle': 'سنجاق به بالا',
-  'Sabitlemeyi kaldır': 'برداشتن سنجاق'
+  'Sabitlemeyi kaldır': 'برداشتن سنجاق',
+  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'این دستگاه {total} گیگابایت دارد؛ دادن این مقدار به بازی برای سیستم کافی باقی نمی‌گذارد.',
+  'Bu sürüm için az; oyun bellek yetmediği için çökebilir.': 'برای این نسخه کم است؛ ممکن است بازی از کمبود حافظه بخوابد.',
+  '{count} mod için az; oyun bellek yetmediği için çökebilir.': 'برای {count} ماد کم است؛ ممکن است بازی از کمبود حافظه بخوابد.',
+  'Mod yok; bu kadarı gereksiz. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'مادی نیست و این مقدار لازم نیست. حافظهٔ بیش از نیاز، زباله‌روب را کند و نرخ فریم را کم می‌کند.',
+  '{count} mod için fazla. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'بیش از نیاز {count} ماد است. حافظهٔ بیش از نیاز، زباله‌روب را کند و نرخ فریم را کم می‌کند.',
+  'Mod yok; bu ayar uygun.': 'مادی نیست؛ این تنظیم مناسب است.',
+  '{count} mod için uygun.': 'برای {count} ماد مناسب است.',
+  '{size} GB yap': '{size} گیگابایت کن'
 }
 
 export default table

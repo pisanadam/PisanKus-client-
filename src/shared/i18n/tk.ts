@@ -686,7 +686,15 @@ const table: Dictionary = {
   'Mod paketi dosyası': 'Mod toplumy faýly',
   'Mod paketi dosyasından kur': 'Mod toplumy faýlyndan gur',
   'Yukarıda sabitle': 'Ýokarda berkit',
-  'Sabitlemeyi kaldır': 'Berkitmegi aýyr'
+  'Sabitlemeyi kaldır': 'Berkitmegi aýyr',
+  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Bu enjamda {total} GB bar; şonçany oýna berseňiz ulgama ýetjegi galmaýar.',
+  'Bu sürüm için az; oyun bellek yetmediği için çökebilir.': 'Bu wersiýa üçin az; ýat ýetmezçiliginden oýun ýykylyp biler.',
+  '{count} mod için az; oyun bellek yetmediği için çökebilir.': '{count} mod üçin az; ýat ýetmezçiliginden oýun ýykylyp biler.',
+  'Mod yok; bu kadarı gereksiz. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Mod ýok, şonçasy gerek däl. Gerekden köp ýat zibil ýygnaýjyny haýalladýar we FPS düşýär.',
+  '{count} mod için fazla. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '{count} mod üçin gerekden köp. Gerekden köp ýat zibil ýygnaýjyny haýalladýar we FPS düşýär.',
+  'Mod yok; bu ayar uygun.': 'Mod ýok; bu sazlama laýyk.',
+  '{count} mod için uygun.': '{count} mod üçin laýyk.',
+  '{size} GB yap': '{size} GB et'
 }
 
 export default table

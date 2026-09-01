@@ -15,6 +15,7 @@ import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { ScreenshotGallery, type GalleryItem } from '../components/ScreenshotGallery'
 import { ServersTab } from '../components/ServersTab'
+import { memoryAdvice } from '../../shared/memoryAdvice'
 import { parseOptions, readOption } from '../../shared/options'
 import { Confirm, Modal } from '../components/Modal'
 import type { AutoWorldBackupSummary, JavaInfo, WorldSummary } from '../../preload'
@@ -1169,6 +1170,18 @@ function ProfileSettingsTab({
    */
   const [totalMemory, setTotalMemory] = useState<number | null>(null)
 
+  /**
+   * What this profile's memory ought to be, given what is in it.
+   *
+   * Only enabled mods count: a jar renamed to `.disabled` is not loaded, so it
+   * costs nothing and should not push the recommendation up.
+   */
+  const advice = memoryAdvice({
+    currentMb: memory,
+    modCount: profile.content.filter((entry) => entry.kind === 'mod' && entry.enabled).length,
+    totalMb: totalMemory ?? undefined
+  })
+
   useEffect(() => {
     void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
   }, [])
@@ -1419,21 +1432,34 @@ function ProfileSettingsTab({
         <div className="settings-row">
           <div>
             <div className="settings-row__label">{t('Ayrılan bellek')}</div>
-            <div className="faint">
-              {t('{size} GB — büyük mod paketleri için 6 GB+ önerilir', { size: (memory / 1024).toFixed(1) })}
+            {/* What this profile actually wants, rather than a fixed sentence:
+                the number depends on how many mods are in it and on how much
+                the machine has, and both are known here. */}
+            <div className={advice.warning ? 'settings-row__warn' : 'faint'}>
+              {(memory / 1024).toFixed(1)} GB — {t(advice.reason, advice.reasonParams)}
             </div>
           </div>
-          <input
-            type="range"
-            min={1024}
-            // Never below what this profile is already set to: a maximum under
-            // the stored value lets the input clamp it, and the next touch saves
-            // the clamped number as though it had been chosen.
-            max={Math.max(totalMemory ?? memory, memory)}
-            step={512}
-            value={memory}
-            onChange={(event) => setMemory(Number(event.target.value))}
-          />
+          <div className="row settings-row__controls" style={{ gap: 10 }}>
+            {advice.recommendedMb !== memory && (
+              <button
+                className={advice.warning ? 'btn btn--sm btn--primary' : 'btn btn--sm'}
+                onClick={() => setMemory(advice.recommendedMb)}
+              >
+                {t('{size} GB yap', { size: (advice.recommendedMb / 1024).toFixed(1) })}
+              </button>
+            )}
+            <input
+              type="range"
+              min={1024}
+              // Never below what this profile is already set to: a maximum under
+              // the stored value lets the input clamp it, and the next touch saves
+              // the clamped number as though it had been chosen.
+              max={Math.max(totalMemory ?? memory, memory)}
+              step={512}
+              value={memory}
+              onChange={(event) => setMemory(Number(event.target.value))}
+            />
+          </div>
         </div>
 
         {profile.loader !== 'vanilla' && loaderVersions.length > 0 && (
