@@ -49,7 +49,7 @@ function announce(version: string): void {
   try {
     const notification = new Notification({
       title: 'PisanKus Client güncellemesi',
-      body: `Sürüm ${version} yayınlandı. Kurmak için launcher'ı açın.`,
+      body: `Sürüm ${version} indiriliyor. Kurmak için launcher'ı açın.`,
       silent: false
     })
     notification.on('click', focusWindow)
@@ -68,14 +68,30 @@ export function initUpdater(onStatus: (status: UpdateStatus) => void, focus: () 
   publish = onStatus
   focusWindow = focus
 
+  // Downloading is started here rather than by electron-updater's own flag, so
+  // the status the sidebar shows is set before the first byte moves and macOS —
+  // which cannot install what it downloads — is never made to fetch it.
   autoUpdater.autoDownload = false
-  // The user restarts when they choose to; quitting the launcher out from under
-  // a running game would be worse than a stale version.
-  autoUpdater.autoInstallOnAppQuit = false
+  // The launcher restarts when the player says so; quitting out from under a
+  // running game would be worse than a stale version. Applying it on the way
+  // out is different: the game is gone by then, and it means someone who just
+  // closes the launcher comes back to the new version already installed.
+  autoUpdater.autoInstallOnAppQuit = true
   autoUpdater.logger = null
 
   autoUpdater.on('update-available', (info) => {
     set({ state: 'available', version: info.version, canSelfUpdate })
+
+    // Fetch it straight away instead of waiting to be asked. The download is a
+    // hundred megabytes and used to start only when the banner was clicked, so
+    // the wait everybody felt was the download — with nothing on screen having
+    // said it had not begun. By the time the banner is noticed it now usually
+    // reads "restart and install", and that is one click on an update that is
+    // already on disk.
+    // Through the same entry point the button uses, so the state moves to
+    // "downloading" before the first byte. Calling electron-updater directly
+    // would leave a window where a click could start a second download.
+    if (canSelfUpdate) void downloadUpdate()
   })
   autoUpdater.on('update-not-available', () => set({ state: 'idle' }))
   autoUpdater.on('download-progress', (progress) => {

@@ -450,3 +450,26 @@ test('the screenshots page re-reads folders only when the profile list changes',
   assert.match(page, /const reload = useCallback\([\s\S]*?\}, \[\]\)/)
   assert.doesNotMatch(page, /\}, \[profiles\]\)/)
 })
+
+/**
+ * The download used to start only when the sidebar banner was clicked, so the
+ * wait everyone felt as "the update installs slowly" was a hundred-megabyte
+ * download that had not begun yet, with nothing on screen saying so.
+ */
+test('an update downloads as soon as it is found', () => {
+  const updater = readFileSync('src/main/updater.ts', 'utf8')
+  const available = updater.slice(updater.indexOf("autoUpdater.on('update-available'"))
+
+  // Fetched on discovery, and through the same guarded entry point the button
+  // uses so a click cannot start a second download.
+  assert.match(available.slice(0, 1_200), /if \(canSelfUpdate\) void downloadUpdate\(\)/)
+  assert.doesNotMatch(available.slice(0, 1_200), /autoUpdater\.downloadUpdate\(\)/)
+
+  // macOS cannot install what it downloads, so it is never made to fetch it.
+  assert.match(updater, /const canSelfUpdate = process\.platform !== 'darwin'/)
+
+  // Restarting stays the player's call — quitting out from under a running game
+  // would be worse than a stale version — but closing the launcher applies it.
+  assert.match(updater, /autoUpdater\.autoInstallOnAppQuit = true/)
+  assert.match(updater, /if \(status\.state !== 'available'\) return status/)
+})
