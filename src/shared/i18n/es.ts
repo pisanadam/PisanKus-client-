@@ -694,7 +694,25 @@ const table: Dictionary = {
   '{count} mod için fazla. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Más de lo que necesitan {count} mods. Más memoria de la necesaria ralentiza el recolector de basura y cuesta FPS.',
   'Mod yok; bu ayar uygun.': 'Sin mods; este ajuste está bien.',
   '{count} mod için uygun.': 'Adecuado para {count} mods.',
-  '{size} GB yap': 'Poner {size} GB'
+  '{size} GB yap': 'Poner {size} GB',
+  'İstatistikler': 'Estadísticas',
+  'Ne kadar ve ne zaman oynadığınız': 'Cuánto juegas y cuándo',
+  'Henüz oynanmış bir oturum yok': 'Aún no hay sesiones jugadas',
+  'Bir profil başlatıp oynadığınızda süreler burada birikmeye başlar.': 'Inicia un perfil y juega; el tiempo se acumula aquí.',
+  'Dönem': 'Periodo',
+  'Son 7 gün': 'Últimos 7 días',
+  'Son 30 gün': 'Últimos 30 días',
+  'Son 90 gün': 'Últimos 90 días',
+  'Toplam süre': 'Tiempo total',
+  'Oturum': 'Sesiones',
+  'Ortalama oturum': 'Sesión media',
+  'En uzun oturum': 'Sesión más larga',
+  'Günlere göre': 'Por día',
+  'Günlere göre oynama süresi': 'Tiempo de juego por día',
+  'oynanmadı': 'sin jugar',
+  'En yoğun gün: {day} — {time}': 'Día más activo: {day} — {time}',
+  'Profillere göre': 'Por perfil',
+  '{count} oturum': '{count} sesiones'
 }
 
 export default table

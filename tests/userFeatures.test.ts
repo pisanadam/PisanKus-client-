@@ -473,3 +473,27 @@ test('an update downloads as soon as it is found', () => {
   assert.match(updater, /autoUpdater\.autoInstallOnAppQuit = true/)
   assert.match(updater, /if \(status\.state !== 'available'\) return status/)
 })
+
+/**
+ * `totalPlaytimeMs` answers "how long altogether" and nothing else — not
+ * whether those hours were last week or two years ago, nor which of five
+ * profiles is the one really being played.
+ */
+test('play sessions are recorded and can be summarised', () => {
+  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
+  // Written where the running total is, from the same pair of timestamps.
+  assert.match(ipc, /totalPlaytimeMs: current\.totalPlaytimeMs \+ \(endedAt - startedAt\)/)
+  assert.match(ipc, /void recordSession\(current, startedAt, endedAt\)/)
+  // One unreadable profile folder must not empty the whole page.
+  assert.match(ipc, /sessions: await listSessions\(profile\)\.catch\(\(\) => \[\]\)/)
+
+  const sessions = readFileSync('src/main/playSessions.ts', 'utf8')
+  // A launch that fails still produces a process that lived a moment; a chart
+  // full of those says the game was played every day it crashed.
+  assert.match(sessions, /if \(!Number\.isFinite\(ms\) \|\| ms < MIN_SESSION_MS\) return/)
+  // Beside the profile, so exporting or deleting it takes the history along.
+  assert.match(sessions, /requireProfileDirectory\(profile\.directory\), '\.pisankus'/)
+
+  const app = readFileSync('src/renderer/App.tsx', 'utf8')
+  assert.match(app, /\{ page: 'stats', label: 'İstatistikler', icon: 'chart' \}/)
+})

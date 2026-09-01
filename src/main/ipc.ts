@@ -51,6 +51,7 @@ import { fixProfileHealth, inspectProfileHealth } from './profileHealth'
 import { isNetworkFailure } from './network.ts'
 import { ICON_BACKGROUNDS, ICON_SYMBOLS, type IconRecipe } from '../shared/profileIcon'
 import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
+import { listSessions, recordSession } from './playSessions'
 import {
   cleanProfileStorage,
   enableSafeMode,
@@ -733,9 +734,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
             void flushPendingOptions(profileId)
             const current = store.profile(profileId)
             if (current) {
+              const endedAt = Date.now()
               store.updateProfile(profileId, {
-                totalPlaytimeMs: current.totalPlaytimeMs + (Date.now() - startedAt)
+                totalPlaytimeMs: current.totalPlaytimeMs + (endedAt - startedAt)
               })
+              // The running total cannot say when any of it happened. The
+              // session list can, and it is what the statistics are drawn from.
+              void recordSession(current, startedAt, endedAt).catch(() => undefined)
             }
             finishDiagnostics(state)
           }
@@ -993,6 +998,26 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     await fsp.mkdir(directory, { recursive: true })
     await shell.openPath(directory)
   })
+
+  // --------------------------------------------------------------- statistics
+
+  /**
+   * Every profile's play history, for the statistics page.
+   *
+   * The sessions are handed over raw and summarised in the renderer: which
+   * window is being looked at is the page's business, and a profile deleted
+   * since the last visit simply is not in the list.
+   */
+  handle('stats:sessions', async () =>
+    Promise.all(
+      store.profiles.map(async (profile) => ({
+        profileId: profile.id,
+        profileName: profile.name,
+        // One unreadable profile folder must not empty the whole page.
+        sessions: await listSessions(profile).catch(() => [])
+      }))
+    )
+  )
 
   // --------------------------------------------------------------- screenshots
 

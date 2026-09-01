@@ -694,7 +694,25 @@ const table: Dictionary = {
   '{count} mod için fazla. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '超过 {count} 个模组所需。内存超出所需会拖慢垃圾回收，掉帧。',
   'Mod yok; bu ayar uygun.': '没有模组，这个设置合适。',
   '{count} mod için uygun.': '适合 {count} 个模组。',
-  '{size} GB yap': '设为 {size} GB'
+  '{size} GB yap': '设为 {size} GB',
+  'İstatistikler': '统计',
+  'Ne kadar ve ne zaman oynadığınız': '你玩了多久，什么时候玩的',
+  'Henüz oynanmış bir oturum yok': '还没有游玩记录',
+  'Bir profil başlatıp oynadığınızda süreler burada birikmeye başlar.': '启动一个配置玩一会儿，时间就会记在这里。',
+  'Dönem': '时间范围',
+  'Son 7 gün': '最近 7 天',
+  'Son 30 gün': '最近 30 天',
+  'Son 90 gün': '最近 90 天',
+  'Toplam süre': '总时长',
+  'Oturum': '次数',
+  'Ortalama oturum': '平均时长',
+  'En uzun oturum': '最长一次',
+  'Günlere göre': '按天',
+  'Günlere göre oynama süresi': '每天的游玩时长',
+  'oynanmadı': '未游玩',
+  'En yoğun gün: {day} — {time}': '最投入的一天：{day} — {time}',
+  'Profillere göre': '按配置',
+  '{count} oturum': '{count} 次'
 }
 
 export default table

@@ -10,6 +10,7 @@ import { Accounts } from './pages/Accounts'
 import { Discover } from './pages/Discover'
 import { Library } from './pages/Library'
 import { Screenshots } from './pages/Screenshots'
+import { Stats } from './pages/Stats'
 import { ProfileDetail } from './pages/ProfileDetail'
 import { Settings } from './pages/Settings'
 import { Skins } from './pages/Skins'
@@ -23,6 +24,7 @@ type Route =
   | { page: 'discover'; profileId?: string; kind?: ContentKind }
   | { page: 'skins' }
   | { page: 'screenshots' }
+  | { page: 'stats' }
   | { page: 'accounts' }
   | { page: 'settings' }
   | { page: 'profile'; profileId: string; tab?: 'logs'; tabRequestKey?: number }
@@ -32,6 +34,7 @@ const NAV: { page: Route['page']; label: string; icon: IconName }[] = [
   { page: 'discover', label: 'Keşfet', icon: 'compass' },
   { page: 'skins', label: 'Skin', icon: 'sparkle' },
   { page: 'screenshots', label: 'Ekran görüntüleri', icon: 'image' },
+  { page: 'stats', label: 'İstatistikler', icon: 'chart' },
   { page: 'accounts', label: 'Hesaplar', icon: 'user' },
   { page: 'settings', label: 'Ayarlar', icon: 'settings' }
 ]
@@ -251,6 +254,7 @@ export function App(): JSX.Element {
 
         {route.page === 'skins' && <Skins />}
         {route.page === 'screenshots' && <Screenshots />}
+        {route.page === 'stats' && <Stats />}
         {route.page === 'accounts' && <Accounts />}
         {route.page === 'settings' && <Settings />}
       </main>

@@ -219,6 +219,14 @@ export interface ProfileStorageReport {
   entries: ProfileStorageEntry[]
 }
 
+/** One finished play session, as the profile's own history records it. */
+export interface PlaySession {
+  /** When the session started. */
+  at: number
+  /** How long it lasted, in milliseconds. */
+  ms: number
+}
+
 export type ProfileHistoryKind =
   | 'content-installed'
   | 'content-removed'

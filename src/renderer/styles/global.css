@@ -2598,3 +2598,81 @@ button.update--ready:hover {
   color: var(--warning);
   font-size: 13px;
 }
+
+/* ------------------------------------------------------------ statistics */
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stat-card__value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.stat-card__label {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* One column per day. They share the width rather than scrolling, so ninety
+   days still reads as a shape at a glance. */
+.daybars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 140px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+/* Every day gets the same faint track, played or not: it puts all the bars on
+   one baseline and makes an empty day visibly a day rather than a missing one.
+   The track is deliberately quiet — given the elevated surface it read as a
+   full-height bar, which is the one thing it must not look like. */
+.daybar {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  min-width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.daybar__fill {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.daybar--empty .daybar__fill {
+  min-height: 0;
+}
+
+.sharebar {
+  flex: 0 0 90px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.sharebar__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}

@@ -6,6 +6,7 @@ import type {
   GameState,
   InstalledContent,
   LoaderId,
+  PlaySession,
   Profile,
   ProfileHistoryEntry,
   ProfileHealthFix,
@@ -344,6 +345,12 @@ const api = {
     restoreAutoBackup: (profileId: string, folderName: string, backupId: string): Promise<WorldSummary[]> =>
       ipcRenderer.invoke('worlds:restoreAutoBackup', profileId, folderName, backupId),
     openAutoBackups: (profileId: string): Promise<void> => ipcRenderer.invoke('worlds:openAutoBackups', profileId)
+  },
+
+  stats: {
+    /** Every profile's play sessions, newest last, for the statistics page. */
+    sessions: (): Promise<{ profileId: string; profileName: string; sessions: PlaySession[] }[]> =>
+      ipcRenderer.invoke('stats:sessions')
   },
 
   screenshots: {
