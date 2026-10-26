@@ -55,14 +55,6 @@ export async function inspectProfileHealth(profile: Profile): Promise<ProfileHea
   }
 
   const enabledMods = profile.content.filter((entry) => entry.kind === 'mod' && entry.enabled).length
-  if (enabledMods > 0 && profile.memoryMb < 2048) {
-    issues.push({
-      id: 'low-memory', severity: 'warning', title: 'Modlar için ayrılan bellek düşük',
-      detail: `${enabledMods} etkin mod var fakat profil 2 GB'den az bellek kullanıyor.`,
-      fix: 'set-safe-memory', fixLabel: '4 GB olarak ayarla'
-    })
-  }
-
   if (profile.loader === 'vanilla' && enabledMods > 0) {
     issues.push({
       id: 'vanilla-mods', severity: 'warning', title: 'Vanilla profil etkin mod içeriyor',
@@ -102,9 +94,6 @@ export async function fixProfileHealth(profileId: string, fix: ProfileHealthFix)
       break
     case 'clear-custom-java':
       store.updateProfile(profileId, { javaPath: undefined })
-      break
-    case 'set-safe-memory':
-      store.updateProfile(profileId, { memoryMb: 4096 })
       break
     case 'remove-missing-content': {
       const missing = new Set(await missingContentIndexes(profile))
