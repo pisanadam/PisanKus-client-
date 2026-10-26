@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Установить из файла сборки',
   'Yukarıda sabitle': 'Закрепить наверху',
   'Sabitlemeyi kaldır': 'Открепить',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'На этой машине {total} ГБ; отдав столько игре, системе не остаётся достаточно.',
-  '{size} GB yap': 'Поставить {size} ГБ',
   'İstatistikler': 'Статистика',
   'Ne kadar ve ne zaman oynadığınız': 'Сколько и когда вы играете',
   'Henüz oynanmış bir oturum yok': 'Сыгранных сессий пока нет',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Ярлык на рабочем столе',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Двойной щелчок открывает лаунчер и запускает этот профиль',
   'Masaüstüne ekle': 'Добавить на рабочий стол',
-  'Kısayol oluşturuldu: {file}': 'Ярлык создан: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Похоже, мало для этого профиля — игре может не хватить памяти.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'Игра израсходовала всю выданную память; настройка выглядит малой.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'В последних сессиях игра использовала {peak} ГБ — этой настройки ей не хватает.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Похоже, много для этого профиля. Лишняя память замедляет сборщик мусора и снижает FPS.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'В последних сессиях игра использовала не больше {peak} ГБ. Лишняя память замедляет сборщик мусора и снижает FPS.',
-  'Bu profil için uygun görünüyor.': 'Для этого профиля выглядит подходящим.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'В последних сессиях игра использовала не больше {peak} ГБ; настройка подходит.'
+  'Kısayol oluşturuldu: {file}': 'Ярлык создан: {file}'
 }
 
 export default table

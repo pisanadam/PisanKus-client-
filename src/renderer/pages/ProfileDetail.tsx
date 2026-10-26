@@ -15,7 +15,6 @@ import { OptionsEditor } from '../components/OptionsEditor'
 import { ProfileIcon } from '../components/ProfileIcon'
 import { ScreenshotGallery, type GalleryItem } from '../components/ScreenshotGallery'
 import { ServersTab } from '../components/ServersTab'
-import { memoryAdvice, type MeasuredSession } from '../../shared/memoryAdvice'
 import { parseOptions, readOption } from '../../shared/options'
 import { Confirm, Modal } from '../components/Modal'
 import type { AutoWorldBackupSummary, JavaInfo, WorldSummary } from '../../preload'
@@ -1173,45 +1172,9 @@ function ProfileSettingsTab({
   const [canShortcut, setCanShortcut] = useState(false)
   const [shortcutBusy, setShortcutBusy] = useState(false)
 
-  /** Weight of the mods folder, and what the game was measured using. */
-  const [modBytes, setModBytes] = useState(0)
-  const [measured, setMeasured] = useState<MeasuredSession[]>([])
-
-  /**
-   * What this profile's memory ought to be.
-   *
-   * Both inputs are about this profile specifically: what its mods weigh, and —
-   * once it has been played — how much the game actually held. A mod count
-   * would say the same thing about ninety-six small tweaks and ninety-six heavy
-   * content mods.
-   */
-  const advice = memoryAdvice({
-    currentMb: memory,
-    modBytes,
-    totalMb: totalMemory ?? undefined,
-    sessions: measured
-  })
-
   useEffect(() => {
     void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
     void api.profiles.canCreateShortcut().then(setCanShortcut).catch(() => undefined)
-    void api.profiles
-      .storage(profileId)
-      .then((report) => setModBytes(report.entries.find((entry) => entry.category === 'mods')?.bytes ?? 0))
-      .catch(() => undefined)
-    void api.stats
-      .sessions()
-      .then((all) => {
-        const mine = all.find((entry) => entry.profileId === profileId)?.sessions ?? []
-        setMeasured(
-          mine.flatMap((session) =>
-            // Both numbers or neither: a peak without the limit it ran under
-            // cannot be read at all.
-            session.peakMb && session.capMb ? [{ peakMb: session.peakMb, capMb: session.capMb }] : []
-          )
-        )
-      })
-      .catch(() => undefined)
   }, [])
 
   const managedCount = Object.keys(profile.managedOptions ?? {}).length
@@ -1489,34 +1452,19 @@ function ProfileSettingsTab({
         <div className="settings-row">
           <div>
             <div className="settings-row__label">{t('Ayrılan bellek')}</div>
-            {/* What this profile actually wants, rather than a fixed sentence:
-                the number depends on how many mods are in it and on how much
-                the machine has, and both are known here. */}
-            <div className={advice.warning ? 'settings-row__warn' : 'faint'}>
-              {(memory / 1024).toFixed(1)} GB — {t(advice.reason, advice.reasonParams)}
-            </div>
+            <div className="faint">{(memory / 1024).toFixed(1)} GB</div>
           </div>
-          <div className="row settings-row__controls" style={{ gap: 10 }}>
-            {advice.recommendedMb !== memory && (
-              <button
-                className={advice.warning ? 'btn btn--sm btn--primary' : 'btn btn--sm'}
-                onClick={() => setMemory(advice.recommendedMb)}
-              >
-                {t('{size} GB yap', { size: (advice.recommendedMb / 1024).toFixed(1) })}
-              </button>
-            )}
-            <input
-              type="range"
-              min={1024}
-              // Never below what this profile is already set to: a maximum under
-              // the stored value lets the input clamp it, and the next touch saves
-              // the clamped number as though it had been chosen.
-              max={Math.max(totalMemory ?? memory, memory)}
-              step={512}
-              value={memory}
-              onChange={(event) => setMemory(Number(event.target.value))}
-            />
-          </div>
+          <input
+            type="range"
+            min={1024}
+            // Never below what this profile is already set to: a maximum under
+            // the stored value lets the input clamp it, and the next touch saves
+            // the clamped number as though it had been chosen.
+            max={Math.max(totalMemory ?? memory, memory)}
+            step={512}
+            value={memory}
+            onChange={(event) => setMemory(Number(event.target.value))}
+          />
         </div>
 
         {profile.loader !== 'vanilla' && loaderVersions.length > 0 && (

@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Installa da un file di modpack',
   'Yukarıda sabitle': 'Fissa in alto',
   'Sabitlemeyi kaldır': 'Togli dai fissati',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Questa macchina ha {total} GB; darne così tanti al gioco lascia troppo poco al sistema.',
-  '{size} GB yap': 'Imposta {size} GB',
   'İstatistikler': 'Statistiche',
   'Ne kadar ve ne zaman oynadığınız': 'Quanto giochi e quando',
   'Henüz oynanmış bir oturum yok': 'Nessuna sessione giocata',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Collegamento sul desktop',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Con un doppio clic apre il launcher e avvia questo profilo',
   'Masaüstüne ekle': 'Aggiungi al desktop',
-  'Kısayol oluşturuldu: {file}': 'Collegamento creato: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Sembra poca per questo profilo; il gioco può bloccarsi per mancanza di memoria.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'Il gioco ha usato tutta la memoria che gli è stata data; l’impostazione sembra bassa.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'Nelle ultime sessioni il gioco ha usato {peak} GB; questa impostazione non gli basta.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Sembra molta per questo profilo. Più memoria del necessario rallenta il garbage collector e costa FPS.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Nelle ultime sessioni il gioco ha usato al massimo {peak} GB. Più memoria del necessario rallenta il garbage collector e costa FPS.',
-  'Bu profil için uygun görünüyor.': 'Sembra adatta a questo profilo.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Nelle ultime sessioni il gioco ha usato al massimo {peak} GB; l’impostazione va bene.'
+  'Kısayol oluşturuldu: {file}': 'Collegamento creato: {file}'
 }
 
 export default table

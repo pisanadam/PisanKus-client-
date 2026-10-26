@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'نصب از فایل بستهٔ ماد',
   'Yukarıda sabitle': 'سنجاق به بالا',
   'Sabitlemeyi kaldır': 'برداشتن سنجاق',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'این دستگاه {total} گیگابایت دارد؛ دادن این مقدار به بازی برای سیستم کافی باقی نمی‌گذارد.',
-  '{size} GB yap': '{size} گیگابایت کن',
   'İstatistikler': 'آمار',
   'Ne kadar ve ne zaman oynadığınız': 'چقدر و کِی بازی می‌کنید',
   'Henüz oynanmış bir oturum yok': 'هنوز نشستی بازی نشده',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'میان‌بر روی میزکار',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'دوبار کلیک، لانچر را باز می‌کند و همین نمایه را اجرا می‌کند',
   'Masaüstüne ekle': 'افزودن به میزکار',
-  'Kısayol oluşturuldu: {file}': 'میان‌بر ساخته شد: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'برای این نمایه کم به نظر می‌رسد؛ ممکن است بازی از کمبود حافظه بخوابد.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'بازی همهٔ حافظه‌ای را که گرفته بود مصرف کرد؛ این تنظیم کم به نظر می‌رسد.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'بازی در نشست‌های اخیر {peak} گیگابایت مصرف کرد؛ این تنظیم برایش کافی نیست.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'برای این نمایه زیاد به نظر می‌رسد. حافظهٔ بیش از نیاز، زباله‌روب را کند و نرخ فریم را کم می‌کند.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'بازی در نشست‌های اخیر حداکثر {peak} گیگابایت مصرف کرد. حافظهٔ بیش از نیاز، زباله‌روب را کند و نرخ فریم را کم می‌کند.',
-  'Bu profil için uygun görünüyor.': 'برای این نمایه مناسب به نظر می‌رسد.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'بازی در نشست‌های اخیر حداکثر {peak} گیگابایت مصرف کرد؛ این تنظیم مناسب است.'
+  'Kısayol oluşturuldu: {file}': 'میان‌بر ساخته شد: {file}'
 }
 
 export default table

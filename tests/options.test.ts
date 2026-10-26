@@ -91,8 +91,11 @@ test('a save made while the game runs is held until it exits', () => {
 
   // And the held text is written on exit, and again before the next launch in
   // case the launcher was closed before the game was.
-  assert.match(ipc, /sessions\.delete\(profileId\)\s*\n\s*launchAborts\.delete\(profileId\)\s*\n\s*void flushPendingOptions\(profileId\)/)
-  assert.match(ipc, /await flushPendingOptions\(profileId\)/)
+  assert.match(ipc, /sessions\.delete\(profileId\)\s*\n\s*launchAborts\.delete\(profileId\)\s*\n\s*void flushPendingOptions\(profileId, reportAfterExit\)/)
+  assert.match(ipc, /await flushPendingOptions\(profileId, /)
+  // A write that fails keeps the save for the next launch instead of dropping it.
+  const flush = ipc.slice(ipc.indexOf('async function flushPendingOptions'))
+  assert.match(flush, /if \(pendingOptions\.get\(profileId\) === text\) pendingOptions\.delete\(profileId\)\s*\n\s*\} catch/)
 })
 
 test('the template is still seeded when the data version cannot be read', async () => {

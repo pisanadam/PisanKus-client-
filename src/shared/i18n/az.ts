@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Mod paketi faylından quraşdır',
   'Yukarıda sabitle': 'Yuxarıda sabitlə',
   'Sabitlemeyi kaldır': 'Sabitləməni götür',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Bu maşında {total} GB var; bu qədərini oyuna versəniz sistemə çatan qalmır.',
-  '{size} GB yap': '{size} GB et',
   'İstatistikler': 'Statistika',
   'Ne kadar ve ne zaman oynadığınız': 'Nə qədər və nə vaxt oynadığınız',
   'Henüz oynanmış bir oturum yok': 'Hələ oynanmış sessiya yoxdur',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Masaüstü qısayolu',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'İki dəfə klikləyəndə launcher açılıb bu profili başladır',
   'Masaüstüne ekle': 'Masaüstünə əlavə et',
-  'Kısayol oluşturuldu: {file}': 'Qısayol yaradıldı: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Bu profil üçün az görünür; yaddaş çatmadığı üçün oyun çökə bilər.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'Oyun ona verilən yaddaşın hamısını istifadə etdi; bu ayar az görünür.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'Oyun son sessiyalarda {peak} GB istifadə etdi; bu ayar ona çatmır.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Bu profil üçün çox görünür. Ehtiyacdan çox yaddaş zibil yığanı yavaşladır və FPS-i salır.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Oyun son sessiyalarda ən çox {peak} GB istifadə etdi. Ehtiyacdan çox yaddaş zibil yığanı yavaşladır və FPS-i salır.',
-  'Bu profil için uygun görünüyor.': 'Bu profil üçün uyğun görünür.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oyun son sessiyalarda ən çox {peak} GB istifadə etdi; bu ayar uyğundur.'
+  'Kısayol oluşturuldu: {file}': 'Qısayol yaradıldı: {file}'
 }
 
 export default table
