@@ -215,18 +215,18 @@ export async function enableSafeMode(profileId: string): Promise<ProfileSafeMode
     (entry) => entry.enabled && (entry.kind === 'mod' || entry.kind === 'shader' || entry.kind === 'resourcepack')
   )
   const disabled: string[] = []
+  const state: ProfileSafeModeState = { active: true, enabledAt: Date.now(), disabledContentIds: disabled }
   try {
     for (const entry of candidates) {
       await setContentEnabled(profileId, entry.id, false)
       disabled.push(entry.id)
     }
+    // Inside the rollback on purpose: the file is the only record of what was
+    // turned off. Content disabled without it could never be restored.
+    await writeJsonAtomic(internalFile(profile, 'safe-mode.json'), state)
   } catch (error) {
-    for (const id of disabled.reverse()) await setContentEnabled(profileId, id, true).catch(() => undefined)
-    throw error
+    throw await rolledBack(error, profileId, disabled, true)
   }
-
-  const state: ProfileSafeModeState = { active: true, enabledAt: Date.now(), disabledContentIds: disabled }
-  await writeJsonAtomic(internalFile(profile, 'safe-mode.json'), state)
   await recordProfileHistory(profile, 'safe-mode-enabled', 'Güvenli mod açıldı', `${disabled.length} içerik geçici olarak kapatıldı`)
   return state
 }
@@ -250,6 +250,27 @@ export async function restoreSafeMode(profileId: string): Promise<ProfileSafeMod
   return cleared
 }
 
+/**
+ * Puts content back the way it was after a batch change failed part way, and
+ * returns the error to throw.
+ *
+ * The rollback itself can fail too. That is no reason to stop putting the rest
+ * back, but it is a reason to say so: the original error alone would let the
+ * player believe nothing had changed.
+ */
+async function rolledBack(error: unknown, profileId: string, ids: string[], enabled: boolean): Promise<Error> {
+  let stuck = 0
+  for (const id of [...ids].reverse()) {
+    await setContentEnabled(profileId, id, enabled).catch(() => {
+      stuck++
+    })
+  }
+  const message = error instanceof Error ? error.message : String(error)
+  return stuck === 0
+    ? error instanceof Error ? error : new Error(message)
+    : new Error(`${message} (${stuck} içerik eski durumuna döndürülemedi; İçerik sekmesinden kontrol edin.)`)
+}
+
 export async function setManyContentEnabled(
   profileId: string,
   contentIds: string[],
@@ -267,8 +288,7 @@ export async function setManyContentEnabled(
       changed.push(id)
     }
   } catch (error) {
-    for (const id of changed.reverse()) await setContentEnabled(profileId, id, !enabled).catch(() => undefined)
-    throw error
+    throw await rolledBack(error, profileId, changed, !enabled)
   }
   if (changed.length > 0) {
     await recordProfileHistory(

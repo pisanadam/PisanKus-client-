@@ -198,16 +198,35 @@ async function recordManagedOptions(profileId: string, directory: string, text: 
   store.updateProfile(profileId, { managedOptions: managed })
 }
 
-/** Writes a deferred save now that the game is no longer holding the file. */
-async function flushPendingOptions(profileId: string): Promise<void> {
+/**
+ * Writes a deferred save now that the game is no longer holding the file.
+ *
+ * A failed write keeps the save pending instead of dropping it: on Windows the
+ * game can hold options.txt for a moment after it exits, and the next launch
+ * flushes again before the game reads the file. Without this the settings the
+ * player saved during the session were simply gone.
+ */
+async function flushPendingOptions(profileId: string, report?: (message: string) => void): Promise<void> {
   const text = pendingOptions.get(profileId)
   if (text === undefined) return
-  pendingOptions.delete(profileId)
 
   const profile = store.profile(profileId)
-  if (!profile) return
-  await recordManagedOptions(profileId, profile.directory, text).catch(() => undefined)
-  await writeProfileOptions(profile.directory, text, true).catch(() => undefined)
+  if (!profile) {
+    pendingOptions.delete(profileId)
+    return
+  }
+  try {
+    await recordManagedOptions(profileId, profile.directory, text)
+    await writeProfileOptions(profile.directory, text, true)
+    // Only if nothing newer was saved while this one was being written.
+    if (pendingOptions.get(profileId) === text) pendingOptions.delete(profileId)
+  } catch (error) {
+    report?.(`Oyun ayarları yazılamadı, bir sonraki başlatmada yeniden denenecek: ${errorMessage(error)}`)
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
 
 const launchAborts = new Map<string, AbortController>()
@@ -614,7 +633,9 @@ export function registerIpc(
     // A save made during the last session is written before the game reads the
     // file, not after — if the launcher was closed before the game exited, this
     // is the only place left to apply it.
-    await flushPendingOptions(profileId)
+    await flushPendingOptions(profileId, (line) =>
+      onLog({ profileId, stream: 'launcher', line, at: Date.now() })
+    )
 
     const profile = store.profile(profileId)
     if (!profile) throw new Error('Profil bulunamadı.')
@@ -660,15 +681,26 @@ export function registerIpc(
       recordedLog({
         profileId,
         stream: 'launcher',
-        line: `Başlatma başarısız: ${error instanceof Error ? error.message : String(error)}`,
+        line: `Başlatma başarısız: ${errorMessage(error)}`,
         at: Date.now()
       })
+    }
+    /**
+     * Housekeeping that fails after the game is gone: it must not stop
+     * anything, but it must not vanish either, or a missing session in the
+     * statistics or a missing crash report has no explanation anywhere.
+     */
+    const reportAfterExit = (line: string): void => {
+      onLog({ profileId, stream: 'launcher', line, at: Date.now() })
     }
     const publishCrash = (report: CrashReport | null): void => {
       if (report) send('crash:created', report)
     }
     const finishDiagnostics = (state: GameState): void => {
-      void diagnostics.finish(state).then(publishCrash).catch(() => undefined)
+      void diagnostics
+        .finish(state)
+        .then(publishCrash)
+        .catch((error) => reportAfterExit(`Çökme raporu hazırlanamadı: ${errorMessage(error)}`))
     }
 
     // What the jars in `mods/` say about themselves, before the game gets a
@@ -738,7 +770,7 @@ export function registerIpc(
             terminal = true
             sessions.delete(profileId)
             launchAborts.delete(profileId)
-            void flushPendingOptions(profileId)
+            void flushPendingOptions(profileId, reportAfterExit)
             const current = store.profile(profileId)
             if (current) {
               const endedAt = Date.now()
@@ -747,7 +779,9 @@ export function registerIpc(
               })
               // The running total cannot say when any of it happened. The
               // session list can, and it is what the statistics are drawn from.
-              void recordSession(current, startedAt, endedAt).catch(() => undefined)
+              void recordSession(current, startedAt, endedAt).catch((error) =>
+                reportAfterExit(`Oynama süresi istatistiklere kaydedilemedi: ${errorMessage(error)}`)
+              )
             }
             finishDiagnostics(state)
           }
