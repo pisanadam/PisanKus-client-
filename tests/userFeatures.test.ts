@@ -483,9 +483,7 @@ test('play sessions are recorded and can be summarised', () => {
   const ipc = readFileSync('src/main/ipc.ts', 'utf8')
   // Written where the running total is, from the same pair of timestamps.
   assert.match(ipc, /totalPlaytimeMs: current\.totalPlaytimeMs \+ \(endedAt - startedAt\)/)
-  // The peak goes with it: a session's memory is only readable next to the
-  // limit it ran under.
-  assert.match(ipc, /void recordSession\(current, startedAt, endedAt, peakMb, launchedMemoryMb\)/)
+  assert.match(ipc, /void recordSession\(current, startedAt, endedAt\)/)
   // One unreadable profile folder must not empty the whole page.
   assert.match(ipc, /sessions: await listSessions\(profile\)\.catch\(\(\) => \[\]\)/)
 
@@ -539,31 +537,3 @@ test('a profile can be started from a desktop shortcut', () => {
  * mods, and the memory each wants is not the same. The running game knows, so
  * it is measured instead of guessed at.
  */
-test('memory advice is measured from the game, not counted off the mod list', () => {
-  const advice = readFileSync('src/shared/memoryAdvice.ts', 'utf8')
-  // Never a count. The fallback is weight on disk, and it says it is a guess.
-  assert.doesNotMatch(advice, /modCount/)
-  assert.match(advice, /function fromDiskSize\(modBytes: number\)/)
-  assert.match(advice, /basis: 'measured' \| 'estimated'/)
-  // A peak pressed against its limit says "at least this much", never "enough".
-  assert.match(advice, /session\.peakMb < session\.capMb \* PRESSED/)
-  assert.match(advice, /Math\.max\(estimate, toStep\(highestCap \+ 1024\)\)/)
-
-  const ipc = readFileSync('src/main/ipc.ts', 'utf8')
-  assert.match(ipc, /memoryWatch = watchPeakMemory\(session\.pid\)/)
-
-  const sessions = readFileSync('src/main/playSessions.ts', 'utf8')
-  // Both numbers or neither.
-  assert.match(sessions, /session\.peakMb = peakMb\s*\n\s*\/\/[\s\S]*?\n\s*session\.capMb = capMb/)
-  // The cap is the one the game started with, not whatever the setting says at exit.
-  assert.match(ipc, /const launchedMemoryMb = profile\.memoryMb \|\| store\.settings\.defaultMemoryMb/)
-
-  // The settings tab reads one folder and one file, not the whole profile and
-  // every profile's history.
-  const inputs = ipc.slice(ipc.indexOf("handle('profiles:memoryInputs'"))
-  assert.match(inputs, /modsBytes\(profile\)/)
-  assert.match(inputs, /session\.peakMb && session\.capMb \?/)
-  const detail = readFileSync('src/renderer/pages/ProfileDetail.tsx', 'utf8')
-  assert.match(detail, /api\.profiles\s*\.memoryInputs\(profileId\)/)
-  assert.doesNotMatch(detail, /api\.stats\s*\.sessions\(\)/)
-})

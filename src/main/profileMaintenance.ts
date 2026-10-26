@@ -105,12 +105,6 @@ async function usage(target: string): Promise<{ bytes: number; fileCount: number
   return { bytes, fileCount }
 }
 
-/** What the enabled and disabled mods weigh together, without walking the rest of the profile. */
-export async function modsBytes(profile: Profile): Promise<number> {
-  const root = requireProfileDirectory(profile.directory)
-  return (await usage(resolveInside(root, 'mods'))).bytes
-}
-
 const STORAGE_PATHS: Record<ProfileStorageCategory, string[]> = {
   mods: ['mods'],
   resourcepacks: ['resourcepacks'],

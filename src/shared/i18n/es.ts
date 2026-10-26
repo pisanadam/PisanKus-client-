@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Instalar desde un archivo de modpack',
   'Yukarıda sabitle': 'Fijar arriba',
   'Sabitlemeyi kaldır': 'Dejar de fijar',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Esta máquina tiene {total} GB; dar tanto al juego deja demasiado poco para el sistema.',
-  '{size} GB yap': 'Poner {size} GB',
   'İstatistikler': 'Estadísticas',
   'Ne kadar ve ne zaman oynadığınız': 'Cuánto juegas y cuándo',
   'Henüz oynanmış bir oturum yok': 'Aún no hay sesiones jugadas',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Acceso directo en el escritorio',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Al hacer doble clic abre el launcher e inicia este perfil',
   'Masaüstüne ekle': 'Añadir al escritorio',
-  'Kısayol oluşturuldu: {file}': 'Acceso directo creado: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Parece poco para este perfil; el juego puede fallar por falta de memoria.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'El juego usó toda la memoria que se le dio; este ajuste parece bajo.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'En las últimas sesiones el juego usó {peak} GB; este ajuste no le basta.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Parece mucho para este perfil. Más memoria de la necesaria ralentiza el recolector de basura y cuesta FPS.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'En las últimas sesiones el juego usó como mucho {peak} GB. Más memoria de la necesaria ralentiza el recolector de basura y cuesta FPS.',
-  'Bu profil için uygun görünüyor.': 'Parece adecuado para este perfil.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'En las últimas sesiones el juego usó como mucho {peak} GB; este ajuste está bien.'
+  'Kısayol oluşturuldu: {file}': 'Acceso directo creado: {file}'
 }
 
 export default table

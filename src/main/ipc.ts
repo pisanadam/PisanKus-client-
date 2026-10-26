@@ -52,7 +52,6 @@ import { isNetworkFailure } from './network.ts'
 import { ICON_BACKGROUNDS, ICON_SYMBOLS, type IconRecipe } from '../shared/profileIcon'
 import { createAutomaticWorldBackups, listAutomaticWorldBackups, restoreAutomaticWorldBackup } from './worldBackups'
 import { listSessions, recordSession } from './playSessions'
-import { watchPeakMemory } from './processMemory'
 import { createProfileShortcut } from './shortcuts'
 import {
   cleanProfileStorage,
@@ -60,7 +59,6 @@ import {
   getSafeModeState,
   inspectProfileStorage,
   listProfileHistory,
-  modsBytes,
   recordProfileHistory,
   restoreSafeMode,
   setManyContentEnabled
@@ -727,21 +725,6 @@ export function registerIpc(
     launchAborts.set(profileId, controller)
     const startedAt = Date.now()
     let terminal = false
-    /**
-     * Watches how much memory the game actually takes.
-     *
-     * What a profile needs cannot be read off its mod list — ninety-six small
-     * utility mods and ninety-six heavy ones are not the same pack, and nothing
-     * on disk says which is which. The running game does, so it is measured
-     * rather than guessed at, and the memory advice uses the measurement once
-     * there is one.
-     */
-    let memoryWatch: { stop: () => number | null } | null = null
-    // What the game is started with, kept apart from the profile: the setting
-    // can be changed while it runs, and the peak only means something next to
-    // the limit it actually ran under.
-    const launchedMemoryMb = profile.memoryMb || store.settings.defaultMemoryMb
-
     try {
       const session = await launch({
         profile,
@@ -756,8 +739,6 @@ export function registerIpc(
             sessions.delete(profileId)
             launchAborts.delete(profileId)
             void flushPendingOptions(profileId)
-            const peakMb = memoryWatch?.stop() ?? null
-            memoryWatch = null
             const current = store.profile(profileId)
             if (current) {
               const endedAt = Date.now()
@@ -766,7 +747,7 @@ export function registerIpc(
               })
               // The running total cannot say when any of it happened. The
               // session list can, and it is what the statistics are drawn from.
-              void recordSession(current, startedAt, endedAt, peakMb, launchedMemoryMb).catch(() => undefined)
+              void recordSession(current, startedAt, endedAt).catch(() => undefined)
             }
             finishDiagnostics(state)
           }
@@ -779,7 +760,6 @@ export function registerIpc(
       })
 
       if (!terminal) sessions.set(profileId, session)
-      if (!terminal && session.pid !== undefined) memoryWatch = watchPeakMemory(session.pid)
       store.updateProfile(profileId, { lastPlayed: Date.now() })
       return { pid: session.pid }
     } catch (error) {
@@ -1070,31 +1050,6 @@ export function registerIpc(
       }))
     )
   )
-
-  /**
-   * What the memory advice needs about one profile: what its mods weigh and
-   * what the game was measured holding.
-   *
-   * Its own call rather than the storage report and the statistics list: those
-   * walk every world on disk and read every profile's history, and the settings
-   * tab needs one folder and one file.
-   */
-  handle('profiles:memoryInputs', async (id: string) => {
-    const profile = store.profile(id)
-    if (!profile) throw new Error('Profil bulunamadı.')
-    const [modBytes, played] = await Promise.all([
-      modsBytes(profile).catch(() => 0),
-      listSessions(profile).catch(() => [])
-    ])
-    return {
-      modBytes,
-      // Both numbers or neither: a peak without the limit it ran under cannot
-      // be read at all.
-      sessions: played.flatMap((session) =>
-        session.peakMb && session.capMb ? [{ peakMb: session.peakMb, capMb: session.capMb }] : []
-      )
-    }
-  })
 
   // --------------------------------------------------------------- screenshots
 

@@ -37,13 +37,20 @@ export async function listSessions(profile: Profile): Promise<PlaySession[]> {
   try {
     const value = JSON.parse(await fsp.readFile(sessionsFile(profile), 'utf8')) as unknown
     if (!Array.isArray(value)) return []
-    return value.filter(
-      (entry): entry is PlaySession =>
-        Boolean(entry) &&
-        typeof entry === 'object' &&
-        Number.isFinite((entry as PlaySession).at) &&
-        Number.isFinite((entry as PlaySession).ms) &&
-        (entry as PlaySession).ms >= 0
+    return (
+      value
+        .filter(
+          (entry): entry is PlaySession =>
+            Boolean(entry) &&
+            typeof entry === 'object' &&
+            Number.isFinite((entry as PlaySession).at) &&
+            Number.isFinite((entry as PlaySession).ms) &&
+            (entry as PlaySession).ms >= 0
+        )
+        // Only what a session is. Builds that measured memory also stored a
+        // peak and a limit; copying those forward would keep them on disk for
+        // good with nothing left that reads them.
+        .map((entry) => ({ at: entry.at, ms: entry.ms }))
     )
   } catch {
     // No file yet, or one that cannot be read. Either way there is nothing to
@@ -59,31 +66,13 @@ export async function listSessions(profile: Profile): Promise<PlaySession[]> {
  * process that lived for a second, and a chart full of those says the game was
  * played every day it crashed.
  */
-export async function recordSession(
-  profile: Profile,
-  startedAt: number,
-  endedAt: number,
-  /** The most memory the game held during it, when it could be measured. */
-  peakMb: number | null = null,
-  /**
-   * The limit the game was started with. Not read off the profile here: by the
-   * time the game exits the setting may have been changed, and a peak filed
-   * under a limit it never ran with reads as evidence it is not.
-   */
-  capMb: number = profile.memoryMb
-): Promise<void> {
+export async function recordSession(profile: Profile, startedAt: number, endedAt: number): Promise<void> {
   const ms = endedAt - startedAt
   if (!Number.isFinite(ms) || ms < MIN_SESSION_MS) return
 
   const file = sessionsFile(profile)
   const history = await listSessions(profile)
-  const session: PlaySession = { at: startedAt, ms }
-  if (peakMb !== null && Number.isFinite(peakMb) && peakMb > 0) {
-    session.peakMb = peakMb
-    // Without the limit it ran under, the peak cannot be read: see PlaySession.
-    session.capMb = capMb
-  }
-  const next = [...history, session].slice(-MAX_SESSIONS)
+  const next = [...history, { at: startedAt, ms }].slice(-MAX_SESSIONS)
 
   await fsp.mkdir(path.dirname(file), { recursive: true })
   const temporary = `${file}.tmp`

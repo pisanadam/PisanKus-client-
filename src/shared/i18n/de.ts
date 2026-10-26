@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Aus einer Modpack-Datei installieren',
   'Yukarıda sabitle': 'Oben anheften',
   'Sabitlemeyi kaldır': 'Loslösen',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Dieser Rechner hat {total} GB; so viel für das Spiel lässt dem System zu wenig.',
-  '{size} GB yap': 'Auf {size} GB setzen',
   'İstatistikler': 'Statistik',
   'Ne kadar ve ne zaman oynadığınız': 'Wie viel du spielst, und wann',
   'Henüz oynanmış bir oturum yok': 'Noch keine gespielte Sitzung',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Desktop-Verknüpfung',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Ein Doppelklick öffnet den Launcher und startet dieses Profil',
   'Masaüstüne ekle': 'Zum Desktop hinzufügen',
-  'Kısayol oluşturuldu: {file}': 'Verknüpfung erstellt: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Wirkt wenig für dieses Profil; dem Spiel kann der Speicher ausgehen.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'Das Spiel hat jeden zugeteilten Megabyte genutzt; die Einstellung wirkt niedrig.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'Das Spiel hat zuletzt {peak} GB gebraucht; diese Einstellung reicht ihm nicht.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Wirkt viel für dieses Profil. Mehr Speicher als nötig bremst den Garbage Collector und kostet FPS.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Das Spiel hat zuletzt höchstens {peak} GB gebraucht. Mehr Speicher als nötig bremst den Garbage Collector und kostet FPS.',
-  'Bu profil için uygun görünüyor.': 'Wirkt passend für dieses Profil.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Das Spiel hat zuletzt höchstens {peak} GB gebraucht; die Einstellung passt.'
+  'Kısayol oluşturuldu: {file}': 'Verknüpfung erstellt: {file}'
 }
 
 export default table

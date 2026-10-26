@@ -6,22 +6,33 @@ import test from 'node:test'
 import { listSessions, recordSession } from '../src/main/playSessions.ts'
 import type { Profile } from '../src/shared/types.ts'
 
-test('a session is filed under the limit it was launched with, not the one set since', async () => {
+async function withProfile(run: (profile: Profile) => Promise<void>): Promise<void> {
   const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'pisankus-sessions-'))
   try {
-    const directory = path.join(root, 'profiles', 'p1')
-    // Raised from 2 GB to 8 GB while the game was still running.
-    const profile = { id: 'p1', directory, memoryMb: 8_192 } as Profile
-    await recordSession(profile, 0, 60_000, 1_950, 2_048)
-    const [session] = await listSessions(profile)
-    // Under the real 2 GB limit this peak is "starved", not "8 GB is plenty".
-    assert.equal(session.peakMb, 1_950)
-    assert.equal(session.capMb, 2_048)
-
-    // Without an explicit limit the profile's own is still used.
-    await recordSession(profile, 100_000, 200_000, 3_000)
-    assert.equal((await listSessions(profile))[1].capMb, 8_192)
+    await run({ id: 'p1', directory: path.join(root, 'profiles', 'p1') } as Profile)
   } finally {
     await fsp.rm(root, { recursive: true, force: true })
   }
+}
+
+test('a launch that died at once is not recorded as play', async () => {
+  await withProfile(async (profile) => {
+    await recordSession(profile, 0, 5_000)
+    assert.deepEqual(await listSessions(profile), [])
+    await recordSession(profile, 0, 60_000)
+    assert.deepEqual(await listSessions(profile), [{ at: 0, ms: 60_000 }])
+  })
+})
+
+test('memory figures left by older builds are dropped on the next write', async () => {
+  await withProfile(async (profile) => {
+    const file = path.join(profile.directory, '.pisankus', 'sessions.json')
+    await fsp.mkdir(path.dirname(file), { recursive: true })
+    await fsp.writeFile(file, JSON.stringify([{ at: 0, ms: 60_000, peakMb: 1_950, capMb: 2_048 }, 'junk']))
+    await recordSession(profile, 100_000, 200_000)
+    assert.deepEqual(JSON.parse(await fsp.readFile(file, 'utf8')), [
+      { at: 0, ms: 60_000 },
+      { at: 100_000, ms: 100_000 }
+    ])
+  })
 })

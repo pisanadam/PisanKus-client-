@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Мод жинағы файлынан орнату',
   'Yukarıda sabitle': 'Жоғарыда бекіту',
   'Sabitlemeyi kaldır': 'Бекітуді алу',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Бұл компьютерде {total} ГБ бар; сонша мөлшерді ойынға берсеңіз жүйеге жететіні қалмайды.',
-  '{size} GB yap': '{size} ГБ қылу',
   'İstatistikler': 'Статистика',
   'Ne kadar ve ne zaman oynadığınız': 'Қанша және қашан ойнағаныңыз',
   'Henüz oynanmış bir oturum yok': 'Әзірге ойналған сеанс жоқ',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Жұмыс үстелі таңбашасы',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Екі рет шертсеңіз launcher ашылып осы профильді іске қосады',
   'Masaüstüne ekle': 'Жұмыс үстеліне қосу',
-  'Kısayol oluşturuldu: {file}': 'Таңбаша жасалды: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Бұл профиль үшін аз көрінеді; жады жетпей ойын құлауы мүмкін.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'Ойын өзіне берілген жадының бәрін пайдаланды; бұл баптау аз көрінеді.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'Ойын соңғы сеанстарда {peak} ГБ пайдаланды; бұл баптау оған жетпейді.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Бұл профиль үшін көп көрінеді. Қажеттен артық жады қоқыс жинағышты баяулатып, FPS түсіреді.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Ойын соңғы сеанстарда ең көбі {peak} ГБ пайдаланды. Қажеттен артық жады қоқыс жинағышты баяулатып, FPS түсіреді.',
-  'Bu profil için uygun görünüyor.': 'Бұл профиль үшін қолайлы көрінеді.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Ойын соңғы сеанстарда ең көбі {peak} ГБ пайдаланды; бұл баптау қолайлы.'
+  'Kısayol oluşturuldu: {file}': 'Таңбаша жасалды: {file}'
 }
 
 export default table

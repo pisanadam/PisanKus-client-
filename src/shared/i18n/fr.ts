@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Installer depuis un fichier de modpack',
   'Yukarıda sabitle': 'Épingler en haut',
   'Sabitlemeyi kaldır': 'Détacher',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'Cette machine a {total} Go ; en donner autant au jeu ne laisse plus assez au système.',
-  '{size} GB yap': 'Mettre {size} Go',
   'İstatistikler': 'Statistiques',
   'Ne kadar ve ne zaman oynadığınız': 'Combien vous jouez, et quand',
   'Henüz oynanmış bir oturum yok': 'Aucune session jouée pour l’instant',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Raccourci sur le bureau',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Un double-clic ouvre le launcher et lance ce profil',
   'Masaüstüne ekle': 'Ajouter au bureau',
-  'Kısayol oluşturuldu: {file}': 'Raccourci créé : {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'Semble peu pour ce profil ; le jeu peut planter par manque de mémoire.',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'Le jeu a utilisé toute la mémoire qu’on lui a donnée ; ce réglage semble faible.',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': 'Le jeu a utilisé {peak} Go lors des dernières sessions ; ce réglage ne lui suffit pas.',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Semble beaucoup pour ce profil. Trop de mémoire ralentit le ramasse-miettes et coûte des FPS.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Le jeu a utilisé au plus {peak} Go lors des dernières sessions. Trop de mémoire ralentit le ramasse-miettes et coûte des FPS.',
-  'Bu profil için uygun görünüyor.': 'Semble adapté à ce profil.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Le jeu a utilisé au plus {peak} Go lors des dernières sessions ; ce réglage convient.'
+  'Kısayol oluşturuldu: {file}': 'Raccourci créé : {file}'
 }
 
 export default table

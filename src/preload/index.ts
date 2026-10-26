@@ -213,9 +213,6 @@ const api = {
       ipcRenderer.invoke('profiles:safeMode', id, enabled),
     history: (id: string): Promise<ProfileHistoryEntry[]> => ipcRenderer.invoke('profiles:history', id),
     storage: (id: string): Promise<ProfileStorageReport> => ipcRenderer.invoke('profiles:storage', id),
-    /** What the memory advice reads: the mods folder's weight and the measured sessions. */
-    memoryInputs: (id: string): Promise<{ modBytes: number; sessions: { peakMb: number; capMb: number }[] }> =>
-      ipcRenderer.invoke('profiles:memoryInputs', id),
     cleanStorage: (id: string, categories: ProfileStorageCategory[]): Promise<ProfileStorageReport> =>
       ipcRenderer.invoke('profiles:cleanStorage', id, categories),
     /** Fires whenever the main process changes the profile list on its own. */

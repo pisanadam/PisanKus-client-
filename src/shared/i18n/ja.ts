@@ -687,8 +687,6 @@ const table: Dictionary = {
   'Mod paketi dosyasından kur': 'Modパックファイルから導入',
   'Yukarıda sabitle': '上部に固定',
   'Sabitlemeyi kaldır': '固定を解除',
-  'Bu makinede {total} GB var; bu kadarını oyuna verince sisteme yetecek kadarı kalmıyor.': 'このマシンは {total} GB です。これだけゲームに渡すとシステムに残る分が足りません。',
-  '{size} GB yap': '{size} GB にする',
   'İstatistikler': '統計',
   'Ne kadar ve ne zaman oynadığınız': 'どれだけ、いつ遊んだか',
   'Henüz oynanmış bir oturum yok': 'まだプレイ記録がありません',
@@ -710,14 +708,7 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'デスクトップのショートカット',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'ダブルクリックでランチャーが開き、このプロファイルが起動します',
   'Masaüstüne ekle': 'デスクトップに追加',
-  'Kısayol oluşturuldu: {file}': 'ショートカットを作成しました: {file}',
-  'Bu profil için az görünüyor; oyun bellek yetmediği için çökebilir.': 'このプロファイルには少なめです。メモリ不足でゲームが落ちることがあります。',
-  'Oyun kendisine verilen belleğin tamamını kullandı; bu ayar az görünüyor.': 'ゲームは与えられたメモリを使い切りました。この設定は少なめに見えます。',
-  'Oyun son oturumlarda {peak} GB kullandı; bu ayar ona yetmiyor.': '直近のセッションでゲームは {peak} GB 使いました。この設定では足りません。',
-  'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'このプロファイルには多すぎるようです。必要以上のメモリは GC を遅くし、FPS を下げます。',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '直近のセッションでゲームが使ったのは最大 {peak} GB です。必要以上のメモリは GC を遅くし、FPS を下げます。',
-  'Bu profil için uygun görünüyor.': 'このプロファイルには妥当です。',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': '直近のセッションでゲームが使ったのは最大 {peak} GB。この設定で問題ありません。'
+  'Kısayol oluşturuldu: {file}': 'ショートカットを作成しました: {file}'
 }
 
 export default table
