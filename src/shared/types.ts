@@ -178,7 +178,6 @@ export interface Profile {
 export type ProfileHealthFix =
   | 'create-profile-directory'
   | 'clear-custom-java'
-  | 'set-safe-memory'
   | 'remove-missing-content'
 
 export interface ProfileHealthIssue {

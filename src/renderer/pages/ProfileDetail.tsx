@@ -1713,7 +1713,6 @@ function ProfileSettingsTab({
                       setHealth(report)
                       await refreshProfiles()
                       if (issue.fix === 'clear-custom-java') setJavaPath('')
-                      if (issue.fix === 'set-safe-memory') setMemory(4096)
                       notify(t('Profil sorunu düzeltildi.'))
                     } catch (error) {
                       notify(error, 'error')

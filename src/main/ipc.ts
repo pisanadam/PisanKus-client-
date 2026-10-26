@@ -393,7 +393,6 @@ export function registerIpc(
     const allowed = new Set<ProfileHealthFix>([
       'create-profile-directory',
       'clear-custom-java',
-      'set-safe-memory',
       'remove-missing-content'
     ])
     if (!allowed.has(fix)) throw new Error('Geçersiz profil düzeltme işlemi.')
