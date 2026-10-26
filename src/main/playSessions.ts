@@ -1,7 +1,7 @@
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import type { PlaySession, Profile } from '../shared/types'
-import { requireProfileDirectory, resolveInside } from './pathSafety'
+import { requireProfileDirectory, resolveInside } from './pathSafety.ts'
 
 /**
  * When each profile was played, and for how long.
@@ -64,7 +64,13 @@ export async function recordSession(
   startedAt: number,
   endedAt: number,
   /** The most memory the game held during it, when it could be measured. */
-  peakMb: number | null = null
+  peakMb: number | null = null,
+  /**
+   * The limit the game was started with. Not read off the profile here: by the
+   * time the game exits the setting may have been changed, and a peak filed
+   * under a limit it never ran with reads as evidence it is not.
+   */
+  capMb: number = profile.memoryMb
 ): Promise<void> {
   const ms = endedAt - startedAt
   if (!Number.isFinite(ms) || ms < MIN_SESSION_MS) return
@@ -75,7 +81,7 @@ export async function recordSession(
   if (peakMb !== null && Number.isFinite(peakMb) && peakMb > 0) {
     session.peakMb = peakMb
     // Without the limit it ran under, the peak cannot be read: see PlaySession.
-    session.capMb = profile.memoryMb
+    session.capMb = capMb
   }
   const next = [...history, session].slice(-MAX_SESSIONS)
 

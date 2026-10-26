@@ -64,29 +64,51 @@ export async function recordProfileHistory(
   return entry
 }
 
+/**
+ * Bytes and files under one path, symlinks not followed.
+ *
+ * Directory entries come typed from `readdir`, so only files are stat'ed, and a
+ * directory's files are stat'ed together rather than one after another — a
+ * worlds folder runs to tens of thousands of region files, and waiting on each
+ * in turn is what made the storage report slow.
+ */
 async function usage(target: string): Promise<{ bytes: number; fileCount: number }> {
+  let root
+  try {
+    root = await fsp.lstat(target)
+  } catch {
+    return { bytes: 0, fileCount: 0 }
+  }
+  if (root.isSymbolicLink()) return { bytes: 0, fileCount: 0 }
+  if (root.isFile()) return { bytes: root.size, fileCount: 1 }
+  if (!root.isDirectory()) return { bytes: 0, fileCount: 0 }
+
   let bytes = 0
   let fileCount = 0
   const queue = [target]
   while (queue.length > 0) {
     const current = queue.pop()!
-    let stat
-    try {
-      stat = await fsp.lstat(current)
-    } catch {
-      continue
+    const children = await fsp.readdir(current, { withFileTypes: true }).catch(() => [])
+    const files: string[] = []
+    for (const child of children) {
+      const full = path.join(current, child.name)
+      if (child.isDirectory()) queue.push(full)
+      else if (child.isFile()) files.push(full)
     }
-    if (stat.isSymbolicLink()) continue
-    if (stat.isFile()) {
-      bytes += stat.size
+    const sizes = await Promise.all(files.map((file) => fsp.stat(file).then((stat) => stat.size, () => null)))
+    for (const size of sizes) {
+      if (size === null) continue
+      bytes += size
       fileCount++
-      continue
     }
-    if (!stat.isDirectory()) continue
-    const children = await fsp.readdir(current).catch(() => [] as string[])
-    for (const child of children) queue.push(path.join(current, child))
   }
   return { bytes, fileCount }
+}
+
+/** What the enabled and disabled mods weigh together, without walking the rest of the profile. */
+export async function modsBytes(profile: Profile): Promise<number> {
+  const root = requireProfileDirectory(profile.directory)
+  return (await usage(resolveInside(root, 'mods'))).bytes
 }
 
 const STORAGE_PATHS: Record<ProfileStorageCategory, string[]> = {

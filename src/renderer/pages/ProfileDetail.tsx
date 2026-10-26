@@ -1196,20 +1196,10 @@ function ProfileSettingsTab({
     void api.app.totalMemoryMb().then(setTotalMemory).catch(() => undefined)
     void api.profiles.canCreateShortcut().then(setCanShortcut).catch(() => undefined)
     void api.profiles
-      .storage(profileId)
-      .then((report) => setModBytes(report.entries.find((entry) => entry.category === 'mods')?.bytes ?? 0))
-      .catch(() => undefined)
-    void api.stats
-      .sessions()
-      .then((all) => {
-        const mine = all.find((entry) => entry.profileId === profileId)?.sessions ?? []
-        setMeasured(
-          mine.flatMap((session) =>
-            // Both numbers or neither: a peak without the limit it ran under
-            // cannot be read at all.
-            session.peakMb && session.capMb ? [{ peakMb: session.peakMb, capMb: session.capMb }] : []
-          )
-        )
+      .memoryInputs(profileId)
+      .then((inputs) => {
+        setModBytes(inputs.modBytes)
+        setMeasured(inputs.sessions)
       })
       .catch(() => undefined)
   }, [])

@@ -5,6 +5,13 @@ import { promisify } from 'node:util'
 const run = promisify(execFile)
 
 /**
+ * How long one reading may take. `tasklist` on a busy Windows machine can stall
+ * for seconds; one that has not answered by now is killed rather than left to
+ * pile up behind the next sample.
+ */
+const READ_TIMEOUT_MS = 10_000
+
+/**
  * How much memory a running process is actually using.
  *
  * The launcher can guess what a profile needs from what is in it, and the guess
@@ -53,11 +60,14 @@ export async function processMemoryMb(pid: number): Promise<number | null> {
       return parseProcStatus(await fsp.readFile(`/proc/${pid}/status`, 'utf8'))
     }
     if (process.platform === 'darwin') {
-      const { stdout } = await run('ps', ['-o', 'rss=', '-p', String(pid)])
+      const { stdout } = await run('ps', ['-o', 'rss=', '-p', String(pid)], { timeout: READ_TIMEOUT_MS })
       return parsePsOutput(stdout)
     }
     if (process.platform === 'win32') {
-      const { stdout } = await run('tasklist', ['/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'])
+      const { stdout } = await run('tasklist', ['/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'], {
+        timeout: READ_TIMEOUT_MS,
+        windowsHide: true
+      })
       return parseTasklistOutput(stdout)
     }
     return null
@@ -77,14 +87,27 @@ export async function processMemoryMb(pid: number): Promise<number | null> {
  * a JVM in its first seconds has not loaded the pack yet and its memory then
  * says nothing about what the pack needs.
  */
-export function watchPeakMemory(pid: number, intervalMs = 30_000): { stop: () => number | null } {
+export function watchPeakMemory(
+  pid: number,
+  intervalMs = 30_000,
+  read: (pid: number) => Promise<number | null> = processMemoryMb
+): { stop: () => number | null } {
   let peakMb: number | null = null
   let stopped = false
+  // A reading still running when the next one is due is not doubled up on.
+  let reading = false
 
   const sample = async (): Promise<void> => {
-    if (stopped) return
-    const current = await processMemoryMb(pid)
-    if (current !== null && (peakMb === null || current > peakMb)) peakMb = current
+    if (stopped || reading) return
+    reading = true
+    try {
+      const current = await read(pid)
+      // A reading that lands after stop() belongs to nobody: the session has
+      // already been recorded with the peak it returned.
+      if (!stopped && current !== null && (peakMb === null || current > peakMb)) peakMb = current
+    } finally {
+      reading = false
+    }
   }
 
   const timer = setInterval(() => void sample(), intervalMs)

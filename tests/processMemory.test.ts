@@ -5,7 +5,8 @@ import {
   parseProcStatus,
   parsePsOutput,
   parseTasklistOutput,
-  processMemoryMb
+  processMemoryMb,
+  watchPeakMemory
 } from '../src/main/processMemory.ts'
 
 test('linux VmRSS is read out of the status block', () => {
@@ -74,4 +75,25 @@ test('this process reports a believable size on the real platform', async (t) =>
 test('a process that does not exist reports unknown rather than throwing', async () => {
   // Nothing is running under this pid; the point is that it answers at all.
   assert.equal(await processMemoryMb(0x7ffffff0), null)
+})
+
+test('a slow reading is not doubled up on, and one landing after stop is dropped', async () => {
+  let started = 0
+  const pending: ((mb: number) => void)[] = []
+  const read = (): Promise<number> => {
+    started++
+    return new Promise((resolve) => pending.push(resolve))
+  }
+  const watch = watchPeakMemory(1, 5, read)
+  await new Promise((resolve) => setTimeout(resolve, 40))
+  // Several intervals have passed while the first reading hangs.
+  assert.equal(started, 1)
+  pending[0](1_200)
+  await new Promise((resolve) => setTimeout(resolve, 20))
+  assert.ok(started >= 2)
+  assert.equal(watch.stop(), 1_200)
+  // A reading still in flight at stop() must not change what was returned.
+  for (const resolve of pending.slice(1)) resolve(9_000)
+  await new Promise((resolve) => setTimeout(resolve, 10))
+  assert.equal(watch.stop(), 1_200)
 })
