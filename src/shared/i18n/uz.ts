@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Bu profil uchun koʻp koʻrinadi. Keragidan ortiq xotira axlat yigʻuvchini sekinlashtiradi va FPS tushadi.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Oʻyin soʻnggi sessiyalarda koʻpi bilan {peak} GB ishlatdi. Keragidan ortiq xotira axlat yigʻuvchini sekinlashtiradi va FPS tushadi.',
   'Bu profil için uygun görünüyor.': 'Bu profil uchun mos koʻrinadi.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oʻyin soʻnggi sessiyalarda koʻpi bilan {peak} GB ishlatdi; bu sozlama mos.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oʻyin soʻnggi sessiyalarda koʻpi bilan {peak} GB ishlatdi; bu sozlama mos.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'Pisan PvP va boshqa PvP serverlari uchun Fabric to‘plami: kristall va anchor optimizatorlari, kechikish va ulanish tuzatishlari, ravon kadr tezligi. O‘yin sozlamalaringizga tegmaydi.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'Optimizator modlar kristall va anchorni server javobini kutmasdan ekraningizda ishlaydi; ping kamaymaydi, ammo zarba natijasi darhol ko‘rinadi. Hammasi katta PvP serverlarida ruxsat etilgan modlar.',
+  'Pisan PvP sunucusunun sürümü': 'Pisan PvP serverining versiyasi',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'Singan kristallni serverni kutmasdan olib tashlaydi — kechikishsiz kristall PvP',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'Qayta tug‘ilish anchori portlashini serverni kutmasdan ko‘rsatadi',
+  'Rakibin kaç totem patlattığını sayar': 'Raqibingiz nechta totem ishlatganini sanaydi',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'Totem animatsiyasini kichraytiradi, ko‘rinishni to‘smaydi',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'Nishonga olgan o‘yinchingizning zarba qutisini bo‘yaydi',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'Vaqt tugashi tufayli uzilishlar va paket xatolarini tuzatadi',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'Serverlar ro‘yxatidagi sekin DNS so‘rovini o‘tkazib yuboradi',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'O‘yinchilar ro‘yxatida pingni millisekundlarda ko‘rsatadi'
 }
 
 export default table

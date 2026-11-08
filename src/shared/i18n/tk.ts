@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Bu profil üçin köp görünýär. Gerekden köp ýat zibil ýygnaýjyny haýalladýar we FPS düşýär.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Oýun soňky sessiýalarda iň köp {peak} GB ulandy. Gerekden köp ýat zibil ýygnaýjyny haýalladýar we FPS düşýär.',
   'Bu profil için uygun görünüyor.': 'Bu profil üçin laýyk görünýär.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oýun soňky sessiýalarda iň köp {peak} GB ulandy; bu sazlama laýyk.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oýun soňky sessiýalarda iň köp {peak} GB ulandy; bu sazlama laýyk.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'Pisan PvP we beýleki PvP serwerleri üçin Fabric bukjasy: kristal we anchor optimizerleri, gijikme we birikme düzedişleri, ýakymly kadr tizligi. Oýun sazlamalaryňyza degmeýär.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'Optimizer modlary kristaly we anchor-y serweriň jogabyna garaşman ekranyňyzda işleýär; ping azalmaýar, emma uruşyň netijesi derrew görünýär. Olaryň hemmesi uly PvP serwerlerinde rugsat berlen modlardyr.',
+  'Pisan PvP sunucusunun sürümü': 'Pisan PvP serweriniň wersiýasy',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'Döwlen kristaly serwere garaşman aýyrýar — gijikmesiz kristal PvP',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'Respawn anchor partlamasyny serwere garaşman görkezýär',
+  'Rakibin kaç totem patlattığını sayar': 'Garşydaşyň näçe totem ulanandygyny sanaýar',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'Totem animasiýasyny kiçeldýär, görüşi ýapmaýar',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'Nyşana alan oýunçyňyzyň urgy gutusyny reňkleýär',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'Wagt gutarmagy sebäpli kesilmeleri we paket ýalňyşlaryny düzedýär',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'Serwer sanawyndaky haýal DNS soragyny geçýär',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'Oýunçy sanawynda pingi millisekuntda görkezýär'
 }
 
 export default table

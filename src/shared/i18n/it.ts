@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Sembra molta per questo profilo. Più memoria del necessario rallenta il garbage collector e costa FPS.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Nelle ultime sessioni il gioco ha usato al massimo {peak} GB. Più memoria del necessario rallenta il garbage collector e costa FPS.',
   'Bu profil için uygun görünüyor.': 'Sembra adatta a questo profilo.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Nelle ultime sessioni il gioco ha usato al massimo {peak} GB; l’impostazione va bene.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Nelle ultime sessioni il gioco ha usato al massimo {peak} GB; l’impostazione va bene.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'Un pacchetto Fabric per Pisan PvP e gli altri server PvP: ottimizzatori di cristalli e ancore, correzioni per latenza e connessione, fotogrammi fluidi. Non tocca le impostazioni del gioco.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'I mod ottimizzatori gestiscono cristalli e ancore sul tuo schermo senza aspettare la risposta del server; il ping non scende, ma l\'esito di un colpo si vede subito. Sono tutti mod consentiti sui grandi server PvP.',
+  'Pisan PvP sunucusunun sürümü': 'La versione del server Pisan PvP',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'Rimuove il cristallo rotto senza aspettare il server — crystal PvP senza ritardo',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'Mostra l\'esplosione dell\'ancora della rinascita senza aspettare il server',
+  'Rakibin kaç totem patlattığını sayar': 'Conta quanti totem ha consumato l\'avversario',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'Rimpicciolisce l\'animazione del totem perché non copra la vista',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'Colora la hitbox del giocatore che stai mirando',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'Risolve le disconnessioni per timeout e gli errori dei pacchetti',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'Salta la lenta ricerca DNS nell\'elenco dei server',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'Mostra il ping in millisecondi nell\'elenco dei giocatori'
 }
 
 export default table

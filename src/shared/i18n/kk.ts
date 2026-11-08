@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Бұл профиль үшін көп көрінеді. Қажеттен артық жады қоқыс жинағышты баяулатып, FPS түсіреді.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Ойын соңғы сеанстарда ең көбі {peak} ГБ пайдаланды. Қажеттен артық жады қоқыс жинағышты баяулатып, FPS түсіреді.',
   'Bu profil için uygun görünüyor.': 'Бұл профиль үшін қолайлы көрінеді.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Ойын соңғы сеанстарда ең көбі {peak} ГБ пайдаланды; бұл баптау қолайлы.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Ойын соңғы сеанстарда ең көбі {peak} ГБ пайдаланды; бұл баптау қолайлы.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'Pisan PvP және басқа PvP серверлеріне арналған Fabric жинағы: кристалл мен якорь оңтайландырғыштары, кідіріс пен байланыс түзетулері, біркелкі кадр жиілігі. Ойын баптауларыңызға тимейді.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'Оңтайландырғыш модтар кристалл мен якорьді сервердің жауабын күтпей экраныңызда өңдейді; пинг азаймайды, бірақ соққының нәтижесі бірден көрінеді. Барлығы ірі PvP серверлерінде рұқсат етілген модтар.',
+  'Pisan PvP sunucusunun sürümü': 'Pisan PvP серверінің нұсқасы',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'Сынған кристалды серверді күтпей алып тастайды — кідіріссіз кристалл PvP',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'Қайта туу якорінің жарылысын серверді күтпей көрсетеді',
+  'Rakibin kaç totem patlattığını sayar': 'Қарсыласыңыз қанша тотем жұмсағанын санайды',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'Тотем анимациясын кішірейтеді, көріністі жаппайды',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'Нысанаға алған ойыншының соққы қорабын бояйды',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'Күту уақыты бітуінен болатын үзілістер мен пакет қателерін түзетеді',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'Серверлер тізіміндегі баяу DNS сұрауын өткізіп жібереді',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'Ойыншылар тізімінде пингті миллисекундпен көрсетеді'
 }
 
 export default table

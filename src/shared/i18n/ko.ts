@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '이 프로필에는 많아 보입니다. 필요 이상의 메모리는 가비지 컬렉터를 느리게 하고 FPS를 떨어뜨립니다.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '최근 실행에서 게임이 쓴 최대치는 {peak} GB입니다. 필요 이상의 메모리는 가비지 컬렉터를 느리게 하고 FPS를 떨어뜨립니다.',
   'Bu profil için uygun görünüyor.': '이 프로필에는 알맞아 보입니다.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': '최근 실행에서 게임이 쓴 최대치는 {peak} GB입니다. 이 설정이면 됩니다.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': '최근 실행에서 게임이 쓴 최대치는 {peak} GB입니다. 이 설정이면 됩니다.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'Pisan PvP와 다른 PvP 서버를 위한 Fabric 팩: 크리스탈·앵커 최적화, 지연과 연결 수정, 부드러운 프레임. 게임 설정은 건드리지 않습니다.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': '최적화 모드는 서버의 응답을 기다리지 않고 화면에서 크리스탈과 앵커를 처리합니다. 핑 자체는 줄지 않지만 타격 결과가 바로 보입니다. 모두 대형 PvP 서버에서 허용되는 모드입니다.',
+  'Pisan PvP sunucusunun sürümü': 'Pisan PvP 서버의 버전',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': '서버를 기다리지 않고 깨진 크리스탈을 없앰 — 지연 없는 크리스탈 PvP',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': '서버를 기다리지 않고 리스폰 정박기 폭발을 보여 줌',
+  'Rakibin kaç totem patlattığını sayar': '상대가 사용한 토템 수를 셈',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': '토템 애니메이션을 줄여 시야를 가리지 않게 함',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': '조준한 플레이어의 히트박스에 색을 입힘',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': '시간 초과 끊김과 패킷 오류를 고침',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': '서버 목록의 느린 DNS 조회를 건너뜀',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': '플레이어 목록에 핑을 밀리초로 표시함'
 }
 
 export default table

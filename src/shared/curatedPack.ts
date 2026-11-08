@@ -115,6 +115,65 @@ const MODERN: CuratedPack = {
 }
 
 /**
+ * For Pisan PvP and servers like it.
+ *
+ * The optimizers are why this pack exists. Breaking a crystal or an anchor
+ * normally waits a full round trip for the server to say it is gone; these mods
+ * act on the client the moment the hit lands, which no server setting can do
+ * because the wait is the network itself. Only the kinds the big PvP servers
+ * allow are here — nothing that aims, clicks or reaches for the player.
+ *
+ * The performance part is the core of Pisan Optimized, without the extras that
+ * matter in single player but not in a fight.
+ */
+const PVP: CuratedPack = {
+  id: 'pisan-pvp',
+  name: 'Pisan PvP',
+  summary:
+    'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı ' +
+    'düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.',
+  icon: '⚔️',
+  loader: 'fabric',
+  modrinthLoaders: ['fabric'],
+  recommended: [
+    { version: '26.3', why: 'Pisan PvP sunucusunun sürümü' },
+    { version: '1.21.11', why: '1.21 serisinin sonu' }
+  ],
+  mods: [
+    { slug: 'fabric-api', name: 'Fabric API', role: 'Diğer modların dayandığı temel', essential: true },
+
+    {
+      slug: 'marlow-crystal-optimizer',
+      name: 'Marlow’s Crystal Optimizer',
+      role: 'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP',
+      essential: true
+    },
+    { slug: 'anchoroptimizer', name: 'Anchor Optimizer', role: 'Respawn anchor patlamasını sunucuyu beklemeden gösterir' },
+    { slug: 'totemcounter', name: 'TotemCounter', role: 'Rakibin kaç totem patlattığını sayar' },
+    { slug: 'cpvp', name: 'Totem Tweaks', role: 'Totem animasyonunu küçültür, görüşü kapatmaz' },
+    { slug: 'combat-hitboxes', name: 'Combat Hitboxes', role: 'Hedeflenen oyuncunun vuruş kutusunu renklendirir' },
+
+    { slug: 'sodium', name: 'Sodium', role: 'Render motorunu baştan yazar — en büyük FPS kazancı', essential: true },
+    { slug: 'lithium', name: 'Lithium', role: 'Oyun mantığını hızlandırır, davranışı değiştirmeden' },
+    { slug: 'ferrite-core', name: 'FerriteCore', role: 'Bellek kullanımını ciddi ölçüde düşürür' },
+    { slug: 'immediatelyfast', name: 'ImmediatelyFast', role: 'Arayüz ve HUD çizimini toplu hale getirir' },
+    { slug: 'entityculling', name: 'Entity Culling', role: 'Görünmeyen varlıkları hiç çizmez' },
+    { slug: 'moreculling', name: 'More Culling', role: 'Görünmeyen blok yüzeylerini eler' },
+    { slug: 'modernfix', name: 'ModernFix', role: 'Açılışı kısaltır, bellek sızıntılarını kapatır' },
+
+    { slug: 'krypton', name: 'Krypton', role: 'Ağ katmanını hafifletir — sunucularda gecikme' },
+    { slug: 'packet-fixer', name: 'Packet Fixer', role: 'Zaman aşımı kopmalarını ve paket hatalarını giderir' },
+    { slug: 'fast-ip-ping', name: 'Fast IP Ping', role: 'Sunucu listesindeki yavaş DNS sorgusunu atlar' },
+    { slug: 'better-ping-display-fabric', name: 'Better Ping Display', role: 'Oyuncu listesinde ping’i milisaniye olarak gösterir' },
+
+    { slug: 'modmenu', name: 'Mod Menu', role: 'Kurulu modları ve ayarlarını oyun içinden yönetir' }
+  ],
+  note:
+    'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama ' +
+    'vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.'
+}
+
+/**
  * 1.8.9 was tried and dropped, loader and all.
  *
  * Legacy Fabric API is distributed two ways and neither works unattended: the
@@ -144,7 +203,7 @@ const MODERN: CuratedPack = {
  * profile was hitting them.
  */
 
-export const PACKS: CuratedPack[] = [MODERN]
+export const PACKS: CuratedPack[] = [MODERN, PVP]
 
 export function packById(id: string): CuratedPack | undefined {
   return PACKS.find((pack) => pack.id === id)

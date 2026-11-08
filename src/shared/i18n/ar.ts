@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'يبدو كثيرًا لهذا الملف الشخصي. الذاكرة الزائدة عن الحاجة تُبطئ جامع المهملات وتخفض الإطارات.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'استخدمت اللعبة {peak} غيغابايت على الأكثر في الجلسات الأخيرة. الذاكرة الزائدة عن الحاجة تُبطئ جامع المهملات وتخفض الإطارات.',
   'Bu profil için uygun görünüyor.': 'يبدو مناسبًا لهذا الملف الشخصي.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'استخدمت اللعبة {peak} غيغابايت على الأكثر في الجلسات الأخيرة؛ هذا الضبط مناسب.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'استخدمت اللعبة {peak} غيغابايت على الأكثر في الجلسات الأخيرة؛ هذا الضبط مناسب.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'حزمة Fabric لخادم Pisan PvP وخوادم PvP الأخرى: محسّنات البلورات والمرساة، وإصلاحات للتأخير والاتصال، ومعدل إطارات سلس. لا تمسّ إعدادات لعبتك.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'تعالج تعديلات التحسين البلورات والمرساة على شاشتك دون انتظار رد الخادم؛ لا ينخفض البنغ، لكن نتيجة الضربة تظهر فورًا. جميعها تعديلات مسموح بها في خوادم PvP الكبيرة.',
+  'Pisan PvP sunucusunun sürümü': 'إصدار خادم Pisan PvP',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'يزيل البلورة المكسورة دون انتظار الخادم — قتال بلورات بلا تأخير',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'يعرض انفجار مرساة الإحياء دون انتظار الخادم',
+  'Rakibin kaç totem patlattığını sayar': 'يعدّ التمائم التي استهلكها خصمك',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'يصغّر رسوم التميمة كي لا تحجب الرؤية',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'يلوّن صندوق إصابة اللاعب الذي تصوّب نحوه',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'يصلح الانقطاعات بسبب انتهاء المهلة وأخطاء الحزم',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'يتجاوز استعلام DNS البطيء في قائمة الخوادم',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'يعرض البنغ بالمللي ثانية في قائمة اللاعبين'
 }
 
 export default table

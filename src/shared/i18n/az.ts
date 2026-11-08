@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Bu profil üçün çox görünür. Ehtiyacdan çox yaddaş zibil yığanı yavaşladır və FPS-i salır.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'Oyun son sessiyalarda ən çox {peak} GB istifadə etdi. Ehtiyacdan çox yaddaş zibil yığanı yavaşladır və FPS-i salır.',
   'Bu profil için uygun görünüyor.': 'Bu profil üçün uyğun görünür.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oyun son sessiyalarda ən çox {peak} GB istifadə etdi; bu ayar uyğundur.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'Oyun son sessiyalarda ən çox {peak} GB istifadə etdi; bu ayar uyğundur.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'Pisan PvP və digər PvP serverləri üçün Fabric paketi: crystal və anchor optimizer, gecikmə və bağlantı düzəlişləri, axıcı kadr sürəti. Oyun tənzimləmələrinizə toxunmur.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'Optimizer modları kristalı və anchor-u serverin cavabını gözləmədən ekranınızda işləyir; ping azalmır, amma zərbənin nəticəsi dərhal görünür. Hamısı böyük PvP serverlərində icazə verilən modlardır.',
+  'Pisan PvP sunucusunun sürümü': 'Pisan PvP serverinin versiyası',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'Sınan kristalı serveri gözləmədən silir — gecikməsiz crystal PvP',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'Respawn anchor partlayışını serveri gözləmədən göstərir',
+  'Rakibin kaç totem patlattığını sayar': 'Rəqibin neçə totem partlatdığını sayır',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'Totem animasiyasını kiçildir, görüşü bağlamır',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'Nişan aldığınız oyunçunun vuruş qutusunu rəngləyir',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'Vaxt aşımı kəsilmələrini və paket xətalarını düzəldir',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'Server siyahısındakı yavaş DNS sorğusunu ötürür',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'Oyunçu siyahısında ping-i millisaniyə ilə göstərir'
 }
 
 export default table

@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '对这个配置来说偏多。内存超出所需会拖慢垃圾回收，掉帧。',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': '最近几次游戏最多用了 {peak} GB。内存超出所需会拖慢垃圾回收，掉帧。',
   'Bu profil için uygun görünüyor.': '对这个配置来说合适。',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': '最近几次游戏最多用了 {peak} GB，这个设置合适。'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': '最近几次游戏最多用了 {peak} GB，这个设置合适。',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': '为 Pisan PvP 及其他 PvP 服务器准备的 Fabric 整合包：水晶与重生锚优化、延迟与连接修复、流畅帧率。不会改动你的游戏设置。',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': '优化类模组会在你的屏幕上直接处理水晶和重生锚，无需等待服务器回应；延迟本身不会降低，但击打结果会立即显示。它们都是大型 PvP 服务器允许使用的模组。',
+  'Pisan PvP sunucusunun sürümü': 'Pisan PvP 服务器所用的版本',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': '无需等待服务器即可移除被打碎的水晶——零延迟水晶 PvP',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': '无需等待服务器即可显示重生锚爆炸',
+  'Rakibin kaç totem patlattığını sayar': '统计对手消耗了多少不死图腾',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': '缩小图腾动画，不再遮挡视线',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': '为你瞄准的玩家的碰撞箱上色',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': '修复超时断线和数据包错误',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': '跳过服务器列表中缓慢的 DNS 查询',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': '在玩家列表中以毫秒显示延迟'
 }
 
 export default table

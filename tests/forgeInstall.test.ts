@@ -148,7 +148,7 @@ test('a pack entry is installed as whatever Modrinth says it is', () => {
 test('only the packs that can be kept working are offered', () => {
   const pack = readFileSync('src/shared/curatedPack.ts', 'utf8')
 
-  assert.match(pack, /export const PACKS: CuratedPack\[] = \[MODERN]/)
+  assert.match(pack, /export const PACKS: CuratedPack\[] = \[MODERN, PVP]/)
   assert.doesNotMatch(pack, /const SWEETIE/)
   assert.doesNotMatch(pack, /slug: 'the-twilight-forest-dungeons-villages'/)
   assert.doesNotMatch(pack, /slug: 'embeddiumplus'/)

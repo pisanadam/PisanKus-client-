@@ -717,7 +717,18 @@ const table: Dictionary = {
   'Bu profil için fazla görünüyor. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'برای این نمایه زیاد به نظر می‌رسد. حافظهٔ بیش از نیاز، زباله‌روب را کند و نرخ فریم را کم می‌کند.',
   'Oyun son oturumlarda en fazla {peak} GB kullandı. Gereğinden büyük bellek çöp toplayıcıyı yavaşlatır, FPS düşer.': 'بازی در نشست‌های اخیر حداکثر {peak} گیگابایت مصرف کرد. حافظهٔ بیش از نیاز، زباله‌روب را کند و نرخ فریم را کم می‌کند.',
   'Bu profil için uygun görünüyor.': 'برای این نمایه مناسب به نظر می‌رسد.',
-  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'بازی در نشست‌های اخیر حداکثر {peak} گیگابایت مصرف کرد؛ این تنظیم مناسب است.'
+  'Oyun son oturumlarda en fazla {peak} GB kullandı; bu ayar uygun.': 'بازی در نشست‌های اخیر حداکثر {peak} گیگابایت مصرف کرد؛ این تنظیم مناسب است.',
+  'Pisan PvP ve diğer PvP sunucuları için Fabric paketi: crystal ve anchor optimizer, gecikme ve bağlantı düzeltmeleri, akıcı kare hızı. Oyun ayarlarınıza dokunmaz.': 'بستهٔ Fabric برای Pisan PvP و دیگر سرورهای PvP: بهینه‌ساز کریستال و لنگر، رفع مشکلات تأخیر و اتصال، نرخ فریم روان. به تنظیمات بازی شما دست نمی‌زند.',
+  'Optimizer modları kristali ve anchor’ı sunucunun cevabını beklemeden ekranınızda işler; ping düşmez ama vuruşun sonucu anında görünür. Hepsi büyük PvP sunucularında izin verilen modlardır.': 'مادهای بهینه‌ساز کریستال و لنگر را بدون انتظار برای پاسخ سرور روی صفحهٔ شما پردازش می‌کنند؛ پینگ کم نمی‌شود، اما نتیجهٔ ضربه فوراً دیده می‌شود. همهٔ آن‌ها در سرورهای بزرگ PvP مجازند.',
+  'Pisan PvP sunucusunun sürümü': 'نسخهٔ سرور Pisan PvP',
+  'Kırılan kristali sunucuyu beklemeden kaldırır — gecikmesiz crystal PvP': 'کریستال شکسته را بدون انتظار برای سرور حذف می‌کند — PvP کریستال بی‌تأخیر',
+  'Respawn anchor patlamasını sunucuyu beklemeden gösterir': 'انفجار لنگر احیا را بدون انتظار برای سرور نشان می‌دهد',
+  'Rakibin kaç totem patlattığını sayar': 'تعداد توتم‌هایی را که حریف مصرف کرده می‌شمارد',
+  'Totem animasyonunu küçültür, görüşü kapatmaz': 'انیمیشن توتم را کوچک می‌کند تا دید را نپوشاند',
+  'Hedeflenen oyuncunun vuruş kutusunu renklendirir': 'جعبهٔ برخورد بازیکنی را که نشانه گرفته‌اید رنگی می‌کند',
+  'Zaman aşımı kopmalarını ve paket hatalarını giderir': 'قطعی‌های ناشی از پایان مهلت و خطاهای بسته را برطرف می‌کند',
+  'Sunucu listesindeki yavaş DNS sorgusunu atlar': 'جست‌وجوی کند DNS در فهرست سرورها را رد می‌کند',
+  'Oyuncu listesinde ping’i milisaniye olarak gösterir': 'پینگ را در فهرست بازیکنان به میلی‌ثانیه نشان می‌دهد'
 }
 
 export default table
