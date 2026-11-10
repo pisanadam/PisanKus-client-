@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
 import { t } from '../../shared/i18n'
+import { missingRecommendedServers } from '../../shared/recommendedServers'
 
 /**
  * The profile's multiplayer list, read from and written back to its own
@@ -23,7 +24,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
   const [busy, setBusy] = useState(false)
   const [joining, setJoining] = useState<string | null>(null)
 
-  const refreshStatus = useCallback(async (list: ServerEntry[]) => {
+  const refreshStatus = useCallback(async (list: { address: string }[]) => {
     setChecking(true)
     try {
       // Sequential rather than parallel: a courteous pace towards a free
@@ -41,7 +42,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
     try {
       const list = await api.servers.list(profile.id)
       setServers(list)
-      void refreshStatus(list)
+      void refreshStatus([...list, ...missingRecommendedServers(list)])
     } catch (error) {
       setServers([])
       notify(error, 'error')
@@ -58,7 +59,7 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
       const list = await action()
       setServers(list)
       setEditing(null)
-      void refreshStatus(list)
+      void refreshStatus([...list, ...missingRecommendedServers(list)])
     } catch (error) {
       notify(error, 'error')
     } finally {
@@ -74,6 +75,10 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
     )
   }
 
+  // Shown as an offer, never written on its own: an address reaches
+  // `servers.dat` only when the player presses one of the buttons below.
+  const suggestions = missingRecommendedServers(servers)
+
   return (
     <div className="stack-lg">
       <div className="row" style={{ flexWrap: 'wrap' }}>
@@ -84,7 +89,11 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
           <Icon name="plus" size={16} />
           {t('Sunucu ekle')}
         </button>
-        <button className="btn" disabled={checking || servers.length === 0} onClick={() => void refreshStatus(servers)}>
+        <button
+          className="btn"
+          disabled={checking || servers.length + suggestions.length === 0}
+          onClick={() => void refreshStatus([...servers, ...suggestions])}
+        >
           {checking ? <div className="spinner" /> : <Icon name="refresh" size={16} />}
           {t('Durumları yenile')}
         </button>
@@ -141,6 +150,94 @@ export function ServersTab({ profile }: { profile: Profile }): JSX.Element {
               {t('Kaydet')}
             </button>
           </div>
+        </div>
+      )}
+
+      {suggestions.length > 0 && (
+        <div className="settings-group">
+          <div className="section-title">{t('Önerilen sunucular')}</div>
+          <p className="faint" style={{ margin: 0 }}>
+            {t('PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.')}
+          </p>
+
+          <div className="list">
+            {suggestions.map((server) => {
+              // No cached icon to fall back on here: the profile has never
+              // connected, so the status service is the only source of one.
+              const state = status[server.address]
+              const icon = state?.icon
+
+              return (
+                <div key={server.address} className="list__row">
+                  {icon ? (
+                    <img
+                      className="list__icon"
+                      src={icon.startsWith('data:') ? icon : `data:image/png;base64,${icon}`}
+                      alt=""
+                    />
+                  ) : (
+                    <div className="list__icon" />
+                  )}
+
+                  <div className="list__main">
+                    <div className="list__title">
+                      {server.name}
+                      {state && (
+                        <span
+                          className={state.online ? 'badge badge--success' : 'badge'}
+                          style={{ marginLeft: 8 }}
+                        >
+                          {state.online
+                            ? t('{online}/{max} oyuncu', {
+                                online: state.players?.online ?? 0,
+                                max: state.players?.max ?? 0
+                              })
+                            : (state.error ?? t('çevrimdışı'))}
+                        </span>
+                      )}
+                    </div>
+                    <div className="list__sub">
+                      {server.address}
+                      {state?.version && ` · ${state.version}`}
+                      {state?.motd && ` · ${state.motd}`}
+                    </div>
+                  </div>
+
+                  <button
+                    className="btn btn--sm"
+                    disabled={busy}
+                    onClick={() => void run(() => api.servers.add(profile.id, server))}
+                  >
+                    <Icon name="plus" size={15} />
+                    {t('Listeye ekle')}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+
+          {suggestions.length > 1 && (
+            <div className="row" style={{ justifyContent: 'flex-end' }}>
+              <button
+                className="btn btn--sm"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    // One call each: every add rewrites `servers.dat` and
+                    // answers with the whole list, so the last answer is the
+                    // one to keep.
+                    let list = servers
+                    for (const server of suggestions) {
+                      list = await api.servers.add(profile.id, server)
+                    }
+                    return list
+                  })
+                }
+              >
+                {t('Tümünü ekle')}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

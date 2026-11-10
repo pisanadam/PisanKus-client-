@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Жұмыс үстелі таңбашасы',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Екі рет шертсеңіз launcher ашылып осы профильді іске қосады',
   'Masaüstüne ekle': 'Жұмыс үстеліне қосу',
-  'Kısayol oluşturuldu: {file}': 'Таңбаша жасалды: {file}'
+  'Kısayol oluşturuldu: {file}': 'Таңбаша жасалды: {file}',
+  'Önerilen sunucular': 'Ұсынылатын серверлер',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus серверлері. Сіз қоспағанша профиль тізіміне жазылмайды.',
+  'Listeye ekle': 'Тізімге қосу',
+  'Tümünü ekle': 'Барлығын қосу',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Интерфейсті жоғары көтереді — жан мен сандар анық көрінеді',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Заттың қалған беріктігін көрсетеді',
+  'Patlayan totemleri sayar': 'Жұмсалған тотемдерді санайды',
+  'Tam vuruşta sesli geri bildirim': 'Соққы толық тигенде дыбыспен хабарлайды',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'PvP дыбыстары мен көрінісін реттеуге мүмкіндік береді',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Шоқпар қолыңызда болғанда хитбокстарды қосады',
+  'PvP için hazırlanmış doku paketi': 'PvP үшін жасалған текстура пакеті',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Көзге кедергі әсерлерді азайтатын текстура пакеті',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'Ваниль көрінісін сақтайтын PvP түзетулері',
+  'PvP için nişangâh': 'PvP үшін көздеуіш',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Қысқа семсер текстурасы — экранды жаппайды',
+  'Crystal PvP için doku paketi': 'Crystal PvP үшін текстура пакеті',
+  'Mace için üç boyutlu doku': 'Шоқпардың үш өлшемді моделі',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Шоқпарды төмен түсіреді — экранды жаппайды',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'pisanpvp және басқа PvP серверлері үшін Fabric пакеті: кідіріс пен кадр түсуін азайтатын модтар, сонымен бірге crystal мен шоқпарды қоса PvP киттеріне дайындалған текстура пакеттері. Текстура пакеттері орнатылады, бірақ қосылмайды; қайсысын қолданатыныңызды ойын ішінде өзіңіз таңдайсыз.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Текстура пакеттері профильдің resourcepacks қалтасына орнатылады және өздігінен қосылмайды: ойында Параметрлер → Ресурс пакеттері бөлімінен біреуін таңдаңыз. Пакеттегі модтар соққы кідірісін алып тастайтын немесе сіздің орныңызға ойнайтын модтар емес; ондай модтар PvP серверлерінің көбінде тыйылған.'
 }
 
 export default table

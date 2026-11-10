@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'デスクトップのショートカット',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'ダブルクリックでランチャーが開き、このプロファイルが起動します',
   'Masaüstüne ekle': 'デスクトップに追加',
-  'Kısayol oluşturuldu: {file}': 'ショートカットを作成しました: {file}'
+  'Kısayol oluşturuldu: {file}': 'ショートカットを作成しました: {file}',
+  'Önerilen sunucular': 'おすすめサーバー',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus のサーバーです。追加するまでプロファイルのリストには書き込まれません。',
+  'Listeye ekle': 'リストに追加',
+  'Tümünü ekle': 'すべて追加',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'HUD を上げる — 体力と数字が読みやすい',
+  'Eşyanın kalan dayanıklılığını gösterir': 'アイテムの残り耐久度を表示',
+  'Patlayan totemleri sayar': 'トーテムの発動回数を数える',
+  'Tam vuruşta sesli geri bildirim': 'フルチャージで当たると音で知らせる',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'PvP の音と見た目を調整できる',
+  'Mace elinizdeyken çarpışma kutularını açar': 'メイスを持つとヒットボックスを表示',
+  'PvP için hazırlanmış doku paketi': 'PvP 向けのリソースパック',
+  'Görüşü kapatan efektleri kısan doku paketi': '視界をふさぐ演出を抑えるリソースパック',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'バニラの見た目を保つ PvP 向け調整',
+  'PvP için nişangâh': 'PvP 用のクロスヘア',
+  'Kısa kılıç dokusu — ekranı kapatmaz': '短い剣のテクスチャ — 画面をふさがない',
+  'Crystal PvP için doku paketi': 'Crystal PvP 向けのリソースパック',
+  'Mace için üç boyutlu doku': 'メイスの立体モデル',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'メイスを下げる — 画面をふさがない',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'pisanpvp などの PvP サーバー向けの Fabric パック。遅延とフレーム落ちを抑える軽量化モッドに、crystal や mace を含む PvP キット向けのリソースパックを添えています。リソースパックは入りますが有効にはならず、どれを使うかはゲーム内で選びます。',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'リソースパックはプロファイルの resourcepacks フォルダーに入り、自動では有効になりません。ゲーム内の 設定 → リソースパック で選んでください。このパックのモッドは攻撃ディレイを消すものでも、代わりに操作するものでもありません。その種のモッドは多くの PvP サーバーで禁止されています。'
 }
 
 export default table

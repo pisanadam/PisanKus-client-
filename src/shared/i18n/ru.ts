@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Ярлык на рабочем столе',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Двойной щелчок открывает лаунчер и запускает этот профиль',
   'Masaüstüne ekle': 'Добавить на рабочий стол',
-  'Kısayol oluşturuldu: {file}': 'Ярлык создан: {file}'
+  'Kısayol oluşturuldu: {file}': 'Ярлык создан: {file}',
+  'Önerilen sunucular': 'Рекомендуемые серверы',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'Серверы PisanKus. Пока вы их не добавите, в список профиля они не попадут.',
+  'Listeye ekle': 'Добавить в список',
+  'Tümünü ekle': 'Добавить все',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Поднимает интерфейс — здоровье и числа видно чётко',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Показывает остаток прочности предмета',
+  'Patlayan totemleri sayar': 'Считает сработавшие тотемы',
+  'Tam vuruşta sesli geri bildirim': 'Звук при полностью заряженном ударе',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'Позволяет настроить звуки и графику PvP',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Включает хитбоксы, когда в руках булава',
+  'PvP için hazırlanmış doku paketi': 'Набор текстур для PvP',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Набор текстур, убирающий мешающие обзору эффекты',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'Правки для PvP в ванильном стиле',
+  'PvP için nişangâh': 'Прицел для PvP',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Короткие текстуры мечей — не закрывают обзор',
+  'Crystal PvP için doku paketi': 'Набор текстур для Crystal PvP',
+  'Mace için üç boyutlu doku': 'Трёхмерная модель булавы',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Опускает булаву — не закрывает экран',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'Сборка Fabric для pisanpvp и других PvP-серверов: моды, снижающие задержку и просадки кадров, и наборы текстур под PvP-киты, включая crystal и mace. Наборы текстур устанавливаются, но не включаются — нужный вы выбираете в игре.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Наборы текстур устанавливаются в папку resourcepacks профиля и сами не включаются: выберите один в игре, Настройки → Наборы текстур. Моды сборки не убирают задержку удара и не играют за вас — такие моды запрещены на большинстве PvP-серверов.'
 }
 
 export default table

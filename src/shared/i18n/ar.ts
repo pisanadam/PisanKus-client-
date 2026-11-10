@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'اختصار على سطح المكتب',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'النقر المزدوج يفتح المشغّل ويشغّل هذا الملف الشخصي',
   'Masaüstüne ekle': 'أضف إلى سطح المكتب',
-  'Kısayol oluşturuldu: {file}': 'أُنشئ الاختصار: {file}'
+  'Kısayol oluşturuldu: {file}': 'أُنشئ الاختصار: {file}',
+  'Önerilen sunucular': 'الخوادم المقترحة',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'خوادم PisanKus. لا تُكتب في قائمة الملف الشخصي حتى تضيفها.',
+  'Listeye ekle': 'إضافة إلى القائمة',
+  'Tümünü ekle': 'إضافة الكل',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'يرفع واجهة اللعب حتى تظل الصحة والأرقام واضحة',
+  'Eşyanın kalan dayanıklılığını gösterir': 'يعرض ما تبقّى من متانة العنصر',
+  'Patlayan totemleri sayar': 'يحسب عدد التوتمات المستهلكة',
+  'Tam vuruşta sesli geri bildirim': 'صوت عند وقوع الضربة كاملة',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'يتيح ضبط أصوات ومؤثرات القتال',
+  'Mace elinizdeyken çarpışma kutularını açar': 'يُظهر صناديق الإصابة ما دمت تحمل الصولجان',
+  'PvP için hazırlanmış doku paketi': 'حزمة مظاهر مُعدّة للقتال',
+  'Görüşü kapatan efektleri kısan doku paketi': 'حزمة مظاهر تخفّف المؤثرات التي تحجب الرؤية',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'تعديلات قتال تحافظ على مظهر اللعبة الأصلي',
+  'PvP için nişangâh': 'مؤشر تصويب للقتال',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'سيوف أقصر لا تحجب الشاشة',
+  'Crystal PvP için doku paketi': 'حزمة مظاهر لقتال الكريستال',
+  'Mace için üç boyutlu doku': 'مجسم ثلاثي الأبعاد للصولجان',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'يُنزل الصولجان حتى لا يحجب الشاشة',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'حزمة Fabric لسيرفر pisanpvp وسيرفرات القتال الأخرى: مودات تقلّل التأخير وهبوط الإطارات، مع حزم مظاهر مُعدّة لأطقم القتال، منها الكريستال والصولجان. حزم المظاهر تُثبّت ولا تُفعّل؛ تختار ما تريده من داخل اللعبة.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'تُثبّت حزم المظاهر في مجلد resourcepacks الخاص بالملف الشخصي ولا تُفعّل من نفسها: اختر واحدة من داخل اللعبة عبر الخيارات → حزم الموارد. مودات الحزمة لا تلغي تأخير الضرب ولا تلعب بدلًا عنك؛ هذا النوع ممنوع في معظم سيرفرات القتال.'
 }
 
 export default table

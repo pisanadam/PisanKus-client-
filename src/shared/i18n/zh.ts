@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': '桌面快捷方式',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': '双击即可打开启动器并直接启动这个配置',
   'Masaüstüne ekle': '添加到桌面',
-  'Kısayol oluşturuldu: {file}': '已创建快捷方式：{file}'
+  'Kısayol oluşturuldu: {file}': '已创建快捷方式：{file}',
+  'Önerilen sunucular': '推荐服务器',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus 服务器。在你添加之前不会写入配置的服务器列表。',
+  'Listeye ekle': '添加到列表',
+  'Tümünü ekle': '全部添加',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': '把界面上移——血量和数字看得更清',
+  'Eşyanın kalan dayanıklılığını gösterir': '显示物品剩余耐久',
+  'Patlayan totemleri sayar': '统计图腾触发次数',
+  'Tam vuruşta sesli geri bildirim': '满蓄力命中时发出提示音',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': '可自定义 PvP 的音效与画面',
+  'Mace elinizdeyken çarpışma kutularını açar': '手持重锤时自动显示碰撞箱',
+  'PvP için hazırlanmış doku paketi': '为 PvP 制作的材质包',
+  'Görüşü kapatan efektleri kısan doku paketi': '削弱挡视线特效的材质包',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': '保持原版观感的 PvP 调整',
+  'PvP için nişangâh': 'PvP 准星',
+  'Kısa kılıç dokusu — ekranı kapatmaz': '短剑材质——不挡视野',
+  'Crystal PvP için doku paketi': 'Crystal PvP 材质包',
+  'Mace için üç boyutlu doku': '重锤的三维模型',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': '把重锤放低——不挡屏幕',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': '为 pisanpvp 等 PvP 服务器准备的 Fabric 包：降低延迟和掉帧的性能模组，以及为 crystal、mace 等 PvP 套装准备的材质包。材质包只安装不启用，用哪个由你在游戏里选。',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': '材质包安装到配置的 resourcepacks 文件夹，不会自动启用：在游戏里的 选项 → 资源包 中选一个。包里的模组不会取消攻击延迟，也不会代替你操作；那类模组在多数 PvP 服务器上是被禁止的。'
 }
 
 export default table
