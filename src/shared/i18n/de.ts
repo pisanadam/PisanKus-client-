@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Desktop-Verknüpfung',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Ein Doppelklick öffnet den Launcher und startet dieses Profil',
   'Masaüstüne ekle': 'Zum Desktop hinzufügen',
-  'Kısayol oluşturuldu: {file}': 'Verknüpfung erstellt: {file}'
+  'Kısayol oluşturuldu: {file}': 'Verknüpfung erstellt: {file}',
+  'Önerilen sunucular': 'Empfohlene Server',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus-Server. Sie landen erst in der Liste des Profils, wenn du sie hinzufügst.',
+  'Listeye ekle': 'Zur Liste hinzufügen',
+  'Tümünü ekle': 'Alle hinzufügen',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Hebt das HUD an — Leben und Zahlen bleiben lesbar',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Zeigt die restliche Haltbarkeit eines Gegenstands',
+  'Patlayan totemleri sayar': 'Zählt verbrauchte Totems',
+  'Tam vuruşta sesli geri bildirim': 'Ein Ton, wenn der Schlag voll trifft',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'Lässt dich PvP-Sounds und -Effekte einstellen',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Schaltet Hitboxen ein, solange du die Keule hältst',
+  'PvP için hazırlanmış doku paketi': 'Ein Texturenpaket für PvP',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Texturenpaket, das sichtversperrende Effekte abschwächt',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'PvP-Feinschliff, der den Vanilla-Look behält',
+  'PvP için nişangâh': 'Ein Fadenkreuz für PvP',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Kürzere Schwerter — sie verdecken den Bildschirm nicht',
+  'Crystal PvP için doku paketi': 'Ein Texturenpaket für Crystal PvP',
+  'Mace için üç boyutlu doku': 'Ein 3D-Modell für die Keule',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Senkt die Keule — sie verdeckt den Bildschirm nicht',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'Ein Fabric-Paket für pisanpvp und andere PvP-Server: Mods gegen Latenz und Framedrops, dazu Texturenpakete für PvP-Kits, Crystal und Keule inbegriffen. Die Texturenpakete werden installiert, aber nicht eingeschaltet — welches du nutzt, wählst du im Spiel.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Texturenpakete landen im Ordner resourcepacks des Profils und schalten sich nicht selbst ein: wähle eines im Spiel unter Optionen → Ressourcenpakete. Die Mods im Paket nehmen keine Schlagverzögerung weg und spielen nicht für dich; solche Mods sind auf den meisten PvP-Servern verboten.'
 }
 
 export default table

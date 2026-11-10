@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': '바탕화면 바로 가기',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': '두 번 누르면 런처가 열리고 이 프로필이 실행됩니다',
   'Masaüstüne ekle': '바탕화면에 추가',
-  'Kısayol oluşturuldu: {file}': '바로 가기를 만들었습니다: {file}'
+  'Kısayol oluşturuldu: {file}': '바로 가기를 만들었습니다: {file}',
+  'Önerilen sunucular': '추천 서버',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus 서버입니다. 추가하기 전까지 프로필 목록에 기록되지 않습니다.',
+  'Listeye ekle': '목록에 추가',
+  'Tümünü ekle': '모두 추가',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'HUD를 올려 체력과 숫자가 잘 보이게 합니다',
+  'Eşyanın kalan dayanıklılığını gösterir': '아이템의 남은 내구도를 보여줍니다',
+  'Patlayan totemleri sayar': '터진 토템 수를 셉니다',
+  'Tam vuruşta sesli geri bildirim': '완충 공격이 들어가면 소리로 알립니다',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'PvP 소리와 화면을 취향대로 조정합니다',
+  'Mace elinizdeyken çarpışma kutularını açar': '메이스를 들면 히트박스를 켭니다',
+  'PvP için hazırlanmış doku paketi': 'PvP용 리소스팩',
+  'Görüşü kapatan efektleri kısan doku paketi': '시야를 가리는 효과를 줄이는 리소스팩',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': '바닐라 느낌을 유지하는 PvP 손질',
+  'PvP için nişangâh': 'PvP용 조준선',
+  'Kısa kılıç dokusu — ekranı kapatmaz': '짧은 검 텍스처 — 화면을 가리지 않습니다',
+  'Crystal PvP için doku paketi': 'Crystal PvP용 리소스팩',
+  'Mace için üç boyutlu doku': '메이스 3D 모델',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': '메이스를 내려 화면을 가리지 않습니다',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'pisanpvp와 같은 PvP 서버를 위한 Fabric 묶음: 지연과 프레임 저하를 줄이는 최적화 모드에, crystal과 mace를 포함한 PvP 키트용 리소스팩을 더했습니다. 리소스팩은 설치되지만 켜지지 않으며, 어느 것을 쓸지는 게임에서 고릅니다.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': '리소스팩은 프로필의 resourcepacks 폴더에 설치되고 저절로 켜지지 않습니다. 게임에서 설정 → 리소스팩에서 하나를 고르세요. 이 묶음의 모드는 공격 지연을 없애거나 대신 플레이해 주는 모드가 아닙니다. 그런 모드는 대부분의 PvP 서버에서 금지됩니다.'
 }
 
 export default table

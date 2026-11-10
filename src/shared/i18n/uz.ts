@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Ish stoli yorligʻi',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Ikki marta bosilganda launcher ochilib shu profilni ishga tushiradi',
   'Masaüstüne ekle': 'Ish stoliga qoʻshish',
-  'Kısayol oluşturuldu: {file}': 'Yorliq yaratildi: {file}'
+  'Kısayol oluşturuldu: {file}': 'Yorliq yaratildi: {file}',
+  'Önerilen sunucular': 'Tavsiya etilgan serverlar',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus serverlari. Siz qo\'shmaguningizcha profil ro\'yxatiga yozilmaydi.',
+  'Listeye ekle': 'Ro\'yxatga qo\'shish',
+  'Tümünü ekle': 'Hammasini qo\'shish',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Interfeysni yuqoriga ko\'taradi — jon va raqamlar aniq ko\'rinadi',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Buyumning qolgan mustahkamligini ko\'rsatadi',
+  'Patlayan totemleri sayar': 'Ishlatilgan totemlarni sanaydi',
+  'Tam vuruşta sesli geri bildirim': 'Zarba to\'liq tekkanda ovoz bilan bildiradi',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'PvP ovozlari va ko\'rinishini sozlash imkonini beradi',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Gurz qo\'lingizda bo\'lsa hitbokslarni yoqadi',
+  'PvP için hazırlanmış doku paketi': 'PvP uchun tayyorlangan tekstura to\'plami',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Ko\'rishni to\'sadigan effektlarni kamaytiruvchi tekstura to\'plami',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'Vanilla ko\'rinishini saqlaydigan PvP tuzatishlari',
+  'PvP için nişangâh': 'PvP uchun nishon',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Qisqa qilich teksturasi — ekranni to\'smaydi',
+  'Crystal PvP için doku paketi': 'Crystal PvP uchun tekstura to\'plami',
+  'Mace için üç boyutlu doku': 'Gurz uchun uch o\'lchovli model',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Gurzni pastga tushiradi — ekranni to\'smaydi',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'pisanpvp va boshqa PvP serverlari uchun Fabric to\'plami: kechikish va kadr tushishini kamaytiruvchi modlar, shuningdek crystal va gurz kabi PvP kitlari uchun tayyorlangan tekstura to\'plamlari. Tekstura to\'plamlari o\'rnatiladi, lekin yoqilmaydi; qaysi birini ishlatishni o\'yin ichida o\'zingiz tanlaysiz.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Tekstura to\'plamlari profilning resourcepacks papkasiga o\'rnatiladi va o\'z-o\'zidan yoqilmaydi: o\'yinda Sozlamalar → Resurs to\'plamlari bo\'limidan birini tanlang. To\'plamdagi modlar zarba kechikishini olib tashlaydigan yoki siz o\'rningizga o\'ynaydigan modlar emas; bunday modlar PvP serverlarining ko\'pida taqiqlangan.'
 }
 
 export default table

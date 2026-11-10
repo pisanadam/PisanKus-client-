@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Desktop shortcut',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Double-clicking it opens the launcher and starts this profile',
   'Masaüstüne ekle': 'Add to desktop',
-  'Kısayol oluşturuldu: {file}': 'Shortcut created: {file}'
+  'Kısayol oluşturuldu: {file}': 'Shortcut created: {file}',
+  'Önerilen sunucular': 'Recommended servers',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus servers. Nothing is written to the profile list until you add it.',
+  'Listeye ekle': 'Add to list',
+  'Tümünü ekle': 'Add all',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Lifts the HUD — health and counts stay readable',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Shows an item’s remaining durability',
+  'Patlayan totemleri sayar': 'Counts totem pops',
+  'Tam vuruşta sesli geri bildirim': 'A sound when a hit lands fully',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'Lets you tune PvP sounds and visuals',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Turns on hitboxes while you hold a mace',
+  'PvP için hazırlanmış doku paketi': 'A texture pack made for PvP',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Texture pack that tones down the effects blocking your view',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'PvP touch-ups that keep the vanilla look',
+  'PvP için nişangâh': 'A crosshair for PvP',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Shorter sword textures — they stay out of your view',
+  'Crystal PvP için doku paketi': 'A texture pack for Crystal PvP',
+  'Mace için üç boyutlu doku': 'A 3D model for the mace',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Lowers the mace — it stays out of your view',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'A Fabric pack for pisanpvp and other PvP servers: performance mods that cut latency and frame drops, plus texture packs made for PvP kits including crystal and mace. The texture packs are installed but left off; you pick the one you want in game.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Texture packs are installed into the profile’s resourcepacks folder and are not switched on by themselves: pick one in game under Options → Resource Packs. The mods in this pack do not remove hit delays and do not play for you; mods like that are banned on most PvP servers.'
 }
 
 export default table

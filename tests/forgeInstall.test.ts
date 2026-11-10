@@ -148,8 +148,47 @@ test('a pack entry is installed as whatever Modrinth says it is', () => {
 test('only the packs that can be kept working are offered', () => {
   const pack = readFileSync('src/shared/curatedPack.ts', 'utf8')
 
-  assert.match(pack, /export const PACKS: CuratedPack\[] = \[MODERN]/)
+  assert.match(pack, /export const PACKS: CuratedPack\[] = \[MODERN, PVP]/)
   assert.doesNotMatch(pack, /const SWEETIE/)
   assert.doesNotMatch(pack, /slug: 'the-twilight-forest-dungeons-villages'/)
   assert.doesNotMatch(pack, /slug: 'embeddiumplus'/)
+})
+
+/**
+ * The PvP pack's promise is what it leaves out.
+ *
+ * Every slug below removes a vanilla delay or plays a part of the fight for the
+ * player — no hit cooldown, instant crystals, automatic totems, inventory kits
+ * with "anti-ban delays". They are banned on the servers the pack is named
+ * after, so installing one would hand the player a ban rather than an edge.
+ */
+test('the PvP pack ships nothing that plays for the player', () => {
+  const pack = readFileSync('src/shared/curatedPack.ts', 'utf8')
+
+  for (const slug of [
+    'pvp-optmizer',
+    'combo-pvp',
+    'eron4us-pvp-utils',
+    'fast-crystals',
+    'g1axcrystaloptimizer',
+    'shikarus-crystal-optimizer',
+    'fleckycrystaloptimizer',
+    'sillys-auto-totem',
+    'autototem-plus'
+  ]) {
+    assert.doesNotMatch(pack, new RegExp(`slug: '${slug}'`), `${slug} must stay out of the PvP pack`)
+  }
+})
+
+/**
+ * A pack built for what current servers run is not offered on versions nobody
+ * plays it on, however far back Sodium and Fabric API still publish.
+ */
+test('a pack can declare the oldest version it is offered for', () => {
+  const pack = readFileSync('src/shared/curatedPack.ts', 'utf8')
+  assert.match(pack, /since: '1\.21\.11'/)
+
+  const curated = readFileSync('src/main/content/curated.ts', 'utf8')
+  assert.match(curated, /const floor = pack\.since/)
+  assert.match(curated, /compareVersions\(version, floor\) >= 0/)
 })

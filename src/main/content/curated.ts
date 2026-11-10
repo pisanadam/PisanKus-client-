@@ -117,7 +117,13 @@ export async function packVersions(packId: string): Promise<string[]> {
     shared = shared === null ? supported : shared.filter((version) => supported.includes(version))
   }
 
-  return (shared ?? []).sort(compareVersions).reverse()
+  // A pack that names its oldest version is not offered below it, however far
+  // back its essential mods still publish.
+  const floor = pack.since
+  return (shared ?? [])
+    .filter((version) => !floor || compareVersions(version, floor) >= 0)
+    .sort(compareVersions)
+    .reverse()
 }
 
 function compareVersions(left: string, right: string): number {

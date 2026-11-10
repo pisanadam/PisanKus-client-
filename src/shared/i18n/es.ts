@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Acceso directo en el escritorio',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Al hacer doble clic abre el launcher e inicia este perfil',
   'Masaüstüne ekle': 'Añadir al escritorio',
-  'Kısayol oluşturuldu: {file}': 'Acceso directo creado: {file}'
+  'Kısayol oluşturuldu: {file}': 'Acceso directo creado: {file}',
+  'Önerilen sunucular': 'Servidores recomendados',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'Servidores de PisanKus. No se escriben en la lista del perfil hasta que los añadas.',
+  'Listeye ekle': 'Añadir a la lista',
+  'Tümünü ekle': 'Añadir todos',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Sube la interfaz: la vida y los números se leen mejor',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Muestra la durabilidad que le queda al objeto',
+  'Patlayan totemleri sayar': 'Cuenta los tótems consumidos',
+  'Tam vuruşta sesli geri bildirim': 'Un sonido cuando el golpe entra completo',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'Permite ajustar los sonidos y los efectos del PvP',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Activa las hitboxes mientras llevas la maza',
+  'PvP için hazırlanmış doku paketi': 'Paquete de texturas hecho para PvP',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Paquete de texturas que reduce los efectos que tapan la vista',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'Ajustes de PvP que mantienen el aspecto vanilla',
+  'PvP için nişangâh': 'Una mira para PvP',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Espadas más cortas: no tapan la pantalla',
+  'Crystal PvP için doku paketi': 'Paquete de texturas para Crystal PvP',
+  'Mace için üç boyutlu doku': 'Un modelo 3D para la maza',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Baja la maza: no tapa la pantalla',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'Pack de Fabric para pisanpvp y otros servidores PvP: mods que reducen la latencia y las caídas de fps, y paquetes de texturas preparados para los kits de PvP, crystal y maza incluidos. Los paquetes de texturas se instalan pero no se activan; eliges el que quieras dentro del juego.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Los paquetes de texturas se instalan en la carpeta resourcepacks del perfil y no se activan solos: elige uno en el juego, en Opciones → Paquetes de recursos. Los mods del pack no quitan el retardo de golpe ni juegan por ti; esos mods están prohibidos en la mayoría de los servidores PvP.'
 }
 
 export default table

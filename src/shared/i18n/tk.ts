@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'Iş stoly gysga ýoly',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'Iki gezek basanyňyzda launcher açylyp şu profili başladýar',
   'Masaüstüne ekle': 'Iş stoluna goş',
-  'Kısayol oluşturuldu: {file}': 'Gysga ýol döredildi: {file}'
+  'Kısayol oluşturuldu: {file}': 'Gysga ýol döredildi: {file}',
+  'Önerilen sunucular': 'Maslahat berilýän serwerler',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'PisanKus serwerleri. Siz goşmasaňyz profiliň sanawyna ýazylmaýar.',
+  'Listeye ekle': 'Sanawa goş',
+  'Tümünü ekle': 'Hemmesini goş',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'Interfeýsi ýokary galdyrýar — jan we sanlar aýdyň görünýär',
+  'Eşyanın kalan dayanıklılığını gösterir': 'Zadyň galan çydamlylygyny görkezýär',
+  'Patlayan totemleri sayar': 'Ulanylan totemleri sanaýar',
+  'Tam vuruşta sesli geri bildirim': 'Urgy doly degende ses bilen habar berýär',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'PvP seslerini we görnüşini sazlamaga ýol berýär',
+  'Mace elinizdeyken çarpışma kutularını açar': 'Gürz eliňizde bolanda urgy gutularyny açýar',
+  'PvP için hazırlanmış doku paketi': 'PvP üçin taýýarlanan dokuma paketi',
+  'Görüşü kapatan efektleri kısan doku paketi': 'Görşi bagşaýan effektleri azaldýan dokuma paketi',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'Wanilla görnüşini saklaýan PvP düzedişleri',
+  'PvP için nişangâh': 'PvP üçin nyşana',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'Gysga gylyç dokumasy — ekrany bagşamaýar',
+  'Crystal PvP için doku paketi': 'Crystal PvP üçin dokuma paketi',
+  'Mace için üç boyutlu doku': 'Gürz üçin üç ölçegli model',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'Gürzi aşak çekýär — ekrany bagşamaýar',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'pisanpvp we beýleki PvP serwerleri üçin Fabric paketi: gijigmegi we kadr düşmesini azaldýan modlar, şeýle hem crystal we gürz goşmak bilen PvP kitleri üçin taýýarlanan dokuma paketleri. Dokuma paketleri gurnalýar, emma açylmaýar; haýsysyny ulanjagyňyzy oýnuň içinden siz saýlaýarsyňyz.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'Dokuma paketleri profiliň resourcepacks bukjasyna gurnalýar we öz-özünden açylmaýar: oýunda Sazlamalar → Çeşme paketleri bölüminden birini saýlaň. Paketdäki modlar urgy gijigmesini aýyrýan ýa-da siziň ýeriňize oýnaýan modlar däl; şeýle modlar PvP serwerleriniň köpüsinde gadagan.'
 }
 
 export default table

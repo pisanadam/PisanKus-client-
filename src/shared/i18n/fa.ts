@@ -708,7 +708,27 @@ const table: Dictionary = {
   'Masaüstü kısayolu': 'میان‌بر روی میزکار',
   'Çift tıklayınca launcher açılıp doğrudan bu profili başlatır': 'دوبار کلیک، لانچر را باز می‌کند و همین نمایه را اجرا می‌کند',
   'Masaüstüne ekle': 'افزودن به میزکار',
-  'Kısayol oluşturuldu: {file}': 'میان‌بر ساخته شد: {file}'
+  'Kısayol oluşturuldu: {file}': 'میان‌بر ساخته شد: {file}',
+  'Önerilen sunucular': 'سرورهای پیشنهادی',
+  'PisanKus sunucuları. Siz eklemeden profilin listesine yazılmaz.': 'سرورهای PisanKus. تا زمانی که اضافه نکنید در فهرست پروفایل نوشته نمی‌شوند.',
+  'Listeye ekle': 'افزودن به فهرست',
+  'Tümünü ekle': 'افزودن همه',
+  'Arayüzü yukarı alır — can ve sayılar net görünür': 'نوار اطلاعات را بالا می‌برد تا جان و اعداد خوانا بماند',
+  'Eşyanın kalan dayanıklılığını gösterir': 'دوام باقی‌مانده‌ی وسیله را نشان می‌دهد',
+  'Patlayan totemleri sayar': 'تعداد توتم‌های مصرف‌شده را می‌شمارد',
+  'Tam vuruşta sesli geri bildirim': 'صدا هنگام برخورد کامل ضربه',
+  'PvP seslerini ve görsellerini ayarlamanızı sağlar': 'امکان تنظیم صداها و جلوه‌های PvP',
+  'Mace elinizdeyken çarpışma kutularını açar': 'وقتی گُرز در دست است هیت‌باکس‌ها را نشان می‌دهد',
+  'PvP için hazırlanmış doku paketi': 'بسته‌ی بافت ساخته‌شده برای PvP',
+  'Görüşü kapatan efektleri kısan doku paketi': 'بسته‌ی بافتی که جلوه‌های مزاحم دید را کم می‌کند',
+  'Vanilla görünümü koruyan PvP düzenlemeleri': 'اصلاحات PvP با حفظ ظاهر اصلی بازی',
+  'PvP için nişangâh': 'نشانه‌گیر برای PvP',
+  'Kısa kılıç dokusu — ekranı kapatmaz': 'بافت شمشیر کوتاه که جلوی دید را نمی‌گیرد',
+  'Crystal PvP için doku paketi': 'بسته‌ی بافت برای Crystal PvP',
+  'Mace için üç boyutlu doku': 'مدل سه‌بعدی گُرز',
+  'Mace’i aşağı çeken doku — ekranı kapatmaz': 'گُرز را پایین می‌آورد تا صفحه را نپوشاند',
+  'pisanpvp ve diğer PvP sunucuları için Fabric paketi: gecikmeyi ve kare düşmesini azaltan performans modları, bir de crystal ve mace dahil PvP kitlerine hazırlanmış doku paketleri. Doku paketleri kurulur ama açılmaz; hangisini kullanacağınızı oyun içinden siz seçersiniz.': 'بسته‌ی Fabric برای pisanpvp و دیگر سرورهای PvP: مادهایی که تأخیر و افت فریم را کم می‌کنند، به‌همراه بسته‌های بافت آماده برای کیت‌های PvP از جمله crystal و mace. بسته‌های بافت نصب می‌شوند ولی روشن نمی‌شوند؛ انتخاب با شماست، داخل بازی.',
+  'Doku paketleri profilin resourcepacks klasörüne kurulur, kendiliğinden açılmaz: oyun içinde Seçenekler → Kaynak Paketleri’nden birini seçin. Paketteki modlar vuruş gecikmesini kaldıran ya da yerinize oynayan modlar değil; o tür modlar PvP sunucularının çoğunda yasaklıdır.': 'بسته‌های بافت در پوشه‌ی resourcepacks پروفایل نصب می‌شوند و خودبه‌خود فعال نمی‌شوند: داخل بازی از تنظیمات → بسته‌های منابع یکی را انتخاب کنید. مادهای این بسته تأخیر ضربه را حذف نمی‌کنند و به‌جای شما بازی نمی‌کنند؛ چنین مادهایی در بیشتر سرورهای PvP ممنوع‌اند.'
 }
 
 export default table
